@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { fitWithin, formatFileSize } from '../src/lib/photo.js'
+import { fitWithin } from '../src/lib/photo.js'
 
 describe('fitWithin', () => {
   it('shrinks a big landscape photo to 1600 px wide', () => {
@@ -19,12 +19,3 @@ describe('fitWithin', () => {
   })
 })
 
-describe('formatFileSize', () => {
-  it('shows small files in KB', () => {
-    expect(formatFileSize(850 * 1024)).toBe('850 KB')
-  })
-
-  it('shows big files in MB', () => {
-    expect(formatFileSize(4.2 * 1024 * 1024)).toBe('4.2 MB')
-  })
-})

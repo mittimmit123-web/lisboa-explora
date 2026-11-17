@@ -17,12 +17,6 @@ export function fitWithin(width, height, maxSize = MAX_PHOTO_SIZE_PX) {
   return { width: Math.round(width * scale), height: Math.round(height * scale) }
 }
 
-// "850 KB" or "4.2 MB"
-export function formatFileSize(bytes) {
-  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-}
-
 // Takes the photo File from the camera and returns a smaller JPEG File.
 // If anything goes wrong (old browser, strange file), we return the original.
 export async function shrinkPhoto(file) {

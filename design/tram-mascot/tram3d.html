@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3D Tram</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #f7f4ee; font-family: Inter, system-ui, sans-serif; }
+  #stage { width: 100%; height: 100%; display: block; }
+  .bubble { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); background: #fff; color: #14213d; padding: 12px 18px; border-radius: 16px; font-size: 16px; box-shadow: 0 4px 14px rgba(20,33,61,.15); white-space: nowrap; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<canvas id="stage"></canvas>
+<div class="bubble">Ding ding! <b>3</b> new places this month 🚋</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+const canvas = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#f7f4ee');
+const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+camera.position.set(0, 3.8, 11.5);
+camera.lookAt(0, 2.0, 0);
+
+// Light: soft sky light + a sun from the top left that casts the shadow
+scene.add(new THREE.HemisphereLight('#ffffff', '#d9cbb0', 1.6));
+const sun = new THREE.DirectionalLight('#ffffff', 2.2);
+sun.position.set(-4, 8, 6);
+sun.castShadow = true;
+sun.shadow.mapSize.set(1024, 1024);
+sun.shadow.radius = 6;
+scene.add(sun);
+
+// Materials
+const mat = (color, rough = 0.45) => new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: 0.05 });
+const yellow = mat('#f5b82e', 0.35), cream = mat('#fff7e6'), navy = mat('#14213d', 0.3),
+      glass = mat('#bfdbfe', 0.15), grey = mat('#6b7280'), pink = mat('#fb7185', 0.6), white = mat('#ffffff', 0.2);
+
+const tram = new THREE.Group();
+scene.add(tram);
+const add = (geo, material, x, y, z, parent = tram) => {
+  const m = new THREE.Mesh(geo, material);
+  m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true;
+  parent.add(m); return m;
+};
+
+// Body: chunky, short and round (cute proportions)
+add(new RoundedBoxGeometry(2.4, 2.2, 3.2, 6, 0.45), yellow, 0, 1.55, 0);
+add(new RoundedBoxGeometry(2.46, 0.36, 3.26, 4, 0.16), cream, 0, 1.0, 0);        // white stripe
+add(new RoundedBoxGeometry(2.0, 0.3, 2.8, 4, 0.14), cream, 0, 2.75, 0);          // roof
+add(new RoundedBoxGeometry(2.5, 0.22, 3.3, 4, 0.1), navy, 0, 0.42, 0);           // bottom edge
+
+// Side windows (3 per side)
+for (const side of [-1, 1]) for (const z of [-0.9, 0, 0.9]) {
+  const w = add(new RoundedBoxGeometry(0.06, 0.7, 0.62, 2, 0.03), glass, side * 1.2, 1.8, z);
+}
+
+// Face on the front window
+const front = new THREE.Group(); front.position.set(0, 1.85, 1.6); tram.add(front);
+add(new RoundedBoxGeometry(1.8, 0.95, 0.08, 4, 0.04), glass, 0, 0, 0, front);
+const eyes = [];
+for (const x of [-0.42, 0.42]) {
+  const eye = new THREE.Group(); eye.position.set(x, 0.05, 0.06); front.add(eye);
+  add(new THREE.SphereGeometry(0.23, 32, 16), white, 0, 0, 0, eye);
+  add(new THREE.SphereGeometry(0.13, 32, 16), navy, 0.02, -0.02, 0.14, eye);
+  add(new THREE.SphereGeometry(0.045, 16, 8), white, -0.03, 0.03, 0.26, eye);
+  eyes.push(eye);
+}
+const smile = add(new THREE.TorusGeometry(0.18, 0.04, 12, 32, Math.PI), navy, 0, -0.22, 0.06, front);
+smile.rotation.z = Math.PI;
+for (const x of [-0.72, 0.72]) add(new THREE.SphereGeometry(0.1, 16, 8), pink, x, -0.18, 0.04, front).scale.z = 0.3;
+
+// Headlights + number sign
+for (const x of [-0.75, 0.75]) add(new THREE.CylinderGeometry(0.14, 0.14, 0.1, 24), white, x, 0.75, 1.62).rotation.x = Math.PI / 2;
+add(new RoundedBoxGeometry(0.6, 0.32, 0.08, 2, 0.04), navy, 0, 2.62, 1.45);
+
+// Wheels
+for (const x of [-1.05, 1.05]) for (const z of [-0.95, 0.95]) {
+  const wheel = add(new THREE.CylinderGeometry(0.34, 0.34, 0.25, 32), navy, x, 0.36, z);
+  wheel.rotation.z = Math.PI / 2;
+  add(new THREE.CylinderGeometry(0.13, 0.13, 0.27, 16), grey, x, 0.36, z).rotation.z = Math.PI / 2;
+}
+
+// Pantograph (the arm that touches the wire) with a little bell on top
+const pole = add(new THREE.CylinderGeometry(0.05, 0.05, 1.3, 12), navy, 0, 3.4, -0.4);
+pole.rotation.x = -0.5;
+add(new THREE.CylinderGeometry(0.04, 0.04, 1.0, 12), navy, 0, 3.95, 0.0).rotation.z = Math.PI / 2;
+add(new THREE.SphereGeometry(0.15, 24, 12), yellow, 0, 4.05, 0.0);
+
+// Ground: round turntable with soft shadow
+const ground = new THREE.Mesh(new THREE.CircleGeometry(3.2, 64), mat('#ece4d4', 0.9));
+ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true;
+scene.add(ground);
+
+function resize() {
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize); resize();
+
+// Animation: twirl, little bounce, blink every few seconds
+const clock = new THREE.Clock();
+window.setTime = null; // set a number here to freeze one moment (used for screenshots)
+function frame() {
+  const t = window.setTime ?? clock.getElapsedTime();
+  tram.rotation.y = t * 0.9;
+  tram.position.y = Math.abs(Math.sin(t * 3)) * 0.12;
+  const blink = (t % 3.2) < 0.12 ? 0.1 : 1;
+  eyes.forEach((e) => (e.scale.y = blink));
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+frame();
+window.ready = true;
+</script>
+</body>
+</html>

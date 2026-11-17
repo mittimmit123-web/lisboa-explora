@@ -4,7 +4,7 @@ import { checkOff } from '../lib/api.js'
 import { isDemoMode } from '../lib/supabase.js'
 import { CHECK_RADIUS_M, distanceMeters, formatDistance } from '../lib/geo.js'
 import { categoryById } from '../data/categories.js'
-import { formatFileSize, shrinkPhoto } from '../lib/photo.js'
+import { shrinkPhoto } from '../lib/photo.js'
 
 export default function CheckOffScreen({ spot, position, gpsError, onDone, onBack }) {
   const [photo, setPhoto] = useState(null)
@@ -94,11 +94,7 @@ export default function CheckOffScreen({ spot, position, gpsError, onDone, onBac
           {/* capture="environment" opens the back camera on phones */}
           <input type="file" accept="image/*" capture="environment" onChange={choosePhoto} />
         </label>
-        {photo && (
-          <p className="muted">
-            {formatFileSize(photo.size)} · tap the photo to take a new one
-          </p>
-        )}
+        {photo && <p className="muted">Tap the photo to take a new one</p>}
 
         {message && <p className="error" role="alert">{message}</p>}
 

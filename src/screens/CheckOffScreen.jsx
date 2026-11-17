@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { checkOff } from '../lib/api.js'
 import { isDemoMode } from '../lib/supabase.js'
-import { CHECK_RADIUS_M, distanceMeters, formatDistance } from '../lib/geo.js'
+import { CHECK_RADIUS_M, distanceMeters, formatDistance, isGpsWeak } from '../lib/geo.js'
 import { categoryById } from '../data/categories.js'
 
 export default function CheckOffScreen({ spot, position, gpsError, onDone, onBack }) {
@@ -14,6 +14,9 @@ export default function CheckOffScreen({ spot, position, gpsError, onDone, onBac
   const effectivePosition = pretendHere ? { lat: spot.lat, lng: spot.lng } : position
   const distance = effectivePosition ? distanceMeters(effectivePosition, spot) : null
   const closeEnough = distance !== null && distance <= CHECK_RADIUS_M
+
+  // How exact the phone's GPS is, in metres (only for the real GPS, not "pretend")
+  const accuracy = !pretendHere && position?.accuracy != null ? Math.round(position.accuracy) : null
 
   async function submit() {
     setBusy(true)
@@ -53,9 +56,16 @@ export default function CheckOffScreen({ spot, position, gpsError, onDone, onBac
             <span>
               {closeEnough ? "You're here" : 'Too far away'} · {formatDistance(distance)}
               {' '}(needs {CHECK_RADIUS_M} m)
+              {accuracy !== null && ` · GPS accurate to ${accuracy} m`}
             </span>
           )}
         </div>
+
+        {accuracy !== null && isGpsWeak(accuracy) && (
+          <p className="gps-warning" role="status">
+            Your GPS is not accurate right now (±{accuracy} m). Wait a moment or step outside.
+          </p>
+        )}
 
         {isDemoMode && (
           <label className="demo-toggle">

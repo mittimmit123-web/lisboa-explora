@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3D Sardine</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #f7f4ee; font-family: Inter, system-ui, sans-serif; }
+  #stage { width: 100%; height: 100%; display: block; }
+  .bubble { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); background: #fff; color: #14213d; padding: 12px 18px; border-radius: 16px; font-size: 16px; box-shadow: 0 4px 14px rgba(20,33,61,.15); white-space: nowrap; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<canvas id="stage"></canvas>
+<div class="bubble">Blub blub! <b>3</b> new places this month 🐟</div>
+
+<script type="module">
+import * as THREE from 'three';
+
+const canvas = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#f7f4ee');
+const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+camera.position.set(0, 3.6, 11);
+camera.lookAt(0, 1.9, 0);
+
+scene.add(new THREE.HemisphereLight('#ffffff', '#d9cbb0', 1.5));
+const sun = new THREE.DirectionalLight('#ffffff', 2.4);
+sun.position.set(-4, 8, 6);
+sun.castShadow = true;
+sun.shadow.mapSize.set(1024, 1024);
+sun.shadow.bias = -0.002;
+sun.shadow.normalBias = 0.03;
+scene.add(sun);
+
+const mat = (color, rough = 0.4, metal = 0.05) => new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: metal });
+const silver = mat('#8fb3dc', 0.25, 0.35), belly = mat('#eef4fb', 0.3, 0.2), stripe = mat('#1e4d8c', 0.3, 0.2),
+      fin = mat('#5b87c4', 0.35, 0.2), navy = mat('#14213d', 0.3), white = mat('#ffffff', 0.2),
+      pink = mat('#fb7185', 0.6), red = mat('#e11d48', 0.4), gold = mat('#f2b33d', 0.3), green = mat('#16a34a', 0.4);
+
+const add = (geo, material, x, y, z, parent) => {
+  const m = new THREE.Mesh(geo, material);
+  m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true;
+  parent.add(m); return m;
+};
+
+// The fish faces +z. "fish" is moved around the circle, "body" wiggles.
+const fish = new THREE.Group(); scene.add(fish);
+const body = new THREE.Group(); body.position.y = 1.9; fish.add(body);
+
+// Chubby body: a stretched sphere, lighter belly underneath, blue back stripe on top
+add(new THREE.SphereGeometry(1, 48, 32), silver, 0, 0, 0, body).scale.set(0.85, 0.95, 1.6);
+add(new THREE.SphereGeometry(1, 48, 32), belly, 0, -0.22, 0.08, body).scale.set(0.78, 0.72, 1.45);
+add(new THREE.SphereGeometry(1, 48, 32), stripe, 0, 0.32, -0.05, body).scale.set(0.6, 0.66, 1.45);
+
+// Tail: two flat cones in a V shape, in their own group so it can flap
+const tail = new THREE.Group(); tail.position.set(0, 0, -1.45); body.add(tail);
+for (const s of [1, -1]) {
+  const t = add(new THREE.ConeGeometry(0.42, 0.95, 24), fin, 0, s * 0.32, -0.42, tail);
+  t.rotation.x = -Math.PI / 2 + s * 0.6; t.scale.set(1, 1, 0.25);
+}
+
+// Fins: one on top, one on each side
+const top = add(new THREE.ConeGeometry(0.35, 0.7, 24), fin, 0, 0.98, -0.2, body);
+top.rotation.x = -0.5; top.scale.set(0.25, 1, 1);
+const sideFins = [];
+for (const s of [1, -1]) {
+  const f = add(new THREE.ConeGeometry(0.22, 0.6, 20), fin, s * 0.8, -0.35, 0.35, body);
+  f.rotation.set(0.9, 0, s * 1.1); f.scale.set(1, 1, 0.3);
+  sideFins.push(f);
+}
+
+// Face on the front
+const eyes = [];
+for (const s of [1, -1]) {
+  const eye = new THREE.Group(); eye.position.set(s * 0.42, 0.18, 1.18); eye.rotation.y = s * 0.35; body.add(eye);
+  add(new THREE.SphereGeometry(0.27, 32, 16), white, 0, 0, 0, eye);
+  add(new THREE.SphereGeometry(0.15, 32, 16), navy, 0, -0.02, 0.17, eye);
+  add(new THREE.SphereGeometry(0.05, 16, 8), white, -0.04, 0.04, 0.3, eye);
+  eyes.push(eye);
+  add(new THREE.SphereGeometry(0.11, 16, 8), pink, s * 0.6, -0.2, 1.0, body).scale.z = 0.4;
+}
+const smile = add(new THREE.TorusGeometry(0.16, 0.04, 12, 32, Math.PI), navy, 0, -0.18, 1.5, body);
+smile.rotation.z = Math.PI;
+
+// Little festival hat (Santo António party hat) with a pompom
+const hat = new THREE.Group(); hat.position.set(0, 0.95, 0.5); hat.rotation.x = 0.25; body.add(hat);
+add(new THREE.ConeGeometry(0.32, 0.75, 32), red, 0, 0.35, 0, hat);
+add(new THREE.TorusGeometry(0.31, 0.05, 12, 32), gold, 0, 0.0, 0, hat).rotation.x = Math.PI / 2;
+add(new THREE.SphereGeometry(0.11, 16, 8), gold, 0, 0.76, 0, hat);
+add(new THREE.SphereGeometry(0.06, 12, 8), green, 0.14, 0.4, 0.22, hat);
+add(new THREE.SphereGeometry(0.06, 12, 8), gold, -0.16, 0.26, 0.2, hat);
+
+// Floor and bubbles
+const ground = new THREE.Mesh(new THREE.CircleGeometry(3.2, 64), mat('#ece4d4', 0.9));
+ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+const bubbleMat = new THREE.MeshStandardMaterial({ color: '#bfdbfe', roughness: 0.1, transparent: true, opacity: 0.6 });
+const bubbles = [0, 1, 2].map((i) => add(new THREE.SphereGeometry(0.06 + i * 0.02, 16, 8), bubbleMat, 0, 0, 0, scene));
+
+function resize() {
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize); resize();
+
+// Animation: turn around, swim up and down, flap the tail and fins, blink
+const clock = new THREE.Clock();
+window.setTime = null; // set a number here to freeze one moment (used for screenshots)
+function frame() {
+  const t = window.setTime ?? clock.getElapsedTime();
+  fish.rotation.y = t * 0.9;
+  body.position.y = 1.9 + Math.sin(t * 2.5) * 0.15;
+  body.rotation.z = Math.sin(t * 2.5) * 0.06;
+  tail.rotation.y = Math.sin(t * 8) * 0.45;
+  sideFins.forEach((f, i) => (f.rotation.y = Math.sin(t * 6 + i * Math.PI) * 0.4));
+  const blink = (t % 3.2) < 0.12 ? 0.1 : 1;
+  eyes.forEach((e) => (e.scale.y = blink));
+  // bubbles rise from in front of the mouth and start again
+  const mouth = new THREE.Vector3(0, -0.1, 1.7);
+  body.localToWorld(mouth);
+  bubbles.forEach((b, i) => {
+    const p = (t * 0.5 + i / 3) % 1;
+    b.position.set(mouth.x + Math.sin(p * 9 + i) * 0.1, mouth.y + p * 1.8, mouth.z);
+    b.scale.setScalar(0.6 + p * 0.6);
+  });
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+frame();
+window.ready = true;
+</script>
+</body>
+</html>

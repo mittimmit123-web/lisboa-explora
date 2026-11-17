@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3D Cat</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #f7f4ee; font-family: Inter, system-ui, sans-serif; }
+  #stage { width: 100%; height: 100%; display: block; }
+  .bubble { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); background: #fff; color: #14213d; padding: 12px 18px; border-radius: 16px; font-size: 16px; box-shadow: 0 4px 14px rgba(20,33,61,.15); white-space: nowrap; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<canvas id="stage"></canvas>
+<div class="bubble">Miau! <b>3</b> new places this month 🐾</div>
+
+<script type="module">
+import * as THREE from 'three';
+
+const canvas = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#f7f4ee');
+const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+camera.position.set(0, 3.6, 11);
+camera.lookAt(0, 1.9, 0);
+
+scene.add(new THREE.HemisphereLight('#ffffff', '#d9cbb0', 1.5));
+const sun = new THREE.DirectionalLight('#ffffff', 2.3);
+sun.position.set(-4, 8, 6);
+sun.castShadow = true;
+sun.shadow.mapSize.set(1024, 1024);
+sun.shadow.bias = -0.002;
+sun.shadow.normalBias = 0.03;
+scene.add(sun);
+
+const mat = (color, rough = 0.5) => new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: 0.02 });
+const orange = mat('#f59e42'), darkOrange = mat('#c96a12'), cream = mat('#fff4e6'), pinkInner = mat('#fbb6c4'),
+      navy = mat('#14213d', 0.3), white = mat('#ffffff', 0.2), pink = mat('#fb7185', 0.6),
+      nose = mat('#f472b6', 0.4), scarf = mat('#2563eb', 0.45);
+
+const add = (geo, material, x, y, z, parent) => {
+  const m = new THREE.Mesh(geo, material);
+  m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true;
+  parent.add(m); return m;
+};
+
+const cat = new THREE.Group(); scene.add(cat);
+
+// Body sitting down: chubby egg shape with a cream chest
+add(new THREE.SphereGeometry(1, 48, 32), orange, 0, 1.05, 0, cat).scale.set(1.0, 1.0, 0.95);
+add(new THREE.SphereGeometry(1, 48, 32), cream, 0, 1.0, 0.32, cat).scale.set(0.68, 0.78, 0.7);
+
+// Paws
+for (const x of [-0.4, 0.4]) add(new THREE.SphereGeometry(0.26, 24, 16), cream, x, 0.2, 0.75, cat).scale.set(1, 0.7, 1.3);
+for (const x of [-0.75, 0.75]) add(new THREE.SphereGeometry(0.34, 24, 16), orange, x, 0.28, 0.1, cat).scale.set(0.9, 0.7, 1.4);
+
+// Tail: a curved tube built from points, rebuilt each frame to swish
+const tailMat = orange;
+let tail = null;
+function makeTail(swish) {
+  const pts = [
+    new THREE.Vector3(0, 0.45, -0.85),
+    new THREE.Vector3(0.25 * swish, 0.55, -1.35),
+    new THREE.Vector3(0.6 * swish, 1.2, -1.45),
+    new THREE.Vector3(0.75 * swish, 1.85, -1.15),
+    new THREE.Vector3(0.55 * swish, 2.15, -0.85),
+  ];
+  const geo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 40, 0.14, 16, false);
+  if (tail) { tail.geometry.dispose(); tail.geometry = geo; }
+  else { tail = add(geo, tailMat, 0, 0, 0, cat); }
+  tipPos.copy(pts[4]);
+}
+const tipPos = new THREE.Vector3();
+const tip = add(new THREE.SphereGeometry(0.15, 16, 8), darkOrange, 0, 0, 0, cat);
+makeTail(1);
+
+// Scarf around the neck
+add(new THREE.TorusGeometry(0.7, 0.17, 16, 48), scarf, 0, 1.85, 0.05, cat).rotation.x = Math.PI / 2 - 0.15;
+const scarfEnd = add(new THREE.BoxGeometry(0.3, 0.6, 0.12), scarf, 0.45, 1.5, 0.65, cat);
+scarfEnd.rotation.set(0.25, 0, -0.25);
+
+// Head
+const head = new THREE.Group(); head.position.set(0, 2.65, 0.1); cat.add(head);
+add(new THREE.SphereGeometry(1, 48, 32), orange, 0, 0, 0, head).scale.set(1.0, 0.88, 0.9);
+// Tabby stripes on the forehead
+for (const [x, r] of [[-0.2, 0.25], [0, 0], [0.2, -0.25]]) {
+  const s = add(new THREE.CapsuleGeometry(0.05, 0.28, 4, 8), darkOrange, x, 0.62, 0.55, head);
+  s.rotation.set(0.6, 0, r);
+}
+// Muzzle, nose and cat mouth ("w")
+add(new THREE.SphereGeometry(0.42, 32, 16), cream, 0, -0.3, 0.7, head).scale.set(1.1, 0.75, 0.6);
+add(new THREE.SphereGeometry(0.09, 16, 8), nose, 0, -0.16, 0.98, head).scale.set(1.3, 0.8, 0.8);
+for (const s of [-1, 1]) {
+  const m = add(new THREE.TorusGeometry(0.08, 0.025, 8, 24, Math.PI), navy, s * 0.08, -0.3, 0.95, head);
+  m.rotation.z = Math.PI;
+}
+// Whiskers
+for (const s of [-1, 1]) for (const y of [-0.22, -0.32]) {
+  const w = add(new THREE.CylinderGeometry(0.012, 0.012, 0.65, 6), navy, s * 0.62, y, 0.75, head);
+  w.rotation.z = Math.PI / 2 + s * (y + 0.27) * 1.5;
+}
+// Eyes (same style as the tram and sardine)
+const eyes = [];
+for (const s of [-1, 1]) {
+  const eye = new THREE.Group(); eye.position.set(s * 0.36, 0.1, 0.72); eye.rotation.y = s * 0.25; head.add(eye);
+  add(new THREE.SphereGeometry(0.22, 32, 16), white, 0, 0, 0, eye);
+  add(new THREE.SphereGeometry(0.13, 32, 16), navy, 0, -0.02, 0.13, eye);
+  add(new THREE.SphereGeometry(0.045, 16, 8), white, -0.035, 0.035, 0.24, eye);
+  eyes.push(eye);
+  add(new THREE.SphereGeometry(0.11, 16, 8), pink, s * 0.62, -0.18, 0.62, head).scale.z = 0.4;
+}
+// Ears (with pink inside), each in a group so they can twitch
+const ears = [];
+for (const s of [-1, 1]) {
+  const ear = new THREE.Group(); ear.position.set(s * 0.52, 0.65, 0.05); ear.rotation.z = -s * 0.35; head.add(ear);
+  add(new THREE.ConeGeometry(0.34, 0.6, 24), orange, 0, 0.25, 0, ear).scale.z = 0.55;
+  add(new THREE.ConeGeometry(0.2, 0.4, 24), pinkInner, 0, 0.2, 0.1, ear).scale.z = 0.3;
+  ears.push(ear);
+}
+
+// Floor
+const ground = new THREE.Mesh(new THREE.CircleGeometry(3.2, 64), mat('#ece4d4', 0.9));
+ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+
+function resize() {
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize); resize();
+
+// Animation: turn around, tail swish, head tilt, ear twitch, blink
+const clock = new THREE.Clock();
+window.setTime = null; // set a number here to freeze one moment (used for screenshots)
+function frame() {
+  const t = window.setTime ?? clock.getElapsedTime();
+  cat.rotation.y = t * 0.9;
+  makeTail(Math.sin(t * 3));
+  tip.position.copy(tipPos);
+  head.rotation.z = Math.sin(t * 1.5) * 0.12;
+  cat.position.y = Math.abs(Math.sin(t * 3)) * 0.05;
+  const twitch = (t % 2.6) < 0.15 ? 0.35 : 0;
+  ears[1].rotation.x = -twitch;
+  const blink = (t % 3.2) < 0.12 ? 0.1 : 1;
+  eyes.forEach((e) => (e.scale.y = blink));
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+frame();
+window.ready = true;
+</script>
+</body>
+</html>

@@ -26,7 +26,7 @@ Everyone must be able to explain every part: in the walkthrough each member is a
 - Keep it simple and readable. Beginners must understand it.
 - Screens never call Supabase directly: always go through `src/lib/api.js`.
 - Logic that can be tested (distances, percentages, ranking) goes into `src/lib/` as plain functions, with a test in `tests/`.
-- The 50 m rule must stay on the server (`supabase/schema.sql`). The browser copy in `geo.js` is only for display.
+- A check-off is never refused because of distance. The **"verified on site" decision** must stay on the server (`supabase/schema.sql`); the browser copy in `geo.js` is only for display.
 - Never commit `.env` or any key.
 - Spots are edited only in `src/data/spots.js`, then run `npm run seed` and run `supabase/seed.sql` in Supabase.
 - Explain what you changed in the pull request in plain words.

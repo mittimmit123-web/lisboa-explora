@@ -13,7 +13,8 @@ export default function CheckOffScreen({ spot, position, gpsError, onDone, onBac
 
   const effectivePosition = pretendHere ? { lat: spot.lat, lng: spot.lng } : position
   const distance = effectivePosition ? distanceMeters(effectivePosition, spot) : null
-  const closeEnough = distance !== null && distance <= CHECK_RADIUS_M
+  // Being close only earns the "verified on site" mark. It never blocks.
+  const willVerify = distance !== null && distance <= CHECK_RADIUS_M
 
   async function submit() {
     setBusy(true)
@@ -22,8 +23,6 @@ export default function CheckOffScreen({ spot, position, gpsError, onDone, onBac
     setBusy(false)
     if (result.ok) {
       onDone()
-    } else if (result.reason === 'too_far') {
-      setMessage(`You are ${formatDistance(result.distance)} away. Get within ${CHECK_RADIUS_M} m.`)
     } else if (result.reason === 'already_collected') {
       setMessage('You already have this spot.')
     } else {
@@ -46,13 +45,14 @@ export default function CheckOffScreen({ spot, position, gpsError, onDone, onBac
       </header>
 
       <div className="content">
-        <div className={closeEnough ? 'status ok' : 'status'}>
+        <div className={willVerify ? 'status ok' : 'status'}>
           {gpsError && !pretendHere && <span>GPS: {gpsError}</span>}
           {!gpsError && distance === null && <span>Finding your location…</span>}
           {distance !== null && (
             <span>
-              {closeEnough ? "You're here" : 'Too far away'} · {formatDistance(distance)}
-              {' '}(needs {CHECK_RADIUS_M} m)
+              {willVerify
+                ? `You're here · ${formatDistance(distance)} · this one gets the "verified on site" mark`
+                : `${formatDistance(distance)} away · you can still add it, just without the mark`}
             </span>
           )}
         </div>
@@ -72,8 +72,8 @@ export default function CheckOffScreen({ spot, position, gpsError, onDone, onBac
 
         {message && <p className="error" role="alert">{message}</p>}
 
-        <button className="primary" disabled={busy || !photo || !closeEnough} onClick={submit}>
-          {busy ? 'Checking…' : 'Check off'}
+        <button className="primary" disabled={busy || !photo} onClick={submit}>
+          {busy ? 'Saving…' : willVerify ? 'Check off' : 'Add to journal'}
         </button>
       </div>
     </div>

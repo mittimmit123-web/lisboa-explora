@@ -31,3 +31,11 @@ export function formatDistance(meters) {
   if (meters < 1000) return `${Math.round(meters)} m`
   return `${(meters / 1000).toFixed(1)} km`
 }
+
+// GPS accuracy: the phone says "I'm here, give or take `accuracy` metres".
+// If that is more than our check-off radius, the distance we show can be
+// wrong, so the screen warns the player.
+// Example: isGpsWeak(25) -> false, isGpsWeak(120) -> true
+export function isGpsWeak(accuracy, limit = CHECK_RADIUS_M) {
+  return accuracy > limit
+}

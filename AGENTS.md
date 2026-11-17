@@ -22,6 +22,7 @@ Everyone must be able to explain every part: in the walkthrough each member is a
 
 ## Rules for code (humans and AI assistants)
 
+- **Everything in English**: code, comments, commit messages, issues, pull requests, docs and UI text. Only real place names stay in Portuguese.
 - Keep it simple and readable. Beginners must understand it.
 - Screens never call Supabase directly: always go through `src/lib/api.js`.
 - Logic that can be tested (distances, percentages, ranking) goes into `src/lib/` as plain functions, with a test in `tests/`.

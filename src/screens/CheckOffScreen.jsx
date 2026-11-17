@@ -4,6 +4,7 @@ import { checkOff } from '../lib/api.js'
 import { isDemoMode } from '../lib/supabase.js'
 import { CHECK_RADIUS_M, distanceMeters, formatDistance } from '../lib/geo.js'
 import { categoryById } from '../data/categories.js'
+import { checkOffErrorMessage } from '../lib/messages.js'
 
 export default function CheckOffScreen({ spot, position, gpsError, onDone, onBack }) {
   const [photo, setPhoto] = useState(null)
@@ -18,16 +19,18 @@ export default function CheckOffScreen({ spot, position, gpsError, onDone, onBac
   async function submit() {
     setBusy(true)
     setMessage(null)
-    const result = await checkOff({ spot, position: effectivePosition, photo })
+    let result
+    try {
+      result = await checkOff({ spot, position: effectivePosition, photo })
+    } catch {
+      // e.g. the internet dropped completely: treat it like a server problem
+      result = { ok: false, reason: 'server_error' }
+    }
     setBusy(false)
     if (result.ok) {
       onDone()
-    } else if (result.reason === 'too_far') {
-      setMessage(`You are ${formatDistance(result.distance)} away. Get within ${CHECK_RADIUS_M} m.`)
-    } else if (result.reason === 'already_collected') {
-      setMessage('You already have this spot.')
     } else {
-      setMessage('Something went wrong. Please try again.')
+      setMessage(checkOffErrorMessage(result))
     }
   }
 

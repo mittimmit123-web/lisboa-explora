@@ -4,7 +4,9 @@
 --
 -- Security idea in one sentence:
 -- players can READ their own data, but they can only WRITE through the
--- functions below, which check the rules (50 m radius, own photos, ...).
+-- functions below, which check the rules (own photos, one spot per player).
+-- The server also decides whether a check-off counts as "verified on site";
+-- the browser can never set that flag itself.
 
 -- ---------- Tables ----------
 
@@ -33,8 +35,11 @@ create table if not exists public.check_offs (
   user_id uuid not null references public.profiles (id) on delete cascade,
   spot_id text not null references public.spots (id),
   photo_path text,
-  lat double precision not null,
-  lng double precision not null,
+  -- lat/lng may be null: the player can add a spot without a GPS position
+  lat double precision,
+  lng double precision,
+  -- true only if the server measured the player within 50 m of the spot
+  verified boolean not null default false,
   created_at timestamptz not null default now(),
   unique (user_id, spot_id)
 );
@@ -104,7 +109,9 @@ returns double precision language sql immutable as $$
   ));
 $$;
 
--- ---------- Check off a spot (the 50 m rule lives HERE) ----------
+-- ---------- Check off a spot ----------
+-- A check-off NEVER fails because of distance. The server only decides
+-- whether the entry gets the "verified on site" mark (within 50 m).
 
 create or replace function public.check_off(p_spot_id text, p_lat double precision,
                                             p_lng double precision, p_photo_path text)
@@ -113,6 +120,7 @@ declare
   v_user uuid := auth.uid();
   v_spot public.spots;
   v_distance double precision;
+  v_verified boolean := false;
 begin
   if v_user is null then
     return jsonb_build_object('ok', false, 'reason', 'not_logged_in');
@@ -128,20 +136,24 @@ begin
     return jsonb_build_object('ok', false, 'reason', 'bad_photo');
   end if;
 
-  v_distance := public.distance_m(p_lat, p_lng, v_spot.lat, v_spot.lng);
-  if v_distance > 50 then
-    return jsonb_build_object('ok', false, 'reason', 'too_far', 'distance', round(v_distance));
+  -- Distance decides the "verified on site" mark and nothing else.
+  -- No GPS position (null) simply means "not verified".
+  if p_lat is not null and p_lng is not null then
+    v_distance := public.distance_m(p_lat, p_lng, v_spot.lat, v_spot.lng);
+    v_verified := v_distance <= 50;
   end if;
 
-  insert into public.check_offs (user_id, spot_id, photo_path, lat, lng)
-  values (v_user, p_spot_id, p_photo_path, p_lat, p_lng)
+  insert into public.check_offs (user_id, spot_id, photo_path, lat, lng, verified)
+  values (v_user, p_spot_id, p_photo_path, p_lat, p_lng, v_verified)
   on conflict (user_id, spot_id) do nothing;
 
   if not found then
     return jsonb_build_object('ok', false, 'reason', 'already_collected');
   end if;
 
-  return jsonb_build_object('ok', true, 'distance', round(v_distance));
+  return jsonb_build_object('ok', true, 'verified', v_verified,
+                            'distance', case when v_distance is null then null
+                                             else round(v_distance) end);
 end;
 $$;
 
@@ -164,6 +176,8 @@ end;
 $$;
 
 -- Me + my friends, with the number of new spots this calendar month.
+-- Counts EVERY check-off, verified or not: the leaderboard is a friendly
+-- comparison, not a competition.
 create or replace function public.friends_leaderboard()
 returns table (display_name text, new_this_month bigint, is_me boolean)
 language sql security definer set search_path = public as $$

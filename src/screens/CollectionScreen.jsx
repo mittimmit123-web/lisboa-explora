@@ -1,11 +1,28 @@
 // Person 4: Collection & sets
+import { useEffect, useState } from 'react'
 import ProgressBar from '../components/ProgressBar.jsx'
 import { SETS } from '../data/sets.js'
 import { categoryById } from '../data/categories.js'
-import { setProgress, neighbourhoodProgress } from '../lib/progress.js'
+import { getFriendsLeaderboard } from '../lib/api.js'
+import { monthlyRecap, neighbourhoodProgress, recentlyCollected, setProgress } from '../lib/progress.js'
 
-export default function CollectionScreen({ spots, collectedIds, newThisMonth }) {
+// "17 Nov"
+function formatDate(date) {
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+}
+
+export default function CollectionScreen({ spots, checkOffs, collectedIds, newThisMonth }) {
   const hoods = neighbourhoodProgress(spots, collectedIds).filter((h) => h.total > 1)
+  const recent = recentlyCollected(checkOffs, spots)
+  const [players, setPlayers] = useState(null) // null = still loading
+
+  useEffect(() => {
+    getFriendsLeaderboard(newThisMonth)
+      .then(setPlayers)
+      .catch(() => setPlayers([])) // recap still works without friends
+  }, [newThisMonth])
+
+  const recap = players ? monthlyRecap(players) : null
 
   return (
     <div className="screen">
@@ -28,6 +45,33 @@ export default function CollectionScreen({ spots, collectedIds, newThisMonth }) 
             <span>left to find</span>
           </div>
         </div>
+
+        <div className="card recap">
+          <span className="section-label">This month</span>
+          <p>
+            You discovered <strong>{newThisMonth}</strong> new {newThisMonth === 1 ? 'place' : 'places'}.
+            {recap?.rank && recap.playerCount > 1 && (
+              <>
+                {' '}You are <strong>#{recap.rank}</strong> of {recap.playerCount} friends.
+              </>
+            )}
+          </p>
+        </div>
+
+        <h2 className="section-label">Recently collected</h2>
+        {recent.length === 0 ? (
+          <p className="muted">Nothing collected yet. Open the map and find your first spot!</p>
+        ) : (
+          <ul className="recent">
+            {recent.map(({ spot, date }) => (
+              <li key={spot.id}>
+                <span className="dot" style={{ background: categoryById(spot.category)?.color }} />
+                <span className="name">{spot.name}</span>
+                <span className="muted">{formatDate(date)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
 
         <h2 className="section-label">Sets</h2>
         {SETS.map((set) => {

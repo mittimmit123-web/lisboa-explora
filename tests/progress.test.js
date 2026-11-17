@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { neighbourhoodProgress, newThisMonth, rankPlayers, setProgress, spotsInSet } from '../src/lib/progress.js'
+import {
+  monthlyRecap,
+  neighbourhoodProgress,
+  newThisMonth,
+  rankPlayers,
+  recentlyCollected,
+  setProgress,
+  spotsInSet,
+} from '../src/lib/progress.js'
 
 const spots = [
   { id: 'a', category: 'nightlife', neighbourhood: 'Bairro Alto' },
@@ -60,5 +68,43 @@ describe('rankPlayers', () => {
       [1, 'Marta'],
       [2, 'Ana'],
     ])
+  })
+})
+
+describe('recentlyCollected', () => {
+  const rows = [
+    { spot_id: 'a', created_at: '2026-11-02T10:00:00Z' },
+    { spot_id: 'f', created_at: '2026-11-16T10:00:00Z' },
+    { spot_id: 'gone', created_at: '2026-11-17T10:00:00Z' },
+    { spot_id: 'b', created_at: '2026-10-30T10:00:00Z' },
+  ]
+
+  it('returns spots newest first and skips unknown spots', () => {
+    const result = recentlyCollected(rows, spots)
+    expect(result.map((r) => r.spot.id)).toEqual(['f', 'a', 'b'])
+    expect(result[0].date.toISOString()).toBe('2026-11-16T10:00:00.000Z')
+  })
+
+  it('respects the limit', () => {
+    expect(recentlyCollected(rows, spots, 1).map((r) => r.spot.id)).toEqual(['f'])
+  })
+
+  it('is empty when nothing is collected', () => {
+    expect(recentlyCollected([], spots)).toEqual([])
+  })
+})
+
+describe('monthlyRecap', () => {
+  it('gives my count and my rank among friends', () => {
+    const recap = monthlyRecap([
+      { name: 'You', count: 5, isMe: true },
+      { name: 'Marta', count: 6 },
+      { name: 'João', count: 4 },
+    ])
+    expect(recap).toEqual({ count: 5, rank: 2, playerCount: 3 })
+  })
+
+  it('has no rank when I am not in the list', () => {
+    expect(monthlyRecap([])).toEqual({ count: 0, rank: null, playerCount: 0 })
   })
 })

@@ -50,3 +50,26 @@ export function rankPlayers(players) {
     .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
     .map((p, i) => ({ ...p, rank: i + 1 }))
 }
+
+// The newest check-offs joined with their spot, newest first.
+// Returns [{ spot, date }]. Check-offs for unknown spots are skipped.
+export function recentlyCollected(checkOffs, spots, limit = 5) {
+  return [...checkOffs]
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .map((c) => ({ spot: spots.find((s) => s.id === c.spot_id), date: new Date(c.created_at) }))
+    .filter((item) => item.spot)
+    .slice(0, limit)
+}
+
+// Numbers for the "monthly recap" card.
+// players: [{ name, count, isMe }] from the friends leaderboard.
+// Returns { count, rank, playerCount }. rank is null if "me" is not in the list.
+export function monthlyRecap(players) {
+  const ranked = rankPlayers(players)
+  const me = ranked.find((p) => p.isMe)
+  return {
+    count: me?.count ?? 0,
+    rank: me?.rank ?? null,
+    playerCount: ranked.length,
+  }
+}

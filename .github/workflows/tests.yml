@@ -1,0 +1,33 @@
+# Runs the test suite and a production build on every pull request.
+# Nobody has to remember to run `npm test` before merging: GitHub does it,
+# and the result shows up as a green or red mark on the pull request.
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      # `npm ci` installs exactly what package-lock.json says,
+      # so the run cannot break because of a surprise dependency update.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      # The build runs here too, because Vercel builds main after every
+      # merge. Catching a broken build now is cheaper than catching it live.
+      - name: Build
+        run: npm run build

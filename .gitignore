@@ -25,3 +25,6 @@ dist-ssr
 
 # Secrets: never commit
 .env
+
+# Local dev-server config for Claude Code
+.claude/launch.json

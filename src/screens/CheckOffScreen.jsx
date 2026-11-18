@@ -1,16 +1,37 @@
 // Person 2: Check-off (GPS + photo)
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { checkOff } from '../lib/api.js'
 import { isDemoMode } from '../lib/supabase.js'
 import { CHECK_RADIUS_M, distanceMeters, formatDistance } from '../lib/geo.js'
 import { categoryById } from '../data/categories.js'
 import { checkOffErrorMessage } from '../lib/messages.js'
+import { shrinkPhoto } from '../lib/photo.js'
 
 export default function CheckOffScreen({ spot, position, gpsError, onDone, onBack }) {
   const [photo, setPhoto] = useState(null)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState(null)
   const [pretendHere, setPretendHere] = useState(false) // demo mode only
+  const [previewUrl, setPreviewUrl] = useState(null) // temporary link to show the photo
+
+  // Runs when the player takes or picks a photo: shrink it, keep it,
+  // and make a temporary link so the <img> below can show it.
+  async function choosePhoto(event) {
+    const file = event.target.files?.[0]
+    if (!file) return
+    setBusy(true)
+    const smallPhoto = await shrinkPhoto(file)
+    setPhoto(smallPhoto)
+    setPreviewUrl(URL.createObjectURL(smallPhoto))
+    setBusy(false)
+  }
+
+  // When the preview link changes or the screen closes, delete the old link to free memory.
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl)
+    }
+  }, [previewUrl])
 
   const effectivePosition = pretendHere ? { lat: spot.lat, lng: spot.lng } : position
   const distance = effectivePosition ? distanceMeters(effectivePosition, spot) : null
@@ -69,11 +90,16 @@ export default function CheckOffScreen({ spot, position, gpsError, onDone, onBac
           </label>
         )}
 
-        <label className="photo-input">
-          <span>{photo ? `Photo: ${photo.name}` : 'Take a photo of the spot'}</span>
+        <label className={previewUrl ? 'photo-input has-photo' : 'photo-input'}>
+          {previewUrl ? (
+            <img src={previewUrl} alt={`Your photo of ${spot.name}`} />
+          ) : (
+            <span>Take a photo of the spot</span>
+          )}
           {/* capture="environment" opens the back camera on phones */}
-          <input type="file" accept="image/*" capture="environment" onChange={(e) => setPhoto(e.target.files?.[0] ?? null)} />
+          <input type="file" accept="image/*" capture="environment" onChange={choosePhoto} />
         </label>
+        {photo && <p className="muted">Tap the photo to take a new one</p>}
 
         {message && <p className="error" role="alert">{message}</p>}
 

@@ -1,4 +1,5 @@
-// Spots set BY HAND. The import script (scripts/import-osm.mjs) never
+// Spots set BY HAND (1. extra spots, 2. position fixes, 3. removals).
+// The import script (scripts/import-osm.mjs) never
 // overwrites this file; it adds these on top of the OpenStreetMap spots.
 // All coordinates were checked by hand (Google Maps or on site).
 
@@ -7,10 +8,29 @@
 //    except for the campus, which is outside Lisbon.
 export const EXTRA_SPOTS = [
   // Demo spot for the live presentation: room D-1.10, measured on site.
-  { id: 'nova-sbe', name: 'Nova SBE Campus', category: 'campus', neighbourhood: 'Carcavelos', lat: 38.67831, lng: -9.32633, rarity: 'legendary' },
+  // `highlight: true` = also visible when the map is zoomed out.
+  { id: 'nova-sbe', name: 'Nova SBE Campus', category: 'campus', neighbourhood: 'Carcavelos', lat: 38.67831, lng: -9.32633, rarity: 'legendary', highlight: true },
   // In OSM these are tagged as forest / not as a park, so the filter misses them.
-  { id: 'monsanto', name: 'Parque Florestal de Monsanto', category: 'park', lat: 38.7239, lng: -9.18923, rarity: 'common' },
-  { id: 'bela-vista', name: 'Parque da Bela Vista', category: 'park', lat: 38.751, lng: -9.12676, rarity: 'common' },
+  { id: 'monsanto', name: 'Parque Florestal de Monsanto', category: 'park', lat: 38.7239, lng: -9.18923, rarity: 'common', highlight: true },
+  { id: 'bela-vista', name: 'Parque da Bela Vista', category: 'park', lat: 38.751, lng: -9.12676, rarity: 'common', highlight: true },
+]
+
+// 3. OSM entries we remove by hand: the same place mapped twice under
+//    different names, which the automatic duplicate rule cannot detect.
+//    By OSM id, so only exactly this entry is removed. The comment says
+//    which entry we keep instead.
+export const REMOVE_IDS = [
+  'osm-w526129020', // Miradouro Nossa Senhora do Monte -> keep Miradouro da Senhora do Monte
+  'osm-w259346570', // Miradouro do Padrão dos Descobrimentos -> keep Padrão dos Descobrimentos
+  'osm-n12926040967', // Museu de Lisboa - Casa dos Bicos -> keep Casa dos Bicos
+  'osm-n13096661171', // Casa Ásia – Coleção Francisco Capelo (other dash) -> keep the "-" one
+  'osm-w207662487', // Palácio Pimenta -> keep Museu de Lisboa - Palácio Pimenta
+  'osm-n9749140958', // Museu da Água at the reservoir -> keep Reservatório da Mãe d'Água das Amoreiras
+  'osm-n4340743360', // Museu do Campo Pequeno -> keep Praça de Touros do Campo Pequeno
+  'osm-w54820068', // Quinta das Conchas -> keep Parque da Quinta das Conchas e dos Lilases
+  'osm-n5448423388', // Alameda Roentgen -> keep Jardim da Alameda Roentgen
+  'osm-n12314198864', // Mercado D´Santos (other apostrophe) -> keep Mercado D'Santos
+  'osm-n12632661001', // Hello, Kristof (São Bento) -> keep Hello, Kristof
 ]
 
 // 2. Better positions for large places. OSM puts the dot in the middle of

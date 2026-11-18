@@ -5,6 +5,7 @@
 //
 // In OSM, every place has "tags": labels written by volunteers, for example
 // { name: 'Miradouro de Santa Luzia', tourism: 'viewpoint' }.
+import { distanceMeters } from './geo.js'
 
 // A place edited at most this many times in OSM counts as "rare"
 // (lesser known). Places edited more often are well known, so "common".
@@ -38,6 +39,14 @@ export function categoryOf(tags) {
   return null
 }
 
+// Food spots come in different kinds, so the map can show a matching icon
+// (☕ / 🍴 / 🧺). The category stays "food" for all of them.
+export function kindOf(tags) {
+  if (tags.amenity === 'marketplace') return 'market'
+  if (tags.amenity === 'cafe' || ['bakery', 'pastry'].includes(tags.shop)) return 'cafe'
+  return 'restaurant' // restaurant, food_court
+}
+
 // ---------- Exclusion ----------
 
 export function hasWebsite(tags) {
@@ -55,6 +64,14 @@ export function exclusionReason(tags, category) {
 
   // Monuments: small wall plaques are not worth a visit.
   if (tags.historic === 'memorial' && (tags.memorial ?? '').includes('plaque')) return 'plaque'
+
+  // Single trees, rocks or ponds tagged as "attraction" are not spots.
+  if (tags.tourism === 'attraction' && (tags.natural || tags.denotation === 'natural_monument')) return 'nature'
+  // Zoo enclosures ("Girafas", "Leões") are tagged as attractions with no
+  // other information. Attractions without any details are skipped.
+  if (tags.tourism === 'attraction' && tags.attraction === 'animal') return 'zoo animal'
+  const detailKeys = Object.keys(tags).filter((k) => !/^(name|tourism|building|height)(:|$)/.test(k))
+  if (tags.tourism === 'attraction' && category === 'monument' && detailKeys.length === 0) return 'no details'
 
   if (category === 'food') {
     if (tags.brand || tags['brand:wikidata']) return 'chain' // Starbucks & co.
@@ -75,6 +92,154 @@ export function exclusionReason(tags, category) {
 export function rarityOf(category, editCount) {
   if (category === 'food' || category === 'nightlife') return 'common'
   return editCount <= RARE_MAX_EDITS ? 'rare' : 'common'
+}
+
+// ---------- Duplicates ----------
+
+// Volunteers sometimes map one place twice, e.g. once as a building and
+// once as an attraction, a few hundred metres apart. Two spots count as the
+// same place if their names are equal (ignoring case and accents) and they
+// are at most this far apart. This applies to ALL categories.
+export const DUPLICATE_DISTANCE_M = 300
+
+// "Oceanário de  Lisboa" -> "oceanario de lisboa"
+export function normalizeName(name) {
+  return name
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '') // remove accents
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+// items: [{ spot, edits }]. Returns the list without duplicates. Of two
+// duplicates we keep the one edited more often (usually the better data).
+export function removeDuplicates(items, maxDistance = DUPLICATE_DISTANCE_M) {
+  const sorted = [...items].sort((a, b) => b.edits - a.edits)
+  const kept = []
+  for (const item of sorted) {
+    const name = normalizeName(item.spot.name)
+    const isDuplicate = kept.some(
+      (k) => normalizeName(k.spot.name) === name && distanceMeters(k.spot, item.spot) <= maxDistance,
+    )
+    if (!isDuplicate) kept.push(item)
+  }
+  return kept
+}
+
+// ---------- One spot per location ----------
+
+// Often several things with the same name stand at the same place: a square
+// and its statue ("Praça Marquês de Pombal" / "Marquês de Pombal"), or a
+// monument and its viewpoint. A player should not collect 2-3 spots in one
+// visit, so they are merged into ONE spot.
+// Rule: similar names AND at most 15 m apart. Both must be true, so that
+// really different places next to each other (a church and the square in
+// front of it, two bars) stay separate.
+export const SAME_SPOT_M = 15
+
+// Words that say WHAT a place is, not WHICH place ("Miradouro da Graça").
+const GENERIC_WORDS = new Set(['da', 'do', 'de', 'dos', 'das', 'e', 'nossa', 'senhora', 'miradouro', 'igreja', 'jardim', 'parque', 'capela', 'largo', 'praca', 'museu', 'lisboa'])
+
+function nameWords(name) {
+  return normalizeName(name)
+    .replace(/[^a-z0-9 ]/g, ' ')
+    .split(' ')
+    .filter((w) => w.length > 2 && !GENERIC_WORDS.has(w))
+}
+
+// "Torre de Belém" and "Miradouro da Torre de Belém" are similar: every
+// important word of the shorter name is also in the longer one.
+export function similarNames(a, b) {
+  const wordsA = nameWords(a)
+  const wordsB = nameWords(b)
+  if (wordsA.length === 0 || wordsB.length === 0) return false
+  const [shorter, longer] = wordsA.length <= wordsB.length ? [wordsA, wordsB] : [wordsB, wordsA]
+  return shorter.every((w) => longer.includes(w))
+}
+
+export function sameLocation(a, b) {
+  return similarNames(a.name, b.name) && distanceMeters(a, b) <= SAME_SPOT_M
+}
+
+// items: [{ spot, edits }]. Returns one item per location.
+// Which spot survives? To even out the categories, the spot from the
+// category with the FEWEST spots wins (e.g. a viewpoint beats a monument).
+// Spots in `keepNames` (hand-checked places) always win.
+export function mergeLocations(items, keepNames = []) {
+  const perCategory = {}
+  for (const { spot } of items) perCategory[spot.category] = (perCategory[spot.category] ?? 0) + 1
+
+  const priority = (item) => [
+    keepNames.includes(item.spot.name) ? 0 : 1, // hand-checked first
+    perCategory[item.spot.category], // then the smallest category
+    -item.edits, // then the better known one
+  ]
+  const sorted = [...items].sort((a, b) => {
+    const pa = priority(a)
+    const pb = priority(b)
+    return pa[0] - pb[0] || pa[1] - pb[1] || pa[2] - pb[2]
+  })
+
+  const kept = []
+  for (const item of sorted) {
+    if (!kept.some((k) => sameLocation(k.spot, item.spot))) kept.push(item)
+  }
+  return kept
+}
+
+// ---------- Local chains ----------
+
+// Big chains are tagged with "brand" in OSM (see exclusionReason). Small
+// local chains are not, e.g. a bakery with 6 shops. A food or nightlife
+// name that appears more than once in the city counts as a chain, and all
+// its branches are removed: the app is about unique, local places.
+// Run this AFTER removeDuplicates, so one place mapped twice is not a chain.
+export function removeChains(items) {
+  const count = {}
+  for (const { spot } of items) {
+    if (spot.category !== 'food' && spot.category !== 'nightlife') continue
+    const name = normalizeName(spot.name)
+    count[name] = (count[name] ?? 0) + 1
+  }
+  return items.filter(({ spot }) => !(count[normalizeName(spot.name)] > 1 && (spot.category === 'food' || spot.category === 'nightlife')))
+}
+
+// ---------- Highlights ----------
+
+// When the map is zoomed out, only highlights are shown. Per category:
+// a few famous places (to find your way around) plus a few hidden gems
+// (the app's idea: discover less touristy places).
+export const FAMOUS_PER_CATEGORY = 5
+export const GEMS_PER_CATEGORY = 5
+
+// items: [{ spot, edits }]. Sets `highlight: true` on the chosen spots.
+// - famous: the most edited places (well known)
+// - gems: lesser known places (edited at most RARE_MAX_EDITS times), at most
+//   one per neighbourhood, so they are spread over the city
+export function markHighlights(items, famous = FAMOUS_PER_CATEGORY, gems = GEMS_PER_CATEGORY) {
+  const byCategory = {}
+  for (const item of items) {
+    byCategory[item.spot.category] ??= []
+    byCategory[item.spot.category].push(item)
+  }
+  for (const list of Object.values(byCategory)) {
+    list.sort((a, b) => b.edits - a.edits)
+    list.slice(0, famous).forEach((item) => {
+      item.spot.highlight = true
+    })
+
+    const usedNeighbourhoods = new Set()
+    let found = 0
+    for (const item of list) {
+      if (found >= gems) break
+      if (item.spot.highlight || item.edits > RARE_MAX_EDITS) continue
+      if (usedNeighbourhoods.has(item.spot.neighbourhood)) continue
+      usedNeighbourhoods.add(item.spot.neighbourhood)
+      item.spot.highlight = true
+      found++
+    }
+  }
 }
 
 // ---------- Parish (neighbourhood) ----------
@@ -133,7 +298,8 @@ export function joinLines(lines) {
 // ---------- One OSM place -> one spot ----------
 
 // element: a place from the Overpass API (with tags, version and a position).
-// Returns { spot } or { skipped: reason }.
+// Returns { spot, edits } or { skipped: reason }.
+// `edits` (how often the place was edited in OSM) is used for highlights.
 export function toSpot(element, parishes) {
   const tags = element.tags ?? {}
   const category = categoryOf(tags)
@@ -148,16 +314,17 @@ export function toSpot(element, parishes) {
   const neighbourhood = parishOf({ lat, lng }, parishes)
   if (!neighbourhood) return { skipped: 'outside Lisbon' }
 
-  return {
-    spot: {
-      // e.g. "osm-n123" for node 123, "osm-w45" for way 45
-      id: `osm-${element.type[0]}${element.id}`,
-      name: tags.name.trim(),
-      category,
-      neighbourhood,
-      lat: Number(lat.toFixed(5)),
-      lng: Number(lng.toFixed(5)),
-      rarity: rarityOf(category, element.version ?? 1),
-    },
+  const edits = element.version ?? 1
+  const spot = {
+    // e.g. "osm-n123" for node 123, "osm-w45" for way 45
+    id: `osm-${element.type[0]}${element.id}`,
+    name: tags.name.trim(),
+    category,
+    neighbourhood,
+    lat: Number(lat.toFixed(5)),
+    lng: Number(lng.toFixed(5)),
+    rarity: rarityOf(category, edits),
   }
+  if (category === 'food') spot.kind = kindOf(tags)
+  return { spot, edits }
 }

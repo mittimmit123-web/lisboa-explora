@@ -7,6 +7,10 @@
 export const MAX_PHOTO_SIZE_PX = 1600
 const JPEG_QUALITY = 0.8 // 0 = worst, 1 = best. 0.8 looks good and is small.
 
+// The biggest photo the server accepts: 5 MB. Must match file_size_limit
+// of the 'photos' bucket in supabase/schema.sql (5242880 bytes).
+export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024
+
 // Works out the new width and height so that the longest side is at most
 // `maxSize`, keeping the same shape (aspect ratio). Small photos stay as they are.
 // Example: fitWithin(4000, 3000) -> { width: 1600, height: 1200 }
@@ -36,4 +40,10 @@ export async function shrinkPhoto(file) {
   } catch {
     return file
   }
+}
+
+// True if the photo is still too big to upload. This can happen when
+// shrinkPhoto could not shrink it and gave back the original.
+export function isPhotoTooBig(file) {
+  return file.size > MAX_UPLOAD_BYTES
 }

@@ -8,6 +8,7 @@ const MESSAGES = {
   already_collected: 'You already have this spot.',
   not_logged_in: "You've been logged out. Please log in again.",
   bad_photo: "We couldn't use this photo. Please take a new one.",
+  photo_too_big: 'This photo is too big. Please take a new one.',
   unknown_spot: "This spot isn't available right now. Please try again later.",
   upload_failed: "The photo couldn't be uploaded. Check your internet and try again.",
   server_error: 'Something went wrong on our side. Please try again in a moment.',

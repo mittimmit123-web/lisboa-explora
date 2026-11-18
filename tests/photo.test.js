@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { fitWithin } from '../src/lib/photo.js'
+import { fitWithin, isPhotoTooBig } from '../src/lib/photo.js'
 
 describe('fitWithin', () => {
   it('shrinks a big landscape photo to 1600 px wide', () => {
@@ -19,3 +19,19 @@ describe('fitWithin', () => {
   })
 })
 
+
+describe('isPhotoTooBig', () => {
+  const MB = 1024 * 1024
+
+  it('accepts a photo under 5 MB', () => {
+    expect(isPhotoTooBig({ size: 4.9 * MB })).toBe(false)
+  })
+
+  it('accepts a photo of exactly 5 MB', () => {
+    expect(isPhotoTooBig({ size: 5 * MB })).toBe(false)
+  })
+
+  it('rejects a photo over 5 MB', () => {
+    expect(isPhotoTooBig({ size: 5.1 * MB })).toBe(true)
+  })
+})

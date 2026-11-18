@@ -6,7 +6,7 @@ Team project for *Introduction to Programming* (Nova SBE, 2026/27). Deadline: **
 
 ## Live app
 
-**Deployed URL:** TODO - add the Vercel URL here once the app is deployed (issue #8)
+**Deployed URL:** https://lisboa-explora.vercel.app
 
 ## Team
 

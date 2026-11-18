@@ -2,12 +2,6 @@ import { describe, expect, it } from 'vitest'
 import { checkOffErrorMessage } from '../src/lib/messages.js'
 
 describe('checkOffErrorMessage', () => {
-  it('says how far away the player is', () => {
-    expect(checkOffErrorMessage({ reason: 'too_far', distance: 120 })).toBe(
-      'You are 120 m away. Get within 50 m.',
-    )
-  })
-
   it('explains each known reason', () => {
     expect(checkOffErrorMessage({ reason: 'already_collected' })).toBe('You already have this spot.')
     expect(checkOffErrorMessage({ reason: 'not_logged_in' })).toBe("You've been logged out. Please log in again.")

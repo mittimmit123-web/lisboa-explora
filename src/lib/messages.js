@@ -4,8 +4,6 @@
 // e.g. 'upload_failed'. This function turns that code into a sentence
 // that tells the player what happened and what to do next.
 
-import { CHECK_RADIUS_M, formatDistance } from './geo.js'
-
 const MESSAGES = {
   already_collected: 'You already have this spot.',
   not_logged_in: "You've been logged out. Please log in again.",
@@ -15,12 +13,11 @@ const MESSAGES = {
   server_error: 'Something went wrong on our side. Please try again in a moment.',
 }
 
-// result: what checkOff() returned, e.g. { ok: false, reason: 'too_far', distance: 120 }
+// Being far away is NOT an error: since #16 a spot can always be added,
+// it just doesn't get the "verified on site" mark.
+//
+// result: what checkOff() returned, e.g. { ok: false, reason: 'upload_failed' }
 export function checkOffErrorMessage(result) {
-  // This one needs the distance in the sentence, so it is built here.
-  if (result.reason === 'too_far') {
-    return `You are ${formatDistance(result.distance)} away. Get within ${CHECK_RADIUS_M} m.`
-  }
   // Any code we don't know gets the general "server_error" message.
   return MESSAGES[result.reason] ?? MESSAGES.server_error
 }

@@ -12,10 +12,10 @@ Team project for *Introduction to Programming* (Nova SBE, 2026/27). Deadline: **
 
 | Name | Student number | GitHub |
 | --- | --- | --- |
-| TODO | TODO | [mittimmit123-web](https://github.com/mittimmit123-web) |
-| TODO | TODO | TODO |
-| TODO | TODO | TODO |
-| TODO | TODO | TODO |
+| Jule Dörpinghaus | 73638 | [JuleDoerpinghaus](https://github.com/JuleDoerpinghaus) |
+| Marleen Koch | 80851 | [marleenk03](https://github.com/marleenk03) |
+| Sorcha Lauder | 71299 | [sorchalauder](https://github.com/sorchalauder) |
+| Tim Ohlert | 74723 | [mittimmit123-web](https://github.com/mittimmit123-web) |
 
 How to run the app and the tests: see [Run it on your computer](#run-it-on-your-computer) and [Useful commands](#useful-commands) below.
 

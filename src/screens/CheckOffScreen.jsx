@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { checkOff } from '../lib/api.js'
 import { isDemoMode } from '../lib/supabase.js'
-import { CHECK_RADIUS_M, distanceMeters, formatDistance } from '../lib/geo.js'
+import { CHECK_RADIUS_M, distanceMeters, formatDistance, isGpsWeak } from '../lib/geo.js'
 import { categoryById } from '../data/categories.js'
 import { shrinkPhoto } from '../lib/photo.js'
 
@@ -36,6 +36,9 @@ export default function CheckOffScreen({ spot, position, gpsError, onDone, onBac
   const distance = effectivePosition ? distanceMeters(effectivePosition, spot) : null
   // Being close only earns the "verified on site" mark. It never blocks.
   const willVerify = distance !== null && distance <= CHECK_RADIUS_M
+
+  // How exact the phone's GPS is, in metres (only for the real GPS, not "pretend")
+  const accuracy = !pretendHere && position?.accuracy != null ? Math.round(position.accuracy) : null
 
   async function submit() {
     setBusy(true)
@@ -76,7 +79,15 @@ export default function CheckOffScreen({ spot, position, gpsError, onDone, onBac
                 : `${formatDistance(distance)} away · you can still add it, just without the mark`}
             </span>
           )}
+          {/* Own line under the main sentence, in smaller grey text */}
+          {accuracy !== null && <span className="gps-accuracy">GPS accurate to {accuracy} m</span>}
         </div>
+
+        {accuracy !== null && isGpsWeak(accuracy) && (
+          <p className="gps-warning" role="status">
+            Your GPS is not accurate right now (±{accuracy} m), so you might miss the "verified on site" mark. Wait a moment or step outside.
+          </p>
+        )}
 
         {isDemoMode && (
           <label className="demo-toggle">

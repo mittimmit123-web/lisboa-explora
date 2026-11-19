@@ -4,6 +4,21 @@
 
 Team project for *Introduction to Programming* (Nova SBE, 2026/27). Deadline: **23 Nov 2026**.
 
+## Live app
+
+**Deployed URL:** https://lisboa-explora.vercel.app
+
+## Team
+
+| Name | Student number | GitHub |
+| --- | --- | --- |
+| TODO | TODO | [mittimmit123-web](https://github.com/mittimmit123-web) |
+| TODO | TODO | TODO |
+| TODO | TODO | TODO |
+| TODO | TODO | TODO |
+
+How to run the app and the tests: see [Run it on your computer](#run-it-on-your-computer) and [Useful commands](#useful-commands) below.
+
 ## What the app does (first version)
 
 | Screen | What you can do |

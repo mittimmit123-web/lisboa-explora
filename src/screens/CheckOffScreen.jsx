@@ -2,13 +2,15 @@
 import { useEffect, useState } from 'react'
 import { checkOff } from '../lib/api.js'
 import { isDemoMode } from '../lib/supabase.js'
-import { CHECK_RADIUS_M, distanceMeters, formatDistance } from '../lib/geo.js'
+import { CHECK_RADIUS_M, distanceMeters, formatDistance, isGpsWeak } from '../lib/geo.js'
 import { categoryById } from '../data/categories.js'
-import { shrinkPhoto } from '../lib/photo.js'
+import { checkOffErrorMessage } from '../lib/messages.js'
+import { isPhotoTooBig, shrinkPhoto } from '../lib/photo.js'
 
 export default function CheckOffScreen({ spot, position, gpsError, onDone, onBack }) {
   const [photo, setPhoto] = useState(null)
-  const [busy, setBusy] = useState(false)
+  const [busy, setBusy] = useState(false) // true while saving the check-off
+  const [preparing, setPreparing] = useState(false) // true while shrinking the photo
   const [message, setMessage] = useState(null)
   const [pretendHere, setPretendHere] = useState(false) // demo mode only
   const [previewUrl, setPreviewUrl] = useState(null) // temporary link to show the photo
@@ -18,11 +20,20 @@ export default function CheckOffScreen({ spot, position, gpsError, onDone, onBac
   async function choosePhoto(event) {
     const file = event.target.files?.[0]
     if (!file) return
-    setBusy(true)
+    setPreparing(true)
+    setMessage(null)
     const smallPhoto = await shrinkPhoto(file)
-    setPhoto(smallPhoto)
-    setPreviewUrl(URL.createObjectURL(smallPhoto))
-    setBusy(false)
+    if (isPhotoTooBig(smallPhoto)) {
+      // Shrinking didn't work and the photo is over 5 MB: don't keep it,
+      // so the player takes a new one before walking off.
+      setPhoto(null)
+      setPreviewUrl(null)
+      setMessage(checkOffErrorMessage({ reason: 'photo_too_big' }))
+    } else {
+      setPhoto(smallPhoto)
+      setPreviewUrl(URL.createObjectURL(smallPhoto))
+    }
+    setPreparing(false)
   }
 
   // When the preview link changes or the screen closes, delete the old link to free memory.
@@ -37,17 +48,24 @@ export default function CheckOffScreen({ spot, position, gpsError, onDone, onBac
   // Being close only earns the "verified on site" mark. It never blocks.
   const willVerify = distance !== null && distance <= CHECK_RADIUS_M
 
+  // How exact the phone's GPS is, in metres (only for the real GPS, not "pretend")
+  const accuracy = !pretendHere && position?.accuracy != null ? Math.round(position.accuracy) : null
+
   async function submit() {
     setBusy(true)
     setMessage(null)
-    const result = await checkOff({ spot, position: effectivePosition, photo })
+    let result
+    try {
+      result = await checkOff({ spot, position: effectivePosition, photo })
+    } catch {
+      // e.g. the internet dropped completely: treat it like a server problem
+      result = { ok: false, reason: 'server_error' }
+    }
     setBusy(false)
     if (result.ok) {
       onDone()
-    } else if (result.reason === 'already_collected') {
-      setMessage('You already have this spot.')
     } else {
-      setMessage('Something went wrong. Please try again.')
+      setMessage(checkOffErrorMessage(result))
     }
   }
 
@@ -76,7 +94,15 @@ export default function CheckOffScreen({ spot, position, gpsError, onDone, onBac
                 : `${formatDistance(distance)} away · you can still add it, just without the mark`}
             </span>
           )}
+          {/* Own line under the main sentence, in smaller grey text */}
+          {accuracy !== null && <span className="gps-accuracy">GPS accurate to {accuracy} m</span>}
         </div>
+
+        {accuracy !== null && isGpsWeak(accuracy) && (
+          <p className="gps-warning" role="status">
+            Your GPS is not accurate right now (±{accuracy} m), so you might miss the "verified on site" mark. Wait a moment or step outside.
+          </p>
+        )}
 
         {isDemoMode && (
           <label className="demo-toggle">
@@ -98,8 +124,8 @@ export default function CheckOffScreen({ spot, position, gpsError, onDone, onBac
 
         {message && <p className="error" role="alert">{message}</p>}
 
-        <button className="primary" disabled={busy || !photo} onClick={submit}>
-          {busy ? 'Saving…' : willVerify ? 'Check off' : 'Add to journal'}
+        <button className="primary" disabled={busy || preparing || !photo} onClick={submit}>
+          {preparing ? 'Preparing photo…' : busy ? 'Saving…' : willVerify ? 'Check off' : 'Add to journal'}
         </button>
       </div>
     </div>

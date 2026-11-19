@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { distanceMeters, formatDistance, isWithinRadius } from '../src/lib/geo.js'
+import { distanceMeters, formatDistance, isGpsWeak, isWithinRadius } from '../src/lib/geo.js'
 
 const santaLuzia = { lat: 38.7118, lng: -9.1301 }
 
@@ -37,5 +37,17 @@ describe('formatDistance', () => {
   })
   it('shows km from 1 km', () => {
     expect(formatDistance(1234)).toBe('1.2 km')
+  })
+})
+
+describe('isGpsWeak', () => {
+  it('is fine when GPS is accurate to 25 m', () => {
+    expect(isGpsWeak(25)).toBe(false)
+  })
+  it('is fine at exactly 50 m', () => {
+    expect(isGpsWeak(50)).toBe(false)
+  })
+  it('is weak when GPS is only accurate to 120 m', () => {
+    expect(isGpsWeak(120)).toBe(true)
   })
 })

@@ -157,4 +157,5 @@ lesser-known ones, at most one per neighbourhood so they are spread across
 the city rather than piled up in the centre.
 
 **Accepted limit.** In the dense centre, zoom 15 still draws over 500 markers
-at once. See issue #3.
+at once, which stutters on a phone. Raising `SHOW_ALL_ZOOM` from 15 to 16
+halves that and is a one-line change; we have not made it yet.

@@ -228,5 +228,5 @@ input[type='email'] { flex: 1; min-height: 44px; border-radius: 10px; border: 1p
 .intro-later { min-height: 44px; border: none; background: none; color: rgba(255, 255, 255, 0.85); font: inherit; font-weight: 800; font-size: 15px; text-decoration: underline; cursor: pointer; }
 
 /* Character buttons: full names; long names wrap onto two lines */
-.tab, .intro-tab { display: flex; align-items: center; justify-content: center; min-height: 52px; padding: 6px 6px; line-height: 1.15; font-size: 14px; text-align: center; }
+.tab, .intro-tab { display: flex; align-items: center; justify-content: center; min-height: 60px; padding: 6px 6px; line-height: 1.15; font-size: 18px; text-align: center; }
 

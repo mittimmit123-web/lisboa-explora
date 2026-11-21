@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { SHOW_ALL_ZOOM, directionsUrl, emojiFor, isInBounds, isVisibleAtZoom } from '../src/lib/markers.js'
+import {
+  SHOW_ALL_ZOOM,
+  directionsUrl,
+  emojiFor,
+  isInBounds,
+  isVisibleAtZoom,
+  matchesFilter,
+  toggleCategory,
+} from '../src/lib/markers.js'
 
 describe('emojiFor', () => {
   it('gives each category its emoji', () => {
@@ -31,6 +39,31 @@ describe('isVisibleAtZoom', () => {
   it('shows every spot when zoomed in, starting exactly at SHOW_ALL_ZOOM', () => {
     expect(isVisibleAtZoom(normal, SHOW_ALL_ZOOM - 1)).toBe(false)
     expect(isVisibleAtZoom(normal, SHOW_ALL_ZOOM)).toBe(true)
+  })
+})
+
+describe('category filter', () => {
+  const bar = { category: 'nightlife' }
+  const cafe = { category: 'food' }
+
+  it('shows every spot when nothing is selected ("All")', () => {
+    expect(matchesFilter(bar, [])).toBe(true)
+    expect(matchesFilter(cafe, [])).toBe(true)
+  })
+
+  it('shows spots of every selected category, and only those', () => {
+    expect(matchesFilter(bar, ['nightlife', 'food'])).toBe(true)
+    expect(matchesFilter(cafe, ['nightlife', 'food'])).toBe(true)
+    expect(matchesFilter(cafe, ['nightlife'])).toBe(false)
+  })
+
+  it('turns a category on and off', () => {
+    expect(toggleCategory(['food'], 'nightlife')).toEqual(['food', 'nightlife'])
+    expect(toggleCategory(['food', 'nightlife'], 'food')).toEqual(['nightlife'])
+  })
+
+  it('goes back to "All" when the last category is turned off', () => {
+    expect(toggleCategory(['food'], 'food')).toEqual([])
   })
 })
 

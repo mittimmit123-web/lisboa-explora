@@ -35,7 +35,7 @@ Full concept: see the *Variant A – Concept Description* doc shared in the team
 | Part | Tool |
 | --- | --- |
 | UI | React + Vite |
-| Map | Leaflet + OpenStreetMap |
+| Map | Leaflet + MapLibre (own map design, data from OpenStreetMap via OpenFreeMap) |
 | Login, database, photos | Supabase |
 | Hosting | Vercel |
 | Tests | Vitest |

@@ -22,7 +22,9 @@ export function emojiFor(spot) {
 // From this zoom level on, ALL spots are shown. Below it (city overview),
 // only the highlights, so the map does not get crowded.
 // Zoom 12 = all of Lisbon, 15 = a neighbourhood, 18 = a street.
-export const SHOW_ALL_ZOOM = 15
+// 16, not 15: at 15 the city centre drew ~680 markers at once and zooming
+// stuttered; at 16 it is about half (#40).
+export const SHOW_ALL_ZOOM = 16
 
 export function isVisibleAtZoom(spot, zoom) {
   return zoom >= SHOW_ALL_ZOOM || spot.highlight === true
@@ -32,6 +34,16 @@ export function isVisibleAtZoom(spot, zoom) {
 // map fast on phones. bounds: { south, west, north, east }
 export function isInBounds(spot, bounds) {
   return spot.lat >= bounds.south && spot.lat <= bounds.north && spot.lng >= bounds.west && spot.lng <= bounds.east
+}
+
+// Category filter: `selected` is a list of category ids. An empty list means
+// "All", so deselecting the last category shows everything again.
+export function toggleCategory(selected, id) {
+  return selected.includes(id) ? selected.filter((c) => c !== id) : [...selected, id]
+}
+
+export function matchesFilter(spot, selected) {
+  return selected.length === 0 || selected.includes(spot.category)
 }
 
 // Link that opens walking directions in Google Maps (new tab / Maps app).

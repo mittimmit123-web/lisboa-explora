@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addFriendMessage, friendEmailProblem, playerLabel } from '../src/lib/friends.js'
+import { addFriendMessage, friendEmailProblem, playerLabel, weatherMood } from '../src/lib/friends.js'
 
 describe('playerLabel', () => {
   it('shows other players by name', () => {
@@ -54,5 +54,54 @@ describe('addFriendMessage (after the server answered)', () => {
 
   it('tells the player to check the internet when the request failed', () => {
     expect(addFriendMessage({ email: 'ana@example.com', error: new Error('offline') }).text).toMatch(/Check your internet/)
+  })
+})
+
+describe('weatherMood', () => {
+  const me = (count) => ({ name: 'You', count, isMe: true })
+
+  it('is golden when I lead by 2 or more', () => {
+    expect(weatherMood([me(6), { name: 'Marta', count: 4 }]).mood).toBe('golden')
+  })
+
+  it('gets clouds when I lead by just 1', () => {
+    const w = weatherMood([me(5), { name: 'Marta', count: 4 }])
+    expect(w.mood).toBe('clouds')
+    expect(w.text).toContain('Marta')
+  })
+
+  it('gets clouds on a tie, naming the friend', () => {
+    const w = weatherMood([me(4), { name: 'Marta', count: 4 }])
+    expect(w.mood).toBe('clouds')
+    expect(w.sub).toBe('Tied with Marta')
+  })
+
+  it('is windy when 1-2 spots behind first place', () => {
+    expect(weatherMood([me(4), { name: 'Marta', count: 6 }, { name: 'João', count: 5 }]).mood).toBe('wind')
+  })
+
+  it('drizzles (with a rainbow) when 3 or more behind', () => {
+    const w = weatherMood([me(3), { name: 'Marta', count: 6 }])
+    expect(w.mood).toBe('drizzle')
+    expect(w.sub).toBe('3 spots behind Marta')
+  })
+
+  it('rains cosily when I have no spots this month, whatever the friends do', () => {
+    expect(weatherMood([me(0), { name: 'Marta', count: 0 }]).mood).toBe('rain')
+    expect(weatherMood([me(0)]).mood).toBe('rain')
+  })
+
+  it('is sunny and invites friends when I play alone', () => {
+    const w = weatherMood([me(2)])
+    expect(w.mood).toBe('golden')
+    expect(w.text).toMatch(/Add a friend/)
+  })
+
+  it('uses "1 spot" not "1 spots"', () => {
+    expect(weatherMood([me(5), { name: 'Marta', count: 4 }]).sub).toBe('#1 · 1 spot ahead')
+  })
+
+  it('works when I am missing from the list', () => {
+    expect(weatherMood([{ name: 'Marta', count: 3 }]).mood).toBe('rain')
   })
 })

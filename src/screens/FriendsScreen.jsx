@@ -2,7 +2,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { addFriend, getFriendsLeaderboard, getUser } from '../lib/api.js'
 import { isDemoMode } from '../lib/supabase.js'
-import { addFriendMessage, friendEmailProblem, playerLabel } from '../lib/friends.js'
+import WeatherScene from '../components/WeatherScene.jsx'
+import { addFriendMessage, friendEmailProblem, playerLabel, weatherMood } from '../lib/friends.js'
 import { rankPlayers } from '../lib/progress.js'
 
 export default function FriendsScreen({ newThisMonth }) {
@@ -46,6 +47,8 @@ export default function FriendsScreen({ newThisMonth }) {
   }
 
   const onlyMe = players && players.length <= 1
+  // The sky shows how this month's race is going (null while loading).
+  const weather = players ? weatherMood(players) : null
 
   return (
     <div className="screen">
@@ -53,6 +56,8 @@ export default function FriendsScreen({ newThisMonth }) {
         <h1>Friends</h1>
       </header>
       <div className="content">
+        <WeatherScene mood={weather?.mood} sub={weather?.sub} text={weather?.text} />
+
         <h2 className="section-label">New spots this month</h2>
         {loadError ? (
           <div className="status">

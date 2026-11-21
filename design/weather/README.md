@@ -3,7 +3,9 @@
 An animated Lisbon scene for the top of the Friends screen (issue #11).
 The weather shows how you are doing in this month's leaderboard, so the
 player *feels* the race instead of only reading a number.
-This is a **design prototype**, not part of the app yet.
+The prototype here was built into the app: `src/lib/weatherScene.js` (drawing),
+`src/components/WeatherScene.jsx` (on screen) and `weatherMood` in
+`src/lib/friends.js` (which mood, with tests).
 
 ![The five moods](weather-moods.png)
 

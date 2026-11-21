@@ -34,3 +34,45 @@ export function addFriendMessage({ email, result, error }) {
     text: 'No player has that email yet. Ask your friend to sign up for Lisboa Explora first, then try again.',
   }
 }
+
+// ---------- Weather mood ----------
+// The sky on the Friends screen shows how the month's race is going.
+// Rain is never a punishment: it always comes with a rainbow or kind words.
+//
+// players: [{ name, count, isMe }] (the friends leaderboard)
+// Returns { mood, sub, text } where mood is one of:
+//   'golden'  you lead by 2 or more        'clouds'  you lead by 0-1 (or a tie)
+//   'wind'    1-2 spots behind first        'drizzle' 3 or more behind
+//   'rain'    you have no spots this month
+export function weatherMood(players) {
+  const me = players.find((p) => p.isMe)
+  const others = players.filter((p) => !p.isMe)
+  const mine = me?.count ?? 0
+  const spots = (n) => `${n} ${n === 1 ? 'spot' : 'spots'}`
+
+  if (mine === 0) {
+    return {
+      mood: 'rain',
+      sub: '0 spots this month',
+      text: 'A rainy evening in Lisbon. The cafés are warm. Your first spot is waiting.',
+    }
+  }
+  if (others.length === 0) {
+    return { mood: 'golden', sub: `${spots(mine)} this month`, text: 'Sunshine over Lisbon! Add a friend to start the race.' }
+  }
+
+  const best = others.reduce((a, b) => (b.count > a.count ? b : a))
+  if (mine > best.count) {
+    const lead = mine - best.count
+    if (lead >= 2) return { mood: 'golden', sub: `#1 · ${spots(lead)} ahead`, text: 'Golden hour over Lisbon. The city is yours.' }
+    return { mood: 'clouds', sub: `#1 · ${spots(lead)} ahead`, text: `Still in the sun… but ${best.name} is right behind you.` }
+  }
+  if (mine === best.count) {
+    return { mood: 'clouds', sub: `Tied with ${best.name}`, text: `Clouds are gathering. One more spot and you pull ahead of ${best.name}.` }
+  }
+  const behind = best.count - mine
+  if (behind <= 2) {
+    return { mood: 'wind', sub: `${spots(behind)} behind ${best.name}`, text: 'The wind is turning. One more spot and the sun breaks through.' }
+  }
+  return { mood: 'drizzle', sub: `${spots(behind)} behind ${best.name}`, text: 'Soft rain on the rooftops. Look, a rainbow over Alfama…' }
+}

@@ -60,7 +60,7 @@ export default function IntroPicker({ onDone }) {
           ))}
         </div>
         <button className="intro-choose" type="button" disabled={!buddy} onClick={choose}>
-          {buddy ? `Choose the ${buddy.name}` : 'Choose your buddy'}
+          Choose your Explora
         </button>
         <button className="intro-later" type="button" onClick={onDone}>
           Choose later

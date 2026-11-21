@@ -1,15 +1,31 @@
 // Person 1: Map & Spots
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { MapContainer, TileLayer, CircleMarker, Marker, useMapEvents } from 'react-leaflet'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { MapContainer, TileLayer, CircleMarker, Marker, useMap, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
+import { maplibreGL } from '@maplibre/maplibre-gl-leaflet'
+import { setWorkerUrl } from 'maplibre-gl'
+import 'maplibre-gl/dist/maplibre-gl.css'
+// MapLibre paints the map with a helper script (a "worker") running in the
+// background. Vite has to be told where that file is, otherwise it is not found.
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
 import CategoryFilter from '../components/CategoryFilter.jsx'
 import { categoryById } from '../data/categories.js'
 import { distanceMeters, formatDistance } from '../lib/geo.js'
-import { SHOW_ALL_ZOOM, directionsUrl, emojiFor, isInBounds, isVisibleAtZoom } from '../lib/markers.js'
+import { enableSmoothWheelZoom } from '../lib/smoothWheelZoom.js'
+import { MAP_ATTRIBUTION, mapStyle } from '../lib/mapStyle.js'
+import { SHOW_ALL_ZOOM, directionsUrl, emojiFor, isInBounds, isVisibleAtZoom, matchesFilter } from '../lib/markers.js'
 
 const LISBON = [38.725, -9.15]
 const START_ZOOM = 12 // overview of the whole city
 const ME_ZOOM = 16 // zoom when jumping to the player's position
+const MAX_ZOOM = 19
+
+setWorkerUrl(maplibreWorkerUrl)
+
+// true  = our own map design (src/lib/mapStyle.js, painted by MapLibre)
+// false = the classic OpenStreetMap map. Safe way back if the new map ever
+//         causes problems, e.g. on a very old phone: change this one line.
+const USE_OWN_MAP_DESIGN = true
 
 const FOOD_KIND_LABEL = { cafe: 'café', restaurant: 'restaurant', market: 'market' }
 const RARITY_STYLE = {
@@ -54,24 +70,60 @@ function markerIcon(spot, collected, selected) {
   return iconCache.get(key)
 }
 
-// Tells the screen whenever the map is moved or zoomed.
+// Tells the screen whenever the map is moved or zoomed. Leaflet fires
+// moveend after every zoom too, so one event is enough (listening to
+// zoomend as well would draw the screen twice per zoom).
 function MapWatcher({ onChange }) {
   const map = useMapEvents({
     moveend: () => onChange(map),
-    zoomend: () => onChange(map),
   })
   useEffect(() => onChange(map), [map, onChange])
   return null
 }
 
+// Turns on our smooth trackpad / mouse-wheel zoom for this map.
+function SmoothWheelZoom() {
+  const map = useMap()
+  useEffect(() => enableSmoothWheelZoom(map), [map])
+  return null
+}
+
+// One spot on the map. memo: React only redraws this marker when its own
+// props change (e.g. it gets selected or collected), not every time the
+// screen updates, for example on each new GPS position.
+const SpotMarker = memo(function SpotMarker({ spot, collected, selected, onSelect }) {
+  const handlers = useMemo(() => ({ click: () => onSelect(spot.id) }), [spot.id, onSelect])
+  return (
+    <Marker
+      position={[spot.lat, spot.lng]}
+      icon={markerIcon(spot, collected, selected)}
+      title={spot.name}
+      zIndexOffset={selected ? 1000 : 0}
+      eventHandlers={handlers}
+    />
+  )
+})
+
+// Our own map design as the background layer (see src/lib/mapStyle.js).
+function OwnMapDesign() {
+  const map = useMap()
+  useEffect(() => {
+    const layer = maplibreGL({ style: mapStyle(), attributionControl: { customAttribution: MAP_ATTRIBUTION } })
+    layer.addTo(map)
+    return () => layer.remove()
+  }, [map])
+  return null
+}
+
 function readView(map) {
-  // pad(0.2): also draw spots just outside the screen, so panning looks smooth
-  const b = map.getBounds().pad(0.2)
+  // pad(0.05): also draw spots just outside the screen, so panning looks
+  // smooth. Kept small, because every extra marker makes zooming slower (#40).
+  const b = map.getBounds().pad(0.05)
   return { zoom: map.getZoom(), bounds: { south: b.getSouth(), west: b.getWest(), north: b.getNorth(), east: b.getEast() } }
 }
 
 export default function MapScreen({ spots, collectedIds, position, onCheckOff, newThisMonth }) {
-  const [filter, setFilter] = useState('all')
+  const [filter, setFilter] = useState([]) // selected category ids, [] = all
   const [selectedId, setSelectedId] = useState(null)
   const [map, setMap] = useState(null)
   const [view, setView] = useState(null)
@@ -89,17 +141,18 @@ export default function MapScreen({ spots, collectedIds, position, onCheckOff, n
     }
   }, [map, position])
 
-  const selected = spots.find((s) => s.id === selectedId)
-  const visible = !view
-    ? []
-    : spots.filter(
-        (s) =>
-          (filter === 'all' || s.category === filter) &&
-          isVisibleAtZoom(s, view.zoom) &&
-          isInBounds(s, view.bounds),
-      )
-  // The selected spot always stays on the map, even after zooming out.
-  if (selected && !visible.includes(selected)) visible.push(selected)
+  const selected = useMemo(() => spots.find((s) => s.id === selectedId), [spots, selectedId])
+  // useMemo: only recalculated when the map moves, the filter changes or
+  // another spot is selected, not on every GPS update.
+  const visible = useMemo(() => {
+    if (!view) return []
+    const list = spots.filter(
+      (s) => matchesFilter(s, filter) && isVisibleAtZoom(s, view.zoom) && isInBounds(s, view.bounds),
+    )
+    // The selected spot always stays on the map, even after zooming out.
+    if (selected && !list.includes(selected)) list.push(selected)
+    return list
+  }, [spots, filter, view, selected])
 
   const category = selected && categoryById(selected.category)
   const collected = selected && collectedIds.has(selected.id)
@@ -116,20 +169,38 @@ export default function MapScreen({ spots, collectedIds, position, onCheckOff, n
       <CategoryFilter value={filter} onChange={setFilter} />
 
       <div className="map-wrap">
-        <MapContainer center={LISBON} zoom={START_ZOOM} className="map" scrollWheelZoom ref={setMap}>
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
+        {/* scrollWheelZoom is off: our own smooth wheel zoom replaces it
+            (src/lib/smoothWheelZoom.js, #40). zoomSnap 0 = any zoom level is
+            allowed, so the map does not jump to a whole level afterwards. */}
+        <MapContainer
+          center={LISBON}
+          zoom={START_ZOOM}
+          className="map"
+          scrollWheelZoom={false}
+          zoomSnap={0}
+          zoomDelta={1}
+          maxZoom={MAX_ZOOM}
+          ref={setMap}
+        >
+          {/* Classic map: one tile server address instead of a/b/c.tile...,
+              as OpenStreetMap recommends (one fast connection for all tiles). */}
+          {USE_OWN_MAP_DESIGN ? (
+            <OwnMapDesign />
+          ) : (
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+          )}
           <MapWatcher onChange={handleViewChange} />
+          <SmoothWheelZoom />
           {visible.map((spot) => (
-            <Marker
+            <SpotMarker
               key={spot.id}
-              position={[spot.lat, spot.lng]}
-              icon={markerIcon(spot, collectedIds.has(spot.id), spot.id === selectedId)}
-              title={spot.name}
-              zIndexOffset={spot.id === selectedId ? 1000 : 0}
-              eventHandlers={{ click: () => setSelectedId(spot.id) }}
+              spot={spot}
+              collected={collectedIds.has(spot.id)}
+              selected={spot.id === selectedId}
+              onSelect={setSelectedId}
             />
           ))}
           {position && (

@@ -148,14 +148,44 @@ merge and a broken build is cheaper to find before the merge than after.
 
 ## 13. Zoomed out, the map shows only highlights
 
-Below zoom 15, only spots marked `highlight` are drawn; above it, everything
-inside the visible part of the map.
+Below zoom 16, only spots marked `highlight` are drawn; from 16 on, everything
+inside the visible part of the map (plus a 5 % margin, so panning looks smooth).
 
 **Why.** 1,930 markers at once is unusable and slow. The highlights are ten
 per category - five well-known ones so you can orient yourself, and five
 lesser-known ones, at most one per neighbourhood so they are spread across
 the city rather than piled up in the centre.
 
-**Accepted limit.** In the dense centre, zoom 15 still draws over 500 markers
-at once, which stutters on a phone. Raising `SHOW_ALL_ZOOM` from 15 to 16
-halves that and is a one-line change; we have not made it yet.
+**Changed in #40.** This used to start at zoom 15 with a 20 % margin, which
+drew about 680 markers at once on a phone in the city centre, and zooming
+stuttered. Zoom 16 and a 5 % margin bring that down to about 200. We
+considered marker clusters (bubbles with a number) as well; they would be
+faster still, but need an extra library and change the look of the map.
+
+**Smooth zooming (#40).** Leaflet's own trackpad / mouse-wheel zoom works in
+steps and ignores scrolling while a step's animation plays, so it felt slow
+and laggy. `src/lib/smoothWheelZoom.js` replaces it: the map follows the
+scrolling directly, like Google Maps. We wrote it ourselves (same idea as the
+Leaflet.SmoothWheelZoom plugin) rather than add a little-maintained library.
+Markers are also memoised, so a new GPS position does not redraw all of them.
+
+## 14. Our own map design (vector map)
+
+The map background is painted by MapLibre in our own colours ("Lisboa warm":
+cream background, white roads, soft green parks, light blue water), defined
+in `src/lib/mapStyle.js`. The data comes from OpenFreeMap: OpenStreetMap
+data, free, with no account and no API key. Markers, filters and zooming
+are unchanged, because MapLibre runs as a layer inside the Leaflet map.
+
+**Why.** The standard OpenStreetMap map is busy: its own icons for churches
+and restaurants compete with our markers. Image-based maps cannot be
+recoloured; a vector map can. CARTO and Stadia have calm styles too, but now
+need an account and an API key.
+
+**Accepted limit.** The first load is about 440 KB larger (MapLibre 6 and its
+worker, gzipped): barely noticeable on Wi-Fi, a few seconds on a weak
+connection; afterwards the browser has it cached. We use MapLibre 6, not the
+smaller 5, because 5 has a known critical security issue. If the new map
+causes problems, e.g. on a very old phone, `USE_OWN_MAP_DESIGN = false` in
+`src/screens/MapScreen.jsx` switches back to the classic map.
+

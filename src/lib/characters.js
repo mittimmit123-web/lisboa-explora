@@ -1,12 +1,10 @@
 // The Exploras: the characters a player can choose (issue #20).
 // Only plain data and helpers here (tested in tests/characters.test.js).
 // The 3D models are in src/lib/characters3d.js.
-// name: shown everywhere. short: for the small buttons side by side.
 export const CHARACTERS = [
   {
     id: 'tram',
     name: 'Trammy',
-    short: 'Trammy',
     emoji: '🚋',
     say: 'Ding ding! Next stop: adventure!',
     about: "Lisbon's famous yellow tram. Always on the move, never late.",
@@ -14,7 +12,6 @@ export const CHARACTERS = [
   {
     id: 'sardine',
     name: 'Captain Bubbles',
-    short: 'Bubbles',
     emoji: '🐟',
     say: "Blub blub! Let's party!",
     about: 'Straight from the June festival. Loves crowds, music and new places.',
@@ -22,7 +19,6 @@ export const CHARACTERS = [
   {
     id: 'cat',
     name: 'Miss Purrfect',
-    short: 'Purrfect',
     emoji: '🐱',
     say: 'Miau! I know every corner.',
     about: 'A street cat from the old town who knows every hidden spot, and is purrfectly sure she is always right.',

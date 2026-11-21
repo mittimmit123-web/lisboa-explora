@@ -4,12 +4,27 @@
 
 Team project for *Introduction to Programming* (Nova SBE, 2026/27). Deadline: **23 Nov 2026**.
 
+## Live app
+
+**Deployed URL:** https://lisboa-explora.vercel.app
+
+## Team
+
+| Name | Student number | GitHub |
+| --- | --- | --- |
+| Jule Dörpinghaus | 73638 | [JuleDoerpinghaus](https://github.com/JuleDoerpinghaus) |
+| Marleen Koch | 80851 | [marleenk03](https://github.com/marleenk03) |
+| Sorcha Lauder | 71299 | [sorchalauder](https://github.com/sorchalauder) |
+| Tim Ohlert | 74723 | [mittimmit123-web](https://github.com/mittimmit123-web) |
+
+How to run the app and the tests: see [Run it on your computer](#run-it-on-your-computer) and [Useful commands](#useful-commands) below.
+
 ## What the app does (first version)
 
 | Screen | What you can do |
 | --- | --- |
 | **Map** | See all spots, filter by category, tap a spot to see the distance |
-| **Check off** | On site (within 50 m): take a photo and add the spot to your collection |
+| **Check off** | Take a photo and add the spot to your journal. Within 50 m it also gets a "verified on site" mark |
 | **Collection** | Total spots, new this month, sets in % (e.g. "Bars in Bairro Alto: 20%"), neighbourhoods in % |
 | **Friends** | Leaderboard "new spots this month" (live), add friends by email |
 
@@ -62,7 +77,7 @@ src/
   data/spots.js         THE list of spots (name, category, neighbourhood, coordinates)
   data/sets.js          the sets ("All miradouros", "Bars in Bairro Alto", ...)
   data/categories.js    categories and their colours
-  lib/geo.js            distance calculation (50 m rule)
+  lib/geo.js            distance display and the 50 m "verified" threshold
   lib/progress.js       percentages, monthly count, ranking (pure functions, tested)
   lib/api.js            the ONLY file that talks to Supabase (with demo mode)
   lib/supabase.js       Supabase connection from .env
@@ -83,9 +98,19 @@ tests/                  Vitest tests
 
 Note: free Supabase projects pause after a week without use. Open the app once before the presentation.
 
-## Security (how we stop cheating)
+## How a check-off works
 
-- The **50 m check runs on the server** (`check_off` function in `schema.sql`), not in the browser.
+A check-off **never fails because of distance**. The spot always goes into the
+player's journal, even days later or from the sofa. The GPS position only
+decides one thing: whether the entry gets a **"verified on site"** mark, which
+the player sees in the collection.
+
+This keeps the app a personal journal instead of a test you can fail, while
+the interesting rule still lives where it cannot be faked: on the server.
+
+## Security
+
+- The **"verified on site" mark is decided by the server** (`check_off` function in `schema.sql`), never by the browser. A player cannot set it.
 - **Row Level Security**: players can only read their own check-offs; nobody can write directly to the tables.
 - Photos go to a **private bucket**; each player can only upload to their own folder. Max 5 MB, images only.
 - Each spot can be collected **once per player** (database rule).

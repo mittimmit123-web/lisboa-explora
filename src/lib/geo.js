@@ -1,8 +1,10 @@
 // Distance helpers.
 //
-// The REAL check happens on the server (see supabase/schema.sql, function
-// check_off). This copy is used for showing "320 m away" in the app and for
-// demo mode. Both use the same formula (haversine).
+// A check-off is NEVER refused because of distance. Being within
+// CHECK_RADIUS_M only earns the "verified on site" mark, and the SERVER
+// decides that (see supabase/schema.sql, function check_off). This copy is
+// used for showing "320 m away" in the app and for demo mode.
+// Both use the same formula (haversine).
 
 export const CHECK_RADIUS_M = 50
 
@@ -30,4 +32,12 @@ export function isWithinRadius(position, spot, radius = CHECK_RADIUS_M) {
 export function formatDistance(meters) {
   if (meters < 1000) return `${Math.round(meters)} m`
   return `${(meters / 1000).toFixed(1)} km`
+}
+
+// GPS accuracy: the phone says "I'm here, give or take `accuracy` metres".
+// If that is more than our check-off radius, the distance we show can be
+// wrong, so the screen warns the player.
+// Example: isGpsWeak(25) -> false, isGpsWeak(120) -> true
+export function isGpsWeak(accuracy, limit = CHECK_RADIUS_M) {
+  return accuracy > limit
 }

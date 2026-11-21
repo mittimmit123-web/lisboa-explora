@@ -186,7 +186,7 @@ input[type='email'] { flex: 1; min-height: 44px; border-radius: 10px; border: 1p
 .intro { position: fixed; inset: 0; z-index: 4000; background: #5b4d7a; overflow: hidden; color: #2b2340; }
 .intro-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 .intro-sun { position: absolute; right: -870px; top: -854px; width: 1800px; height: 1800px; pointer-events: none; }
-.intro-rays { position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(rgba(255, 226, 150, 0.3) 0 7deg, transparent 7deg 22deg); -webkit-mask: radial-gradient(circle, #000 4%, rgba(0, 0, 0, 0.55) 22%, transparent 48%); mask: radial-gradient(circle, #000 4%, rgba(0, 0, 0, 0.55) 22%, transparent 48%); }
+.intro-rays { position: absolute; inset: 0; border-radius: 50%; animation: intro-rays 90s linear infinite; background: repeating-conic-gradient(rgba(255, 226, 150, 0.3) 0 7deg, transparent 7deg 22deg); -webkit-mask: radial-gradient(circle, #000 4%, rgba(0, 0, 0, 0.55) 22%, transparent 48%); mask: radial-gradient(circle, #000 4%, rgba(0, 0, 0, 0.55) 22%, transparent 48%); }
 .intro-glow { position: absolute; left: 760px; top: 760px; width: 280px; height: 280px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 240, 180, 0.85) 0 30%, rgba(255, 214, 110, 0.35) 55%, transparent 72%); }
 .intro-disc { position: absolute; left: 840px; top: 840px; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle at 40% 38%, #fff8d6, #ffd34d 68%, #ffbf2e); box-shadow: 0 0 40px 14px rgba(255, 214, 90, 0.55); }
 .intro-skip { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 10px); left: 12px; min-height: 44px; padding: 0 12px; border: none; background: none; color: rgba(255, 255, 255, 0.9); font: inherit; font-weight: 800; font-size: 16px; cursor: pointer; }
@@ -203,5 +203,21 @@ input[type='email'] { flex: 1; min-height: 44px; border-radius: 10px; border: 1p
 @keyframes intro-pop { from { opacity: 0; transform: scale(0.3); } to { opacity: 1; transform: none; } }
 @keyframes intro-bubble { from { opacity: 0; transform: translateX(-50%) scale(0); } to { opacity: 1; transform: translateX(-50%) scale(1); } }
 @keyframes intro-yes { 0%, 100% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.05); } }
-@media (prefers-reduced-motion: reduce) { .intro-title.show, .intro-bubble, .intro-yes { animation: none; } .intro-title.show { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .intro-title.show, .intro-bubble, .intro-yes, .intro-rays { animation: none; } .intro-title.show { opacity: 1; } }
+@keyframes intro-rays { to { transform: rotate(360deg); } }
+
+/* Intro step 2: choose your buddy */
+.intro-pick { position: absolute; inset: 0; display: flex; flex-direction: column; padding: calc(env(safe-area-inset-top, 0px) + 48px) 20px calc(env(safe-area-inset-bottom, 0px) + 18px); }
+.intro-pick-title { margin: 0; text-align: center; font-size: 34px; font-weight: 900; line-height: 1.1; color: #fff; text-shadow: 0 3px 0 rgba(58, 40, 92, 0.55), 0 0 16px rgba(58, 40, 92, 0.45); position: relative; z-index: 1; }
+.intro-pick-stage { flex: 1; min-height: 260px; width: calc(100% + 40px); margin: 0 -20px; display: block; cursor: pointer; touch-action: manipulation; }
+.intro-bubble-pick { top: 24%; font-size: 21px; }
+.intro-pick-hint { position: absolute; left: 0; right: 0; top: 24%; margin: 0; text-align: center; color: rgba(255, 255, 255, 0.9); font-weight: 800; font-size: 18px; }
+.intro-pick-bottom { display: flex; flex-direction: column; gap: 12px; position: relative; z-index: 1; }
+.intro-pick-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.intro-tab { min-height: 52px; border-radius: 16px; border: 2px solid rgba(255, 255, 255, 0.35); background: rgba(255, 255, 255, 0.12); color: #fff; font: inherit; font-weight: 800; font-size: 15px; cursor: pointer; }
+.intro-tab[aria-pressed='true'] { background: #fff; color: #2b2340; border-color: #fff; }
+.intro-choose { height: 64px; border: none; border-radius: 20px; background: #ffc93c; color: #5a3d00; box-shadow: 0 5px 0 #d79e00; font: inherit; font-weight: 900; font-size: 20px; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; }
+.intro-choose:disabled { opacity: 0.5; cursor: not-allowed; }
+.intro-choose:not(:disabled):active { transform: translateY(4px); box-shadow: 0 1px 0 #d79e00; }
+.intro-later { min-height: 44px; border: none; background: none; color: rgba(255, 255, 255, 0.85); font: inherit; font-weight: 800; font-size: 15px; text-decoration: underline; cursor: pointer; }
 

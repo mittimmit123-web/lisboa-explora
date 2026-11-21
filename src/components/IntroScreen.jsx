@@ -1,9 +1,11 @@
-// The intro on the first opening of the app (issue #33): the tram rolls in,
-// cheers, and asks the player to show it around Lisbon.
+// The intro on the first opening of the app (issue #33).
+// Step 1 "film": the tram rolls in, cheers, and asks to be shown around.
+// Step 2 "pick": the player chooses their buddy for the first time.
 // Loaded only when needed (React.lazy in App.jsx), because of the 3D library.
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { INTRO_END, advance, phaseAt } from '../lib/intro.js'
 import { createIntroScene } from '../lib/introScene.js'
+import IntroPicker from './IntroPicker.jsx'
 
 const BUBBLES = {
   welcome: 'Ding ding! 🔔',
@@ -12,13 +14,30 @@ const BUBBLES = {
   joy: "Yay! Let's go! 🎉",
 }
 
+const prefersCalm = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+
 export default function IntroScreen({ onDone }) {
+  const [step, setStep] = useState('film')
+  const toPick = useCallback(() => setStep('pick'), [])
+
+  return (
+    <div className="intro" role="dialog" aria-modal="true" aria-label="Welcome to Lisboa Explora">
+      <div className="intro-sun" aria-hidden="true">
+        <div className="intro-rays" />
+        <div className="intro-glow" />
+        <div className="intro-disc" />
+      </div>
+      {step === 'film' ? <IntroFilm onDone={toPick} /> : <IntroPicker onDone={onDone} />}
+    </div>
+  )
+}
+
+function IntroFilm({ onDone }) {
   const canvasRef = useRef(null)
-  const raysRef = useRef(null)
   const answeredRef = useRef(false)
   const [phase, setPhase] = useState('arrive')
   // People who turned on "reduce motion" see the question right away.
-  const [calm] = useState(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false)
+  const [calm] = useState(prefersCalm)
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -43,7 +62,6 @@ export default function IntroScreen({ onDone }) {
         shown = p
         setPhase(p) // React only updates when the part changes
       }
-      if (raysRef.current) raysRef.current.style.transform = `rotate(${calm ? 0 : live * 4}deg)`
       scene.draw(t, calm ? 0 : live)
       if (t >= INTRO_END) {
         onDone()
@@ -62,14 +80,8 @@ export default function IntroScreen({ onDone }) {
   const bubble = BUBBLES[phase]
 
   return (
-    <div className="intro" role="dialog" aria-modal="true" aria-label="Welcome to Lisboa Explora">
-      <div className="intro-sun" aria-hidden="true">
-        <div className="intro-rays" ref={raysRef} />
-        <div className="intro-glow" />
-        <div className="intro-disc" />
-      </div>
+    <>
       <canvas ref={canvasRef} className="intro-canvas" aria-hidden="true" />
-
       <button className="intro-skip" type="button" onClick={onDone}>
         Skip
       </button>
@@ -90,6 +102,6 @@ export default function IntroScreen({ onDone }) {
           Yes, let&apos;s go!
         </button>
       )}
-    </div>
+    </>
   )
 }

@@ -1,7 +1,9 @@
 # Characters (prototype)
 
 Players choose a buddy character that represents them in the app (issue #20).
-These are **design prototypes**, not part of the app yet.
+These were the design prototypes. The picker is now in the app: a "Your buddy"
+card on the Collection screen opens it (`src/components/BuddyCard.jsx`,
+`CharacterPicker.jsx`, `BuddyAvatar.jsx`, models in `src/lib/characters3d.js`).
 
 | Tram | Sardine | Cat |
 | --- | --- | --- |
@@ -51,7 +53,8 @@ In the picker:
 
 ## Limits and open questions
 
-- The choice is **not saved** yet. Real mode needs a new column in the players
-  table (Person 3).
+- The choice is saved **in this browser only** (`getCharacter`/`setCharacter` in
+  `api.js`). To share it with friends, Person 3 adds a column to profiles and
+  changes only those two functions.
 - three.js is a large dependency. Check that it runs smoothly on a phone.
 - The texts (catchphrases, descriptions) are first drafts.

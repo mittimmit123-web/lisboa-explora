@@ -1,4 +1,5 @@
 // Person 4: Collection & sets
+import BuddyCard from '../components/BuddyCard.jsx'
 import ProgressBar from '../components/ProgressBar.jsx'
 import { SETS } from '../data/sets.js'
 import { categoryById } from '../data/categories.js'
@@ -14,6 +15,8 @@ export default function CollectionScreen({ spots, collectedIds, newThisMonth }) 
       </header>
 
       <div className="content">
+        <BuddyCard />
+
         <div className="stats">
           <div className="stat dark">
             <strong>{collectedIds.size}</strong>

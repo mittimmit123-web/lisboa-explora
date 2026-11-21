@@ -111,10 +111,20 @@ describe('partFor', () => {
 
 describe('newlyUnlocked', () => {
   it('returns the new chapter when a check-off opened one', () => {
-    expect(newlyUnlocked([{ number: 1 }], [{ number: 1 }, { number: 2 }])).toEqual({ number: 2 })
+    const before = [{ number: 1, place: 'Belém' }]
+    const after = [...before, { number: 2, place: 'Arroios' }]
+    expect(newlyUnlocked(before, after)).toEqual({ number: 2, place: 'Arroios' })
+  })
+
+  it('finds the new neighbourhood even if it is not the last one in the list', () => {
+    // e.g. when a clock is wrong and an older entry has a later date
+    const before = [{ number: 1, place: 'Belém' }, { number: 2, place: 'Arroios' }]
+    const after = [{ number: 1, place: 'Belém' }, { number: 2, place: 'Misericórdia' }, { number: 3, place: 'Arroios' }]
+    expect(newlyUnlocked(before, after).place).toBe('Misericórdia')
   })
 
   it('returns null when nothing new was unlocked', () => {
-    expect(newlyUnlocked([{ number: 1 }], [{ number: 1 }])).toBeNull()
+    const list = [{ number: 1, place: 'Belém' }]
+    expect(newlyUnlocked(list, list)).toBeNull()
   })
 })

@@ -41,8 +41,9 @@ export function partFor(number, parts) {
   return [...parts].reverse().find((p) => number >= p.from) ?? parts[0]
 }
 
-// Did the latest check-off unlock a new chapter? Compares the number of
-// unlocked chapters before and after. Returns the new chapter or null.
+// Did the latest check-off unlock a new chapter? Looks for the neighbourhood
+// that wasn't unlocked before. Returns that chapter or null.
 export function newlyUnlocked(before, after) {
-  return after.length > before.length ? after[after.length - 1] : null
+  const known = new Set(before.map((e) => e.place))
+  return after.find((e) => !known.has(e.place)) ?? null
 }

@@ -23,7 +23,7 @@ export default function BuddyCard() {
       <div className="card buddy">
         {buddy ? (
           <>
-            <Suspense fallback={<span className="buddy-avatar buddy-placeholder">{buddy.emoji}</span>}>
+            <Suspense fallback={<span className="buddy-avatar buddy-placeholder" aria-hidden="true" />}>
               <BuddyAvatar id={buddy.id} />
             </Suspense>
             <div className="buddy-text">
@@ -37,12 +37,10 @@ export default function BuddyCard() {
           </>
         ) : (
           <>
-            <span className="buddy-avatar buddy-placeholder" aria-hidden="true">
-              🚋🐟🐱
-            </span>
+            <span className="buddy-avatar buddy-placeholder empty" aria-hidden="true" />
             <div className="buddy-text">
               <strong>Pick your Explora</strong>
-              <span className="muted">A tram, a sardine or a cat to explore Lisbon with you.</span>
+              <span className="muted">Trammy, Captain Bubbles or Miss Purrfect will explore Lisbon with you.</span>
             </div>
             <button className="primary small" type="button" onClick={() => setPicking(true)}>
               Choose

@@ -41,8 +41,7 @@ export default function CharacterPicker({ current, onChoose, onClose }) {
       <div className="picker-tabs" role="group" aria-label="Characters">
         {CHARACTERS.map((c) => (
           <button key={c.id} className="tab" type="button" aria-pressed={selected === c.id} onClick={() => select(c.id)}>
-            <span className="tab-emoji" aria-hidden="true">{c.emoji}</span>
-              <span>{c.name}</span>
+            {c.name}
           </button>
         ))}
       </div>

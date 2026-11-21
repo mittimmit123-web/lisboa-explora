@@ -5,21 +5,18 @@ export const CHARACTERS = [
   {
     id: 'tram',
     name: 'Trammy',
-    emoji: '🚋',
     say: 'Ding ding! Next stop: adventure!',
     about: "Lisbon's famous yellow tram. Always on the move, never late.",
   },
   {
     id: 'sardine',
     name: 'Captain Bubbles',
-    emoji: '🐟',
     say: "Blub blub! Let's party!",
     about: 'Straight from the June festival. Loves crowds, music and new places.',
   },
   {
     id: 'cat',
     name: 'Miss Purrfect',
-    emoji: '🐱',
     say: 'Miau! I know every corner.',
     about: 'A street cat from the old town who knows every hidden spot, and is purrfectly sure she is always right.',
   },

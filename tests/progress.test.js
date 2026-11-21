@@ -1,60 +1,55 @@
 import { describe, expect, it } from 'vitest'
 import {
-  monthlyRecap,
-  neighbourhoodProgress,
+  categoryCounts,
+  monthSummary,
+  neighbourhoodCoverage,
   newThisMonth,
   rankPlayers,
   recentlyCollected,
-  setProgress,
-  spotsInSet,
 } from '../src/lib/progress.js'
 
 const spots = [
-  { id: 'a', category: 'nightlife', neighbourhood: 'Bairro Alto' },
-  { id: 'b', category: 'nightlife', neighbourhood: 'Bairro Alto' },
-  { id: 'c', category: 'nightlife', neighbourhood: 'Bairro Alto' },
-  { id: 'd', category: 'nightlife', neighbourhood: 'Bairro Alto' },
-  { id: 'e', category: 'nightlife', neighbourhood: 'Bairro Alto' },
-  { id: 'f', category: 'viewpoint', neighbourhood: 'Alfama' },
+  { id: 'a', category: 'nightlife', neighbourhood: 'Misericórdia' },
+  { id: 'b', category: 'nightlife', neighbourhood: 'Misericórdia' },
+  { id: 'c', category: 'food', neighbourhood: 'Santa Maria Maior' },
+  { id: 'f', category: 'viewpoint', neighbourhood: 'Santa Maria Maior' },
+  { id: 'campus', category: 'campus', neighbourhood: 'Carcavelos' },
 ]
 
-describe('sets', () => {
-  const bars = { id: 'bars', match: { category: 'nightlife', neighbourhood: 'Bairro Alto' } }
-
-  it('picks spots by category and neighbourhood', () => {
-    expect(spotsInSet(bars, spots).map((s) => s.id)).toEqual(['a', 'b', 'c', 'd', 'e'])
-  })
-
-  it('shows 20% when 1 of 5 bars in Bairro Alto is collected', () => {
-    expect(setProgress(bars, spots, new Set(['a']))).toEqual({ done: 1, total: 5, percent: 20 })
-  })
-
-  it('ignores collected spots outside the set', () => {
-    expect(setProgress(bars, spots, new Set(['f'])).percent).toBe(0)
-  })
-
-  it('is 0% (not an error) for an empty set', () => {
-    expect(setProgress({ id: 'x', match: { category: 'food' } }, spots, new Set()).percent).toBe(0)
-  })
-})
-
-describe('neighbourhoodProgress', () => {
-  it('sorts neighbourhoods by percent', () => {
-    const result = neighbourhoodProgress(spots, new Set(['f']))
-    expect(result[0]).toMatchObject({ name: 'Alfama', percent: 100 })
-    expect(result[1]).toMatchObject({ name: 'Bairro Alto', percent: 0 })
-  })
-})
+const now = new Date('2026-11-17T12:00:00Z')
 
 describe('newThisMonth', () => {
   it('counts only check-offs from the current month', () => {
-    const now = new Date('2026-11-17T12:00:00Z')
     const rows = [
       { created_at: '2026-11-02T10:00:00Z' },
       { created_at: '2026-11-16T10:00:00Z' },
       { created_at: '2026-10-30T10:00:00Z' },
     ]
     expect(newThisMonth(rows, now)).toBe(2)
+  })
+
+  it('does not count the same month of another year', () => {
+    expect(newThisMonth([{ created_at: '2025-11-10T10:00:00Z' }], now)).toBe(0)
+  })
+})
+
+describe('monthSummary', () => {
+  it('counts this month and how many were verified on site', () => {
+    const rows = [
+      { created_at: '2026-11-02T10:00:00Z', verified: true },
+      { created_at: '2026-11-16T10:00:00Z', verified: false },
+      { created_at: '2026-11-10T10:00:00Z', verified: true },
+      { created_at: '2026-10-30T10:00:00Z', verified: true }, // last month
+    ]
+    expect(monthSummary(rows, now)).toEqual({ count: 3, verified: 2 })
+  })
+
+  it('treats a missing verified flag (old entries) as not verified', () => {
+    expect(monthSummary([{ created_at: '2026-11-02T10:00:00Z' }], now)).toEqual({ count: 1, verified: 0 })
+  })
+
+  it('is zero for a new player', () => {
+    expect(monthSummary([], now)).toEqual({ count: 0, verified: 0 })
   })
 })
 
@@ -69,13 +64,21 @@ describe('rankPlayers', () => {
       [2, 'Ana'],
     ])
   })
+
+  it('breaks a tie alphabetically', () => {
+    const ranked = rankPlayers([
+      { name: 'Zé', count: 2 },
+      { name: 'Ana', count: 2 },
+    ])
+    expect(ranked.map((p) => p.name)).toEqual(['Ana', 'Zé'])
+  })
 })
 
 describe('recentlyCollected', () => {
   const rows = [
-    { spot_id: 'a', created_at: '2026-11-02T10:00:00Z' },
-    { spot_id: 'f', created_at: '2026-11-16T10:00:00Z' },
-    { spot_id: 'gone', created_at: '2026-11-17T10:00:00Z' },
+    { spot_id: 'a', created_at: '2026-11-02T10:00:00Z', verified: true },
+    { spot_id: 'f', created_at: '2026-11-16T10:00:00Z', verified: false },
+    { spot_id: 'gone', created_at: '2026-11-17T10:00:00Z', verified: true },
     { spot_id: 'b', created_at: '2026-10-30T10:00:00Z' },
   ]
 
@@ -83,6 +86,10 @@ describe('recentlyCollected', () => {
     const result = recentlyCollected(rows, spots)
     expect(result.map((r) => r.spot.id)).toEqual(['f', 'a', 'b'])
     expect(result[0].date.toISOString()).toBe('2026-11-16T10:00:00.000Z')
+  })
+
+  it('passes on the verified mark', () => {
+    expect(recentlyCollected(rows, spots).map((r) => r.verified)).toEqual([false, true, false])
   })
 
   it('respects the limit', () => {
@@ -94,17 +101,48 @@ describe('recentlyCollected', () => {
   })
 })
 
-describe('monthlyRecap', () => {
-  it('gives my count and my rank among friends', () => {
-    const recap = monthlyRecap([
-      { name: 'You', count: 5, isMe: true },
-      { name: 'Marta', count: 6 },
-      { name: 'João', count: 4 },
+describe('categoryCounts', () => {
+  const categories = [
+    { id: 'nightlife', label: 'Nightlife', color: '#7C3AED' },
+    { id: 'food', label: 'Food spots', color: '#C2410C' },
+    { id: 'park', label: 'Parks', color: '#15803D' },
+  ]
+
+  it('counts collected spots per category and keeps empty categories', () => {
+    const result = categoryCounts(spots, new Set(['a', 'b', 'c']), categories)
+    expect(result.map((c) => [c.id, c.count])).toEqual([
+      ['nightlife', 2],
+      ['food', 1],
+      ['park', 0],
     ])
-    expect(recap).toEqual({ count: 5, rank: 2, playerCount: 3 })
+    expect(result[0].label).toBe('Nightlife')
   })
 
-  it('has no rank when I am not in the list', () => {
-    expect(monthlyRecap([])).toEqual({ count: 0, rank: null, playerCount: 0 })
+  it('ignores ids that are not spots', () => {
+    expect(categoryCounts(spots, new Set(['nope']), categories).every((c) => c.count === 0)).toBe(true)
+  })
+})
+
+describe('neighbourhoodCoverage', () => {
+  const hoods = ['Misericórdia', 'Santa Maria Maior', 'Belém']
+
+  it('counts visited neighbourhoods out of the fixed list', () => {
+    const result = neighbourhoodCoverage(spots, new Set(['a', 'b', 'f']), hoods)
+    expect(result.visited).toBe(2)
+    expect(result.total).toBe(3)
+    expect(result.list).toEqual([
+      { name: 'Misericórdia', count: 2 },
+      { name: 'Santa Maria Maior', count: 1 },
+      { name: 'Belém', count: 0 },
+    ])
+  })
+
+  it('does not count spots outside the city as a neighbourhood', () => {
+    expect(neighbourhoodCoverage(spots, new Set(['campus']), hoods).visited).toBe(0)
+  })
+
+  it('is 0 of N for a new player', () => {
+    const result = neighbourhoodCoverage(spots, new Set(), hoods)
+    expect([result.visited, result.total]).toEqual([0, 3])
   })
 })

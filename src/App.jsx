@@ -61,7 +61,7 @@ export default function App() {
             onCheckOff={setCheckOffSpot}
           />
         ) : tab === 'collection' ? (
-          <CollectionScreen spots={SPOTS} checkOffs={checkOffs} collectedIds={collectedIds} newThisMonth={monthCount} />
+          <CollectionScreen spots={SPOTS} checkOffs={checkOffs} collectedIds={collectedIds} />
         ) : (
           <FriendsScreen newThisMonth={monthCount} />
         )}

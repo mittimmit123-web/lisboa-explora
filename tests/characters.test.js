@@ -5,7 +5,8 @@ describe('characters', () => {
   it('has the three buddies with unique ids and all texts filled in', () => {
     expect(CHARACTERS.map((c) => c.id)).toEqual(['tram', 'sardine', 'cat'])
     for (const c of CHARACTERS) {
-      expect(c.name && c.say && c.about).toBeTruthy()
+      expect(c.name && c.say && c.about && c.hello).toBeTruthy()
+      expect(c.pronouns.he && c.pronouns.him && c.pronouns.his).toBeTruthy()
     }
   })
 

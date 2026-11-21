@@ -26,14 +26,22 @@ export function unlockedChapters(checkOffs, spots, neighbourhoods, chapters) {
   }))
 }
 
-// Fill in {buddy} and {place}. Without a chosen Explora the story says
-// "your Explora" (and "Your Explora" at the start of a sentence).
-export function fillStory(text, { buddy, place }) {
+// Fill in {buddy}, {place} and the pronouns. Without a chosen Explora the
+// story says "your Explora" (and "Your Explora" at the start of a sentence)
+// and "it". pronouns: { he, him, his }, e.g. { he: 'she', him: 'her', his: 'her' }
+const cap = (w) => w.charAt(0).toUpperCase() + w.slice(1)
+export function fillStory(text, { buddy, place, pronouns }) {
   const name = buddy || 'your Explora'
+  const p = pronouns ?? { he: 'it', him: 'it', his: 'its' }
   return text
     .replace(/(^|[.!?]["”]?\s+)\{buddy\}/g, (_, before) => before + (buddy || 'Your Explora'))
     .replaceAll('{buddy}', name)
     .replaceAll('{place}', place ?? 'Lisbon')
+    .replaceAll('{He}', cap(p.he))
+    .replaceAll('{His}', cap(p.his))
+    .replaceAll('{he}', p.he)
+    .replaceAll('{him}', p.him)
+    .replaceAll('{his}', p.his)
 }
 
 // The part (e.g. "Saudade") a chapter number belongs to.

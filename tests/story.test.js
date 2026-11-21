@@ -93,9 +93,18 @@ describe('fillStory', () => {
     expect(fillStory('"Why?" {buddy} asks.', {})).toBe('"Why?" Your Explora asks.')
   })
 
+  it('uses the Explora\'s pronouns', () => {
+    const she = { he: 'she', him: 'her', his: 'her' }
+    expect(fillStory('{He} smiles. You show {him} {his} tile.', { buddy: 'Miss Purrfect', pronouns: she })).toBe('She smiles. You show her her tile.')
+  })
+
+  it('says "it" when no Explora was chosen', () => {
+    expect(fillStory('{He} smiles at {his} map.', {})).toBe('It smiles at its map.')
+  })
+
   it('works on every real chapter without leaving placeholders behind', () => {
     for (const c of CHAPTERS) {
-      expect(fillStory(c.text, { buddy: 'Tram', place: 'Belém' })).not.toMatch(/[{}]/)
+      expect(fillStory(c.text, { buddy: 'Miss Purrfect', place: 'Belém', pronouns: { he: 'she', him: 'her', his: 'her' } })).not.toMatch(/[{}]/)
       expect(fillStory(c.text, { place: 'Belém' })).not.toMatch(/[{}]/)
     }
   })

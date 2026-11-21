@@ -8,7 +8,9 @@ import { fillStory, unlockedChapters } from '../lib/story.js'
 import StoryChapter from './StoryChapter.jsx'
 
 export default function StorySection({ spots, checkOffs }) {
-  const buddy = characterById(getCharacter())?.name
+  const explora = characterById(getCharacter())
+  const buddy = explora?.name
+  const pronouns = explora?.pronouns
   const unlocked = unlockedChapters(checkOffs, spots, NEIGHBOURHOODS, CHAPTERS)
   const next = CHAPTERS[unlocked.length]
   const title = fillStory('Showing {buddy} around', { buddy })
@@ -53,7 +55,7 @@ export default function StorySection({ spots, checkOffs }) {
                   <span className="chapter-title">{entry.chapter.title}</span>
                   <span className="muted">{entry.place}</span>
                 </summary>
-                <StoryChapter entry={entry} buddy={buddy} />
+                <StoryChapter entry={entry} buddy={buddy} pronouns={pronouns} />
               </details>
             ))}
           </div>

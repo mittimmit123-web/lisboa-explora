@@ -3,8 +3,8 @@
 import { ENDINGS, PARTS } from '../data/story.js'
 import { fillStory, partFor } from '../lib/story.js'
 
-export default function StoryChapter({ entry, buddy, showTitle = true }) {
-  const values = { buddy, place: entry.place }
+export default function StoryChapter({ entry, buddy, pronouns, showTitle = true }) {
+  const values = { buddy, pronouns, place: entry.place }
   return (
     <div className="story-chapter">
       {showTitle && (

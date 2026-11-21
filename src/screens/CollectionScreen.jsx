@@ -1,5 +1,6 @@
 // Person 4: Collection — the player's own journal. No ranking here on purpose:
 // competition lives on the Friends screen.
+import BuddyCard from '../components/BuddyCard.jsx'
 import ProgressBar from '../components/ProgressBar.jsx'
 import { CATEGORIES, categoryById } from '../data/categories.js'
 import { NEIGHBOURHOODS } from '../data/neighbourhoods.js'
@@ -34,6 +35,8 @@ export default function CollectionScreen({ spots, checkOffs, collectedIds }) {
       </header>
 
       <div className="content">
+        <BuddyCard />
+
         <div className="stats">
           <div className="stat dark">
             <strong>{collectedIds.size}</strong>

@@ -7,6 +7,7 @@
 
 import { supabase, isDemoMode } from './supabase.js'
 import { distanceMeters, isWithinRadius } from './geo.js'
+import { cleanCharacterId } from './characters.js'
 
 const DEMO_KEY = 'lisboa-explora-demo-checkoffs'
 
@@ -127,4 +128,30 @@ export async function addFriend(email) {
   const { data, error } = await supabase.rpc('add_friend', { p_email: email })
   if (error) throw error
   return data
+}
+
+// ---------- Buddy character (issue #20) ----------
+// For now the choice is saved in this browser only, in both modes.
+// TODO (Person 3): add a `character` column to profiles and save it there,
+// so friends can see each other's buddy. Only these two functions change.
+const CHARACTER_KEY = 'lisboa-explora-character'
+
+// Returns 'tram' | 'sardine' | 'cat' or null if none was chosen yet.
+export function getCharacter() {
+  try {
+    return cleanCharacterId(localStorage.getItem(CHARACTER_KEY))
+  } catch {
+    return null // storage blocked (private mode): just no buddy yet
+  }
+}
+
+export function setCharacter(id) {
+  const clean = cleanCharacterId(id)
+  if (!clean) return null
+  try {
+    localStorage.setItem(CHARACTER_KEY, clean)
+  } catch {
+    // storage blocked: the choice lasts until the page is reloaded
+  }
+  return clean
 }

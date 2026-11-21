@@ -77,6 +77,29 @@ button { font: inherit; cursor: pointer; }
 .stat.dark { background: var(--ink); color: #fff; }
 .stat.dark span { color: #e2e8f0; }
 .card { background: var(--card); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.recap { background: #eef3fb; }
+.recap p { margin: 0; line-height: 1.4; }
+.recent { list-style: none; margin: 0; padding: 0; background: var(--card); border-radius: 14px; }
+.recent li { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #efeae0; }
+.recent li:last-child { border-bottom: none; }
+.recent .dot { flex-shrink: 0; }
+.recent .name { display: flex; flex-direction: column; gap: 2px; }
+/* "Verified on site": the row glows gold, like a special memory */
+.recent li.verified { background: linear-gradient(90deg, #fff4d6, #fffdf6); box-shadow: inset 4px 0 0 var(--sun); }
+.recent li.verified:first-child { border-radius: 14px 14px 0 0; }
+.recent li.verified:last-child { border-radius: 0 0 14px 14px; }
+.recent li.verified:only-child { border-radius: 14px; }
+.verified-note { font-size: 12px; font-weight: 600; color: #92400e; }
+.stat strong small { font-size: 14px; font-weight: 600; color: var(--muted); }
+.category-counts { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.category-counts li { background: var(--card); border-radius: 12px; padding: 10px 12px; display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.category-counts .name { flex: 1; min-width: 0; }
+.category-counts li.empty { color: var(--muted); }
+.coverage { margin: 0; }
+.hood-chips { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.hood-chips li { font-size: 12px; padding: 4px 9px; border-radius: 999px; border: 1px dashed var(--line); color: var(--muted); display: flex; align-items: center; gap: 5px; }
+.hood-chips li.visited { border: 1px solid var(--accent); background: #eef3fb; color: var(--ink); font-weight: 600; }
+.hood-count { background: var(--accent); color: #fff; border-radius: 999px; font-size: 10px; padding: 0 6px; line-height: 16px; }
 .bar { height: 8px; border-radius: 999px; background: #e8e2d6; overflow: hidden; }
 .bar-fill { height: 100%; border-radius: 999px; }
 

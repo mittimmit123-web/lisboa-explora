@@ -115,7 +115,7 @@ export default function MapScreen({ spots, collectedIds, position, onCheckOff, n
 
       <CategoryFilter value={filter} onChange={setFilter} />
 
-      <div className="map-wrap">
+      <div className="map-wrap" data-tour="map">
         <MapContainer center={LISBON} zoom={START_ZOOM} className="map" scrollWheelZoom ref={setMap}>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

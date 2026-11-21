@@ -9,11 +9,14 @@ import StoryPopup from './components/StoryPopup.jsx'
 import { SPOTS } from './data/spots.js'
 import { NEIGHBOURHOODS } from './data/neighbourhoods.js'
 import { CHAPTERS } from './data/story.js'
-import { getMyCheckOffs, getUser, onAuthChange } from './lib/api.js'
+import { getCharacter, getMyCheckOffs, getUser, onAuthChange } from './lib/api.js'
 import { isDemoMode } from './lib/supabase.js'
 import { newThisMonth } from './lib/progress.js'
 import { newlyUnlocked, unlockedChapters } from './lib/story.js'
 import { hasSeenIntro, markIntroSeen } from './lib/intro.js'
+import { TOUR_HOST, TOUR_STEPS, hasSeenTour, isLastStep, markTourSeen } from './lib/tour.js'
+import { characterById } from './lib/characters.js'
+import TourOverlay from './components/TourOverlay.jsx'
 import { useGeolocation } from './lib/useGeolocation.js'
 
 // The intro brings the 3D library, so it is only downloaded when it is shown.
@@ -21,6 +24,7 @@ const IntroScreen = lazy(() => import('./components/IntroScreen.jsx'))
 
 export default function App() {
   const [showIntro, setShowIntro] = useState(() => !hasSeenIntro()) // intro (#33)
+  const [tourStep, setTourStep] = useState(null) // guided tour after the intro (#33), null = no tour
   const [user, setUser] = useState(undefined) // undefined = still loading
   const [tab, setTab] = useState('map')
   const [checkOffs, setCheckOffs] = useState([])
@@ -44,7 +48,23 @@ export default function App() {
   const finishIntro = useCallback(() => {
     markIntroSeen()
     setShowIntro(false)
+    if (!hasSeenTour()) {
+      setTourStep(0)
+      setTab(TOUR_STEPS[0].tab)
+    }
   }, [])
+
+  // Tour: go to the next step (and open its tab), or finish after the last one.
+  function finishTour() {
+    markTourSeen()
+    setTourStep(null)
+    setTab('map')
+  }
+  function nextTourStep() {
+    if (isLastStep(tourStep)) return finishTour()
+    setTourStep(tourStep + 1)
+    setTab(TOUR_STEPS[tourStep + 1].tab)
+  }
 
   // First opening: meet the tram before anything else.
   if (showIntro) {
@@ -95,6 +115,14 @@ export default function App() {
           <FriendsScreen newThisMonth={monthCount} />
         )}
       </main>
+      {tourStep !== null && (
+        <TourOverlay
+          index={tourStep}
+          explora={characterById(getCharacter()) ?? characterById(TOUR_HOST)}
+          onNext={nextTourStep}
+          onSkip={finishTour}
+        />
+      )}
       {newChapter && (
         <StoryPopup
           entry={newChapter}

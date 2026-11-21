@@ -55,7 +55,7 @@ export default function IntroPicker({ onDone }) {
         <div className="intro-pick-tabs" role="group" aria-label="Characters">
           {CHARACTERS.map((c) => (
             <button key={c.id} type="button" className="intro-tab" aria-pressed={selected === c.id} onClick={() => select(c.id)}>
-              {c.emoji} {c.name}
+              {c.emoji} {c.short}
             </button>
           ))}
         </div>

@@ -5,12 +5,16 @@ describe('characters', () => {
   it('has the three buddies with unique ids and all texts filled in', () => {
     expect(CHARACTERS.map((c) => c.id)).toEqual(['tram', 'sardine', 'cat'])
     for (const c of CHARACTERS) {
-      expect(c.name && c.say && c.about && c.emoji).toBeTruthy()
+      expect(c.name && c.short && c.say && c.about && c.emoji).toBeTruthy()
     }
   })
 
   it('finds a character by id', () => {
-    expect(characterById('cat').name).toBe('Cat')
+    expect(characterById('cat').name).toBe('Miss Purrfect')
+  })
+
+  it('has short names that fit the small buttons', () => {
+    for (const c of CHARACTERS) expect(c.short.length).toBeLessThanOrEqual(9)
   })
 
   it('returns null for an unknown id', () => {

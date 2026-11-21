@@ -27,7 +27,7 @@ export default function BuddyCard() {
               <BuddyAvatar id={buddy.id} />
             </Suspense>
             <div className="buddy-text">
-              <span className="section-label">Your buddy</span>
+              <span className="section-label">Your Explora</span>
               <strong>{buddy.name}</strong>
               <span className="muted">“{buddy.say}”</span>
             </div>
@@ -41,7 +41,7 @@ export default function BuddyCard() {
               🚋🐟🐱
             </span>
             <div className="buddy-text">
-              <strong>Pick a buddy</strong>
+              <strong>Pick your Explora</strong>
               <span className="muted">A tram, a sardine or a cat to explore Lisbon with you.</span>
             </div>
             <button className="primary small" type="button" onClick={() => setPicking(true)}>

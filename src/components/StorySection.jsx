@@ -61,10 +61,10 @@ export default function StorySection({ spots, checkOffs }) {
 
         {next ? (
           <p className="story-next">
-            🔒 Chapter {unlocked.length + 1}: show {buddy ?? 'your buddy'} a neighbourhood you haven&apos;t been to yet.
+            🔒 Chapter {unlocked.length + 1}: show {buddy ?? 'your Explora'} a neighbourhood you haven&apos;t been to yet.
           </p>
         ) : (
-          <p className="story-next done">🗺️ The map is complete. Thank you for showing {buddy ?? 'your buddy'} Lisbon.</p>
+          <p className="story-next done">🗺️ The map is complete. Thank you for showing {buddy ?? 'your Explora'} Lisbon.</p>
         )}
       </div>
     </section>

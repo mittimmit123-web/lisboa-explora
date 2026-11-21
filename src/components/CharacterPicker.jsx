@@ -31,8 +31,8 @@ export default function CharacterPicker({ current, onChoose, onClose }) {
           ‹
         </button>
         <div>
-          <h1 id="picker-title">Choose your character</h1>
-          <p className="muted">Your buddy for exploring Lisbon. You can change it later.</p>
+          <h1 id="picker-title">Choose your Explora</h1>
+          <p className="muted">Your companion for discovering Lisbon. You can change it later.</p>
         </div>
       </header>
 
@@ -60,7 +60,7 @@ export default function CharacterPicker({ current, onChoose, onClose }) {
               type="button"
               onClick={() => onChoose(info.id)}
             >
-              {current === info.id ? `✓ ${info.name} is your buddy` : `Choose the ${info.name}`}
+              {current === info.id ? `✓ ${info.name} is your Explora` : `Choose the ${info.name}`}
             </button>
           </>
         ) : (

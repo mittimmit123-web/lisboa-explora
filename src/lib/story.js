@@ -26,12 +26,12 @@ export function unlockedChapters(checkOffs, spots, neighbourhoods, chapters) {
   }))
 }
 
-// Fill in {buddy} and {place}. Without a buddy the story says "your buddy"
-// (and "Your buddy" at the start of a sentence).
+// Fill in {buddy} and {place}. Without a chosen Explora the story says
+// "your Explora" (and "Your Explora" at the start of a sentence).
 export function fillStory(text, { buddy, place }) {
-  const name = buddy || 'your buddy'
+  const name = buddy || 'your Explora'
   return text
-    .replace(/(^|[.!?]["”]?\s+)\{buddy\}/g, (_, before) => before + (buddy || 'Your buddy'))
+    .replace(/(^|[.!?]["”]?\s+)\{buddy\}/g, (_, before) => before + (buddy || 'Your Explora'))
     .replaceAll('{buddy}', name)
     .replaceAll('{place}', place ?? 'Lisbon')
 }

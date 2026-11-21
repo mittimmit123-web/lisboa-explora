@@ -83,14 +83,14 @@ describe('fillStory', () => {
     expect(fillStory('{buddy} loves {place}.', { buddy: 'Cat', place: 'Belém' })).toBe('Cat loves Belém.')
   })
 
-  it('says "your buddy" when none was chosen, with a capital at the start of a sentence', () => {
+  it('says "your Explora" when none was chosen, with a capital at the start of a sentence', () => {
     expect(fillStory('{buddy} waves. Then {place} waves at {buddy}.', { place: 'Alfama' })).toBe(
-      'Your buddy waves. Then Alfama waves at your buddy.',
+      'Your Explora waves. Then Alfama waves at your Explora.',
     )
   })
 
   it('capitalises after a quote that ends a sentence', () => {
-    expect(fillStory('"Why?" {buddy} asks.', {})).toBe('"Why?" Your buddy asks.')
+    expect(fillStory('"Why?" {buddy} asks.', {})).toBe('"Why?" Your Explora asks.')
   })
 
   it('works on every real chapter without leaving placeholders behind', () => {

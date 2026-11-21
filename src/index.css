@@ -112,7 +112,7 @@ button { font: inherit; cursor: pointer; }
 .avatar { width: 34px; height: 34px; border-radius: 50%; background: #fde68a; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; }
 .leaderboard li.me .avatar { background: var(--accent); color: #fff; }
 .name { flex: 1; font-weight: 600; }
-input[type='email'] { flex: 1; min-height: 44px; border-radius: 10px; border: 1px solid var(--line); padding: 0 12px; font: inherit; }
+input[type='email'] { flex: 1; min-width: 0; min-height: 44px; border-radius: 10px; border: 1px solid var(--line); padding: 0 12px; font: inherit; }
 
 /* Login */
 .login { justify-content: center; }
@@ -283,4 +283,16 @@ input[type='email'] { flex: 1; min-height: 44px; border-radius: 10px; border: 1p
 .album-card .postcard-front { height: 100%; }
 .album-empty { border: 2px dashed var(--line); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #c4bba9; font-weight: 800; font-size: 12px; }
 @media (prefers-reduced-motion: reduce) { .postcard, .postcard-arrive { transition: none; animation: none; } }
+/* Friends: add-friend form and feedback */
+.add-friend .primary { flex-shrink: 0; }
+.note { margin: 0; font-size: 14px; line-height: 1.4; padding: 8px 10px; border-radius: 10px; }
+.note.ok { background: var(--ok-bg); color: var(--ok-ink); }
+.note.error { background: #fef2f2; color: var(--error); }
+.link-button { border: none; background: none; padding: 0; min-height: 44px; font: inherit; font-weight: 700; color: var(--accent); text-decoration: underline; cursor: pointer; }
+
+/* Friends: animated weather scene */
+.weather { margin: 0; border-radius: 18px; overflow: hidden; background: var(--card); box-shadow: 0 4px 14px rgba(20, 33, 61, 0.12); }
+.weather-canvas { display: block; width: 100%; aspect-ratio: 360 / 280; background: #9db4cc; }
+.weather-caption { padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 2px; font-size: 15px; font-weight: 600; line-height: 1.35; }
+.weather-caption small { font-size: 11px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
 

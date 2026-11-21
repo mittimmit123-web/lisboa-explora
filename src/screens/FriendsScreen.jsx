@@ -1,6 +1,6 @@
 // Person 4: Friends & leaderboard — the competitive part of the game.
 import { useCallback, useEffect, useState } from 'react'
-import { addFriend, getFriendsLeaderboard, getUser } from '../lib/api.js'
+import { addFriend, getCharacter, getFriendsLeaderboard, getUser } from '../lib/api.js'
 import { isDemoMode } from '../lib/supabase.js'
 import WeatherScene from '../components/WeatherScene.jsx'
 import { addFriendMessage, friendEmailProblem, playerLabel, weatherMood } from '../lib/friends.js'
@@ -56,7 +56,7 @@ export default function FriendsScreen({ newThisMonth }) {
         <h1>Friends</h1>
       </header>
       <div className="content">
-        <WeatherScene mood={weather?.mood} sub={weather?.sub} text={weather?.text} />
+        <WeatherScene mood={weather?.mood} sub={weather?.sub} text={weather?.text} buddy={getCharacter()} />
 
         <h2 className="section-label">New spots this month</h2>
         {loadError ? (

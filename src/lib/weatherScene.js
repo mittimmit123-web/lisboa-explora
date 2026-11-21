@@ -8,7 +8,10 @@
 // - Each mood is a list of "dials" (how much sun, clouds, rain, wind, ...).
 //   When the mood changes, every dial turns a little each frame towards its
 //   new value, so the weather melts into the next mood instead of jumping.
-// - We draw in a fixed "virtual" size of 360 x 280 and scale it to the canvas.
+// - We draw in a fixed "virtual" size of 360 x 280 and stretch it to the
+//   canvas (on the Friends screen the canvas is a square).
+// - The drawn tram is only shown when the player has no 3D Explora: normally
+//   the player's own Explora stands in front of the scene (WeatherBuddy.jsx).
 
 const W = 360
 const H = 280
@@ -68,7 +71,7 @@ function buildScenery() {
 }
 
 // ---------- the scene ----------
-export function createWeatherScene(canvas, { animate = true } = {}) {
+export function createWeatherScene(canvas, { animate = true, tram: withTram = true } = {}) {
   const ctx = canvas.getContext('2d')
   const scene = buildScenery()
   const now = { top: hex(MOODS.golden.top), bottom: hex(MOODS.golden.bottom) }
@@ -81,8 +84,9 @@ export function createWeatherScene(canvas, { animate = true } = {}) {
   function resize() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
     const cssW = canvas.clientWidth || W
+    const cssH = canvas.clientHeight || cssW * (H / W)
     canvas.width = Math.round(cssW * dpr)
-    canvas.height = Math.round(cssW * (H / W) * dpr)
+    canvas.height = Math.round(cssH * dpr)
     ctx.setTransform(canvas.width / W, 0, 0, canvas.height / H, 0, 0)
     if (!frameId) draw(0)
   }
@@ -290,7 +294,7 @@ export function createWeatherScene(canvas, { animate = true } = {}) {
 
   function draw(dt) {
     sky(); sun(); rainbow(); clouds(dt); birds(dt); hills(); houses()
-    street(); tram(dt); leaves(dt); motes(dt); rain(dt); filter()
+    street(); if (withTram) tram(dt); leaves(dt); motes(dt); rain(dt); filter()
   }
 
   // Turn every dial a bit towards the target (about 2.5 s for a full change).
@@ -322,6 +326,11 @@ export function createWeatherScene(canvas, { animate = true } = {}) {
     stop() {
       if (frameId) cancelAnimationFrame(frameId)
       frameId = null
+    },
+    // Show or hide the drawn tram (it comes back if the 3D Explora fails).
+    showTram(on) {
+      withTram = on
+      if (!frameId) draw(0)
     },
     resize,
   }

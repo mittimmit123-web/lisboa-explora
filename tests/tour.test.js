@@ -18,14 +18,14 @@ describe('tour steps', () => {
 })
 
 describe('tourText', () => {
-  const journal = TOUR_STEPS.find((s) => s.text.includes('{name}'))
+  const fake = { text: 'Hi, I am {name}!' }
 
   it("puts in the Explora's name", () => {
-    expect(tourText(journal, 'Miss Purrfect')).toContain('Miss Purrfect')
+    expect(tourText(fake, 'Miss Purrfect')).toBe('Hi, I am Miss Purrfect!')
   })
 
   it('says "your Explora" when none was chosen', () => {
-    expect(tourText(journal, null)).toContain('your Explora')
+    expect(tourText(fake, null)).toContain('your Explora')
   })
 
   it('leaves no placeholders in any step', () => {

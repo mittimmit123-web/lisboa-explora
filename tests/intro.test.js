@@ -1,36 +1,59 @@
 import { describe, expect, it } from 'vitest'
-import { ASK_HOLD, INTRO_END, JOY_START, advance, hasSeenIntro, markIntroSeen, phaseAt } from '../src/lib/intro.js'
+import {
+  PROLOGUE_END,
+  PROLOGUE_HOLD,
+  PROLOGUE_JOY,
+  advancePrologue,
+  hasSeenIntro,
+  markIntroSeen,
+  nextStep,
+  prologuePhase,
+  welcomePhase,
+} from '../src/lib/intro.js'
 
-// A fake browser storage for the tests
 function fakeStorage() {
   const data = {}
   return { getItem: (k) => data[k] ?? null, setItem: (k, v) => (data[k] = String(v)) }
 }
 
-describe('phaseAt', () => {
-  it('plays the parts of the intro in order', () => {
-    expect(phaseAt(0)).toBe('arrive')
-    expect(phaseAt(2)).toBe('welcome')
-    expect(phaseAt(5)).toBe('turn')
-    expect(phaseAt(6)).toBe('hello')
-    expect(phaseAt(8)).toBe('ask')
-  })
-
-  it('stays at the question until the player answers', () => {
-    expect(phaseAt(10)).toBe('ask')
-    expect(phaseAt(10, true)).toBe('joy')
+describe('nextStep', () => {
+  it('goes welcome -> pick -> prologue -> tiles -> done', () => {
+    expect(nextStep('welcome')).toBe('pick')
+    expect(nextStep('pick')).toBe('prologue')
+    expect(nextStep('prologue')).toBe('tiles')
+    expect(nextStep('tiles')).toBe('done')
   })
 })
 
-describe('advance', () => {
-  it('waits at the question before the answer', () => {
-    expect(advance(8.7, 0.5, false)).toBe(ASK_HOLD)
-    expect(advance(ASK_HOLD, 5, false)).toBe(ASK_HOLD)
+describe('welcomePhase', () => {
+  it('rolls in first, then cheers', () => {
+    expect(welcomePhase(0.5)).toBe('arrive')
+    expect(welcomePhase(2)).toBe('cheer')
+  })
+})
+
+describe('prologuePhase', () => {
+  it('plays enter, hello and ask in order', () => {
+    expect(prologuePhase(0.2)).toBe('enter')
+    expect(prologuePhase(2)).toBe('hello')
+    expect(prologuePhase(4)).toBe('ask')
   })
 
-  it('jumps to the happy ending after "Yes" and plays on to the end', () => {
-    expect(advance(ASK_HOLD, 0.1, true)).toBeCloseTo(JOY_START + 0.1)
-    expect(advance(10.5, 1, true)).toBeGreaterThanOrEqual(INTRO_END)
+  it('stays at the question until the player answers', () => {
+    expect(prologuePhase(6)).toBe('ask')
+    expect(prologuePhase(6, true)).toBe('joy')
+  })
+})
+
+describe('advancePrologue', () => {
+  it('waits at the question before the answer', () => {
+    expect(advancePrologue(4.3, 0.5, false)).toBe(PROLOGUE_HOLD)
+    expect(advancePrologue(PROLOGUE_HOLD, 5, false)).toBe(PROLOGUE_HOLD)
+  })
+
+  it('jumps to the happy part after "Yes" and plays on to the end', () => {
+    expect(advancePrologue(PROLOGUE_HOLD, 0.1, true)).toBeCloseTo(PROLOGUE_JOY + 0.1)
+    expect(advancePrologue(6.5, 1, true)).toBeGreaterThanOrEqual(PROLOGUE_END)
   })
 })
 

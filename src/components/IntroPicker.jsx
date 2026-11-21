@@ -7,7 +7,8 @@ import { setCharacter } from '../lib/api.js'
 import { CHARACTERS, characterById } from '../lib/characters.js'
 import { createPickerStage } from '../lib/pickerStage.js'
 
-export default function IntroPicker({ onDone }) {
+// onChosen(id): called with the chosen Explora, or null for "Choose later".
+export default function IntroPicker({ onChosen }) {
   const canvasRef = useRef(null)
   const selectedRef = useRef(null)
   const [selected, setSelected] = useState(null)
@@ -32,7 +33,7 @@ export default function IntroPicker({ onDone }) {
 
   function choose() {
     setCharacter(buddy.id)
-    onDone()
+    onChosen(buddy.id)
   }
 
   return (
@@ -62,7 +63,7 @@ export default function IntroPicker({ onDone }) {
         <button className="intro-choose" type="button" disabled={!buddy} onClick={choose}>
           Choose your Explora
         </button>
-        <button className="intro-later" type="button" onClick={onDone}>
+        <button className="intro-later" type="button" onClick={() => onChosen(null)}>
           Choose later
         </button>
       </div>

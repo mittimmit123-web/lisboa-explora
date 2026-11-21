@@ -1,24 +1,36 @@
-// The intro on the first opening of the app (issue #33).
-// Step 1 "film": the tram rolls in, cheers, and asks to be shown around.
-// Step 2 "pick": the player chooses their buddy for the first time.
+// The intro on the first opening of the app (issue #33), in four steps:
+//   welcome   Trammy, the app's host, rolls in and cheers
+//   pick      the player chooses their Explora
+//   prologue  the chosen Explora says hello and asks to be shown around
+//   tiles     it explains the tile map (one tile per neighbourhood)
 // Loaded only when needed (React.lazy in App.jsx), because of the 3D library.
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { INTRO_END, advance, phaseAt } from '../lib/intro.js'
+import { characterById } from '../lib/characters.js'
+import {
+  PROLOGUE_END,
+  WELCOME_END,
+  advancePrologue,
+  nextStep,
+  prologuePhase,
+  welcomePhase,
+} from '../lib/intro.js'
 import { createIntroScene } from '../lib/introScene.js'
 import IntroPicker from './IntroPicker.jsx'
+import IntroTiles from './IntroTiles.jsx'
 
-const BUBBLES = {
-  welcome: 'Ding ding! 🔔',
-  hello: 'Olá! I just arrived… everything is so big! 😳',
-  ask: 'Will you show me around?',
-  joy: "Yay! Let's go! 🎉",
-}
-
+const HOST = 'tram' // Trammy welcomes everyone, and stands in if no Explora is chosen
 const prefersCalm = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
 
 export default function IntroScreen({ onDone }) {
-  const [step, setStep] = useState('film')
-  const toPick = useCallback(() => setStep('pick'), [])
+  const [step, setStep] = useState('welcome')
+  const [exploraId, setExploraId] = useState(null)
+  const next = useCallback(() => setStep((s) => nextStep(s)), [])
+
+  useEffect(() => {
+    if (step === 'done') onDone()
+  }, [step, onDone])
+
+  const actorId = exploraId ?? HOST
 
   return (
     <div className="intro" role="dialog" aria-modal="true" aria-label="Welcome to Lisboa Explora">
@@ -27,26 +39,31 @@ export default function IntroScreen({ onDone }) {
         <div className="intro-glow" />
         <div className="intro-disc" />
       </div>
-      {step === 'film' ? <IntroFilm onDone={toPick} /> : <IntroPicker onDone={onDone} />}
+      {step === 'welcome' && <WelcomeFilm onDone={next} />}
+      {step === 'pick' && (
+        <IntroPicker
+          onChosen={(id) => {
+            setExploraId(id)
+            next()
+          }}
+        />
+      )}
+      {step === 'prologue' && <PrologueFilm actorId={actorId} onDone={next} />}
+      {step === 'tiles' && <IntroTiles actorId={actorId} onDone={next} />}
     </div>
   )
 }
 
-function IntroFilm({ onDone }) {
-  const canvasRef = useRef(null)
-  const answeredRef = useRef(false)
-  const [phase, setPhase] = useState('arrive')
-  // People who turned on "reduce motion" see the question right away.
-  const [calm] = useState(prefersCalm)
-
+// Runs a 3D film: calls draw(t, live) every frame and stops when done.
+// tick(t, dt) returns the new story time; finished(t) says when to stop.
+function useFilm(canvasRef, actorId, { draw, tick, finished, onDone, onPhase, phaseOf }) {
   useEffect(() => {
     const canvas = canvasRef.current
-    const scene = createIntroScene(canvas)
+    const scene = createIntroScene(canvas, { actorId })
     scene.resize()
     const resizer = new ResizeObserver(() => scene.resize())
     resizer.observe(canvas)
-
-    let t = calm ? 8.8 : 0 // story clock
+    let t = 0 // story clock
     let live = 0 // always-running clock (blinking, swaying)
     let last = performance.now()
     let shown = null
@@ -55,18 +72,14 @@ function IntroFilm({ onDone }) {
       const dt = Math.min(0.05, (now - last) / 1000)
       last = now
       live += dt
-      t = advance(t, calm ? 0 : dt, answeredRef.current)
-      if (calm && answeredRef.current) t = INTRO_END
-      const p = phaseAt(t, answeredRef.current)
+      t = tick(t, dt)
+      const p = phaseOf(t)
       if (p !== shown) {
         shown = p
-        setPhase(p) // React only updates when the part changes
+        onPhase(p) // React only updates when the part changes
       }
-      scene.draw(t, calm ? 0 : live)
-      if (t >= INTRO_END) {
-        onDone()
-        return
-      }
+      draw(scene, t, live)
+      if (finished(t)) return onDone()
       frameId = requestAnimationFrame(frame)
     }
     frameId = requestAnimationFrame(frame)
@@ -75,23 +88,73 @@ function IntroFilm({ onDone }) {
       resizer.disconnect()
       scene.dispose()
     }
-  }, [calm, onDone])
+    // the film is set up once per step
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [actorId])
+}
 
-  const bubble = BUBBLES[phase]
-
+function WelcomeFilm({ onDone }) {
+  const canvasRef = useRef(null)
+  const [phase, setPhase] = useState('arrive')
+  const [calm] = useState(prefersCalm)
+  useFilm(canvasRef, HOST, {
+    // reduce motion: show the cheering pose without movement for a moment
+    tick: (t, dt) => (calm ? Math.max(t, 2) + dt * 0.5 : t + dt),
+    draw: (scene, t, live) => scene.drawWelcome(calm ? 2 : t, calm ? 0 : live),
+    finished: (t) => t >= WELCOME_END,
+    phaseOf: welcomePhase,
+    onPhase: setPhase,
+    onDone,
+  })
   return (
     <>
       <canvas ref={canvasRef} className="intro-canvas" aria-hidden="true" />
       <button className="intro-skip" type="button" onClick={onDone}>
         Skip
       </button>
-      {(phase === 'welcome' || phase === 'arrive') && (
-        <h1 className={phase === 'welcome' ? 'intro-title show' : 'intro-title'}>
-          Lisboa
-          <br />
-          Explora
-        </h1>
+      <h1 className={phase === 'cheer' ? 'intro-title show' : 'intro-title'}>
+        Lisboa
+        <br />
+        Explora
+      </h1>
+      {phase === 'cheer' && (
+        <p className="intro-bubble intro-bubble-welcome" aria-live="polite">
+          Ding ding! 🔔
+        </p>
       )}
+    </>
+  )
+}
+
+function PrologueFilm({ actorId, onDone }) {
+  const canvasRef = useRef(null)
+  const answeredRef = useRef(false)
+  const [phase, setPhase] = useState('enter')
+  const [calm] = useState(prefersCalm)
+  const explora = characterById(actorId)
+  useFilm(canvasRef, actorId, {
+    tick: (t, dt) => {
+      if (calm) return answeredRef.current ? PROLOGUE_END : 4.0
+      return advancePrologue(t, dt, answeredRef.current)
+    },
+    draw: (scene, t, live) => scene.drawPrologue(t, calm ? 0 : live),
+    finished: (t) => t >= PROLOGUE_END,
+    phaseOf: (t) => prologuePhase(t, answeredRef.current),
+    onPhase: setPhase,
+    onDone,
+  })
+  const bubble = {
+    hello: explora.hello,
+    ask: 'Will you show me around?',
+    joy: "Yay! Let's go! 🎉",
+  }[phase]
+  return (
+    <>
+      <canvas ref={canvasRef} className="intro-canvas" aria-hidden="true" />
+      <button className="intro-skip" type="button" onClick={onDone}>
+        Skip
+      </button>
+      <span className="intro-who">{explora.name}</span>
       {bubble && (
         <p key={phase} className={`intro-bubble intro-bubble-${phase}`} aria-live="polite">
           {bubble}

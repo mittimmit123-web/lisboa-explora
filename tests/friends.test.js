@@ -1,0 +1,58 @@
+import { describe, expect, it } from 'vitest'
+import { addFriendMessage, friendEmailProblem, playerLabel } from '../src/lib/friends.js'
+
+describe('playerLabel', () => {
+  it('shows other players by name', () => {
+    expect(playerLabel({ name: 'Marta' })).toBe('Marta')
+  })
+
+  it('adds "(you)" to my own name', () => {
+    expect(playerLabel({ name: 'Marleen', isMe: true })).toBe('Marleen (you)')
+  })
+
+  it('does not say "You (you)" in demo mode', () => {
+    expect(playerLabel({ name: 'You', isMe: true })).toBe('You')
+  })
+
+  it('falls back to "You" when I have no name yet', () => {
+    expect(playerLabel({ name: '', isMe: true })).toBe('You')
+  })
+})
+
+describe('friendEmailProblem (before asking the server)', () => {
+  const base = { email: 'ana@example.com', myEmail: 'me@example.com' }
+
+  it('lets a normal email through', () => {
+    expect(friendEmailProblem(base)).toBeNull()
+  })
+
+  it('rejects my own email', () => {
+    expect(friendEmailProblem({ ...base, email: ' ME@example.com ' }).text).toMatch(/your own email/)
+  })
+
+  it('asks for an email when the field is empty', () => {
+    expect(friendEmailProblem({ ...base, email: '   ' }).text).toMatch(/Type your friend/)
+  })
+
+  it('is honest in demo mode instead of pretending to add someone', () => {
+    expect(friendEmailProblem({ ...base, demo: true }).text).toMatch(/demo mode/)
+  })
+})
+
+describe('addFriendMessage (after the server answered)', () => {
+  it('confirms when the friend was added', () => {
+    const m = addFriendMessage({ email: 'ana@example.com', result: { ok: true } })
+    expect(m.ok).toBe(true)
+    expect(m.text).toContain('ana@example.com')
+  })
+
+  it('explains clearly when no player has that email', () => {
+    const m = addFriendMessage({ email: 'ana@example.com', result: { ok: false } })
+    expect(m.ok).toBe(false)
+    expect(m.text).toMatch(/No player has that email/)
+  })
+
+  it('tells the player to check the internet when the request failed', () => {
+    expect(addFriendMessage({ email: 'ana@example.com', error: new Error('offline') }).text).toMatch(/Check your internet/)
+  })
+})

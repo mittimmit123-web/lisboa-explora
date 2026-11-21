@@ -48,6 +48,13 @@ describe('unlockedChapters', () => {
     expect(result.map((r) => r.verified)).toEqual([false, true, false])
   })
 
+  it('keeps the spot and the check-off, so the postcard can show the photo', () => {
+    const rows = [{ spot_id: 'c', created_at: '2026-11-10T10:00:00Z', photo_thumb: 'data:image/jpeg;base64,xyz' }]
+    const [entry] = unlockedChapters(rows, spots, hoods, chapters)
+    expect(entry.spot.id).toBe('c')
+    expect(entry.checkOff.photo_thumb).toBe('data:image/jpeg;base64,xyz')
+  })
+
   it('does not unlock a second chapter for the same neighbourhood', () => {
     const rows = [
       { spot_id: 'a', created_at: '2026-11-02T10:00:00Z' },

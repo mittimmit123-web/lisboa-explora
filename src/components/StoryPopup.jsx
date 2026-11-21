@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react'
 import { getCharacter } from '../lib/api.js'
 import { characterById } from '../lib/characters.js'
 import StoryChapter from './StoryChapter.jsx'
+import { PostcardFront } from './Postcard.jsx'
 
 export default function StoryPopup({ entry, onClose, onRead }) {
   const explora = characterById(getCharacter())
@@ -27,8 +28,10 @@ export default function StoryPopup({ entry, onClose, onRead }) {
         aria-labelledby="story-popup-title"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className={entry.verified ? 'tile found glow big' : 'tile found big'} aria-hidden="true" />
-        <p className="story-meta">📜 New chapter unlocked · {entry.number} / 24</p>
+        <div className="postcard-arrive">
+          <PostcardFront entry={entry} />
+        </div>
+        <p className="story-meta">📮 New postcard · {entry.number} / 24</p>
         <h2 id="story-popup-title">{entry.chapter.title}</h2>
         <StoryChapter entry={entry} buddy={buddy} pronouns={pronouns} showTitle={false} />
         <div className="row">

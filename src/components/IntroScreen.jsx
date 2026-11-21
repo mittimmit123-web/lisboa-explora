@@ -2,7 +2,7 @@
 //   welcome   Trammy, the app's host, rolls in and cheers
 //   pick      the player chooses their Explora
 //   prologue  the chosen Explora says hello and asks to be shown around
-//   tiles     it explains the tile map (one tile per neighbourhood)
+//   album     it explains the postcard album (your photos become postcards)
 // Loaded only when needed (React.lazy in App.jsx), because of the 3D library.
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { characterById } from '../lib/characters.js'
@@ -16,7 +16,7 @@ import {
 } from '../lib/intro.js'
 import { createIntroScene } from '../lib/introScene.js'
 import IntroPicker from './IntroPicker.jsx'
-import IntroTiles from './IntroTiles.jsx'
+import IntroAlbum from './IntroAlbum.jsx'
 
 const HOST = 'tram' // Trammy welcomes everyone, and stands in if no Explora is chosen
 const prefersCalm = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
@@ -49,7 +49,7 @@ export default function IntroScreen({ onDone }) {
         />
       )}
       {step === 'prologue' && <PrologueFilm actorId={actorId} onDone={next} />}
-      {step === 'tiles' && <IntroTiles actorId={actorId} onDone={next} />}
+      {step === 'album' && <IntroAlbum actorId={actorId} onDone={next} />}
     </div>
   )
 }

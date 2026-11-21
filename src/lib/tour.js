@@ -9,7 +9,7 @@
 export const TOUR_STEPS = [
   { target: 'map', tab: 'map', text: 'This is Lisbon! Every pin is a real place we can collect together.' },
   { target: 'map', tab: 'map', text: 'Walk to a pin, tap it and take a photo. If you are really there, you get a golden ⭐!' },
-  { target: 'nav-collection', tab: 'collection', text: 'This is our journal: every spot, our story chapters, and our tile map of Lisbon.' },
+  { target: 'nav-collection', tab: 'collection', text: 'This is our journal: every spot, our story, and our postcard album made from your photos.' },
   { target: 'nav-friends', tab: 'friends', text: 'Race your friends every month. The weather shows how you are doing!' },
   { target: null, tab: 'map', text: 'Every new neighbourhood unlocks a chapter of our story. Ready? Let’s find our first spot!' },
 ]

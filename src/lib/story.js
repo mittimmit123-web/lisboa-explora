@@ -6,7 +6,7 @@
 // the second NEW one, and so on. Spots outside the city (not in the
 // neighbourhood list) don't unlock a chapter.
 //
-// Returns [{ number, chapter, place, date, verified }] (oldest first).
+// Returns [{ number, chapter, place, date, verified, spot, checkOff }] (oldest first).
 // verified = the spot that opened this neighbourhood was verified on site.
 export function unlockedChapters(checkOffs, spots, neighbourhoods, chapters) {
   const spotById = new Map(spots.map((s) => [s.id, s]))
@@ -17,7 +17,8 @@ export function unlockedChapters(checkOffs, spots, neighbourhoods, chapters) {
     const place = spotById.get(c.spot_id)?.neighbourhood
     if (!place || !neighbourhoods.includes(place) || seen.has(place)) continue
     seen.add(place)
-    firstVisits.push({ place, date: new Date(c.created_at), verified: c.verified === true })
+    // spot + checkOff: for the postcard (spot name, the player's photo)
+    firstVisits.push({ place, date: new Date(c.created_at), verified: c.verified === true, spot: spotById.get(c.spot_id), checkOff: c })
   }
   return firstVisits.slice(0, chapters.length).map((visit, i) => ({
     number: i + 1,

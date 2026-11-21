@@ -8,6 +8,7 @@
 import { supabase, isDemoMode } from './supabase.js'
 import { distanceMeters, isWithinRadius } from './geo.js'
 import { cleanCharacterId } from './characters.js'
+import { makePostcardPhoto } from './postcards.js'
 
 const DEMO_KEY = 'lisboa-explora-demo-checkoffs'
 
@@ -19,11 +20,14 @@ function readDemo() {
   }
 }
 
+// Returns false if the browser could not save (blocked or full).
 function writeDemo(rows) {
   try {
     localStorage.setItem(DEMO_KEY, JSON.stringify(rows))
+    return true
   } catch {
     // storage not available: demo data is lost on reload, that's fine
+    return false
   }
 }
 
@@ -80,10 +84,11 @@ export async function checkOff({ spot, position, photo }) {
     const verified = position ? isWithinRadius(position, spot) : false
     const rows = readDemo()
     if (rows.some((r) => r.spot_id === spot.id)) return { ok: false, reason: 'already_collected' }
-    writeDemo([
-      { spot_id: spot.id, created_at: new Date().toISOString(), photo_path: null, verified },
-      ...rows,
-    ])
+    // Keep a small copy of the photo for the postcard (#33). If the browser's
+    // storage is full, save the spot without the photo rather than losing it.
+    const photo_thumb = photo ? await makePostcardPhoto(photo) : null
+    const row = { spot_id: spot.id, created_at: new Date().toISOString(), photo_path: null, verified }
+    if (!writeDemo([{ ...row, photo_thumb }, ...rows])) writeDemo([row, ...rows])
     return { ok: true, verified, distance }
   }
 
@@ -103,6 +108,16 @@ export async function checkOff({ spot, position, photo }) {
   })
   if (error) return { ok: false, reason: 'server_error' }
   return data // { ok, verified, distance } or { ok: false, reason }
+}
+
+// A link to show the player's own photo of a check-off on a postcard (#33),
+// or null if there is none. Real mode: photos are private, so we ask the
+// server for a temporary link (valid for one hour).
+export async function getPhotoUrl(checkOffRow) {
+  if (isDemoMode) return checkOffRow?.photo_thumb ?? null
+  if (!checkOffRow?.photo_path) return null
+  const { data, error } = await supabase.storage.from('photos').createSignedUrl(checkOffRow.photo_path, 3600)
+  return error ? null : data.signedUrl
 }
 
 // ---------- Friends ----------

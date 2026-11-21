@@ -1,19 +1,22 @@
-// "Story" section in the Collection screen (issue #32): the buddy's tile map
-// of Lisbon (one tile per neighbourhood you showed it) and the chapters so far.
+// "Story" section in the Collection screen (issues #32, #33): the Explora's
+// postcard album. Every new neighbourhood adds a postcard made from the
+// player's photo; its back is that neighbourhood's story chapter.
+import { useState } from 'react'
 import { CHAPTERS } from '../data/story.js'
 import { NEIGHBOURHOODS } from '../data/neighbourhoods.js'
 import { getCharacter } from '../lib/api.js'
 import { characterById } from '../lib/characters.js'
+import { ALBUM_SIZE, albumSlots } from '../lib/postcards.js'
 import { fillStory, unlockedChapters } from '../lib/story.js'
-import StoryChapter from './StoryChapter.jsx'
+import Postcard, { PostcardFront } from './Postcard.jsx'
 
 export default function StorySection({ spots, checkOffs }) {
   const explora = characterById(getCharacter())
   const buddy = explora?.name
-  const pronouns = explora?.pronouns
   const unlocked = unlockedChapters(checkOffs, spots, NEIGHBOURHOODS, CHAPTERS)
-  const next = CHAPTERS[unlocked.length]
-  const title = fillStory('Showing {buddy} around', { buddy })
+  const slots = albumSlots(unlocked)
+  const [open, setOpen] = useState(null) // the postcard shown big, or null
+  const title = fillStory("{buddy}'s postcard album", { buddy })
 
   return (
     <section className="story" aria-labelledby="story-title">
@@ -24,51 +27,54 @@ export default function StorySection({ spots, checkOffs }) {
         <div className="row between">
           <strong>{title}</strong>
           <span className="muted">
-            {unlocked.length} / {CHAPTERS.length}
+            {unlocked.length} / {ALBUM_SIZE}
           </span>
         </div>
 
-        {/* The tile map: one azulejo per neighbourhood you showed your buddy */}
-        <ol className="tile-map" aria-label={`Tile map: ${unlocked.length} of ${CHAPTERS.length} tiles`}>
-          {CHAPTERS.map((c, i) => {
-            const entry = unlocked[i]
-            return (
-              <li
-                key={c.title}
-                className={entry ? (entry.verified ? 'tile found glow' : 'tile found') : 'tile'}
-                title={entry ? `Chapter ${i + 1}: ${entry.place}` : `Chapter ${i + 1}: still hidden`}
-              />
-            )
-          })}
+        <ol className="album" aria-label={`Postcard album: ${unlocked.length} of ${ALBUM_SIZE} postcards`}>
+          {slots.map((entry, i) =>
+            entry ? (
+              <li key={i}>
+                <button
+                  type="button"
+                  className="album-card"
+                  onClick={() => setOpen(entry)}
+                  aria-label={`Postcard ${i + 1}: ${entry.place}, ${entry.chapter.title}`}
+                >
+                  <PostcardFront entry={entry} mini />
+                </button>
+              </li>
+            ) : (
+              <li key={i} className="album-empty" aria-hidden="true">
+                {i + 1}
+              </li>
+            ),
+          )}
         </ol>
 
         {unlocked.length === 0 ? (
           <p className="muted">
-            {fillStory('{buddy} is new in Lisbon. Collect a spot in any neighbourhood to start the story.', { buddy })}
+            {fillStory('{buddy} is new in Lisbon. Collect a spot in any neighbourhood and your photo becomes the first postcard.', { buddy })}
           </p>
-        ) : (
-          <div className="chapters">
-            {[...unlocked].reverse().map((entry) => (
-              <details key={entry.number} open={entry.number === unlocked.length}>
-                <summary>
-                  <span className="chapter-number">{entry.number}</span>
-                  <span className="chapter-title">{entry.chapter.title}</span>
-                  <span className="muted">{entry.place}</span>
-                </summary>
-                <StoryChapter entry={entry} buddy={buddy} pronouns={pronouns} />
-              </details>
-            ))}
-          </div>
-        )}
-
-        {next ? (
+        ) : unlocked.length < ALBUM_SIZE ? (
           <p className="story-next">
-            🔒 Chapter {unlocked.length + 1}: show {buddy ?? 'your Explora'} a neighbourhood you haven&apos;t been to yet.
+            📮 Postcard {unlocked.length + 1}: show {buddy ?? 'your Explora'} a neighbourhood you haven&apos;t been to yet. Tap a postcard to read its story.
           </p>
         ) : (
-          <p className="story-next done">🗺️ The map is complete. Thank you for showing {buddy ?? 'your Explora'} Lisbon.</p>
+          <p className="story-next done">📮 The album is full. Thank you for showing {buddy ?? 'your Explora'} Lisbon.</p>
         )}
       </div>
+
+      {open && (
+        <div className="story-popup-backdrop" onClick={() => setOpen(null)}>
+          <div className="story-popup" role="dialog" aria-modal="true" aria-label={`Postcard from ${open.place}`} onClick={(e) => e.stopPropagation()}>
+            <Postcard entry={open} explora={explora} />
+            <button className="primary" type="button" onClick={() => setOpen(null)}>
+              Back to the album
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   )
 }

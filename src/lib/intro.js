@@ -6,9 +6,10 @@
 //   welcome   Trammy, the app's host, rolls in and cheers ("Lisboa Explora")
 //   pick      the player chooses their Explora
 //   prologue  the chosen Explora says hello and asks "Will you show me around?"
-//   tiles     it explains the tile map: one tile per neighbourhood, 24 in total
+//   album     it explains the postcard album: your photo becomes a postcard
+//             in every new neighbourhood, 24 in total
 // Then the guided tour starts (src/lib/tour.js).
-export const STEPS = ['welcome', 'pick', 'prologue', 'tiles']
+export const STEPS = ['welcome', 'pick', 'prologue', 'album']
 
 export function nextStep(step) {
   const i = STEPS.indexOf(step)
@@ -28,7 +29,7 @@ export function welcomePhase(t) {
 //   enter 0 - 0.8    the Explora pops in
 //   hello 0.8 - 3.2  its first words (shy)
 //   ask   3.2 - …    "Will you show me around?" + Yes button; waits for the answer
-//   joy   after Yes  jumps for joy, then the tile map step starts at PROLOGUE_END
+//   joy   after Yes  jumps for joy, then the album step starts at PROLOGUE_END
 export const PROLOGUE_HOLD = 4.4
 export const PROLOGUE_JOY = 4.8
 export const PROLOGUE_END = 6.6

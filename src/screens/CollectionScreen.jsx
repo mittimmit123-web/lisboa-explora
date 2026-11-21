@@ -1,11 +1,31 @@
-// Person 4: Collection & sets
+// Person 4: Collection — the player's own journal. No ranking here on purpose:
+// competition lives on the Friends screen.
 import ProgressBar from '../components/ProgressBar.jsx'
-import { SETS } from '../data/sets.js'
-import { categoryById } from '../data/categories.js'
-import { setProgress, neighbourhoodProgress } from '../lib/progress.js'
+import { CATEGORIES, categoryById } from '../data/categories.js'
+import { NEIGHBOURHOODS } from '../data/neighbourhoods.js'
+import { categoryCounts, monthSummary, neighbourhoodCoverage, recentlyCollected } from '../lib/progress.js'
 
-export default function CollectionScreen({ spots, collectedIds, newThisMonth }) {
-  const hoods = neighbourhoodProgress(spots, collectedIds).filter((h) => h.total > 1)
+// "17 Nov"
+function formatDate(date) {
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+}
+
+// The sentence in the "This month" card.
+function MonthText({ count, verified }) {
+  if (count === 0) return <>No new places yet this month. Your first spot is waiting on the map.</>
+  const places = count === 1 ? 'place' : 'places'
+  if (verified === 0) return <>You discovered <strong>{count}</strong> new {places} this month.</>
+  if (verified === count) {
+    return <>You discovered <strong>{count}</strong> new {places} this month, {count === 1 ? 'on site' : 'all of them on site'} ⭐</>
+  }
+  return <>You discovered <strong>{count}</strong> new {places} this month, <strong>{verified}</strong> of them on site ⭐</>
+}
+
+export default function CollectionScreen({ spots, checkOffs, collectedIds }) {
+  const month = monthSummary(checkOffs)
+  const recent = recentlyCollected(checkOffs, spots)
+  const categories = categoryCounts(spots, collectedIds, CATEGORIES)
+  const hoods = neighbourhoodCoverage(spots, collectedIds, NEIGHBOURHOODS)
 
   return (
     <div className="screen">
@@ -20,40 +40,71 @@ export default function CollectionScreen({ spots, collectedIds, newThisMonth }) 
             <span>spots total</span>
           </div>
           <div className="stat">
-            <strong>{newThisMonth}</strong>
+            <strong>{month.count}</strong>
             <span>new this month</span>
           </div>
           <div className="stat">
-            <strong>{spots.length - collectedIds.size}</strong>
-            <span>left to find</span>
+            <strong>
+              {hoods.visited}
+              <small>/{hoods.total}</small>
+            </strong>
+            <span>neighbourhoods</span>
           </div>
         </div>
 
-        <h2 className="section-label">Sets</h2>
-        {SETS.map((set) => {
-          const p = setProgress(set, spots, collectedIds)
-          const color = categoryById(set.match?.category)?.color
-          return (
-            <div key={set.id} className="card">
-              <div className="row between">
-                <strong>{set.name}</strong>
-                <span className="muted">
-                  {p.done} / {p.total} · {p.percent}%
+        <div className="card recap">
+          <span className="section-label">This month</span>
+          <p>
+            <MonthText {...month} />
+          </p>
+        </div>
+
+        <h2 className="section-label">Recently collected</h2>
+        {recent.length === 0 ? (
+          <p className="muted">Nothing collected yet. Open the map and find your first spot!</p>
+        ) : (
+          <ul className="recent">
+            {recent.map(({ spot, date, verified }) => (
+              <li key={spot.id} className={verified ? 'verified' : undefined}>
+                <span className="dot" style={{ background: categoryById(spot.category)?.color }} />
+                <span className="name">
+                  {spot.name}
+                  {verified && <span className="verified-note">⭐ You were really there</span>}
                 </span>
-              </div>
-              <ProgressBar percent={p.percent} color={color} label={set.name} />
-            </div>
-          )
-        })}
+                <span className="muted">{formatDate(date)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <h2 className="section-label">By category</h2>
+        <ul className="category-counts">
+          {categories.map((c) => (
+            <li key={c.id} className={c.count === 0 ? 'empty' : undefined}>
+              <span className="dot" style={{ background: c.color }} />
+              <span className="name">{c.label}</span>
+              <strong>{c.count}</strong>
+            </li>
+          ))}
+        </ul>
 
         <h2 className="section-label">Neighbourhoods</h2>
-        <div className="grid-3">
-          {hoods.map((h) => (
-            <div key={h.name} className="stat">
-              <strong>{h.percent}%</strong>
-              <span>{h.name}</span>
-            </div>
-          ))}
+        <div className="card">
+          <p className="coverage">
+            You&apos;ve been to <strong>{hoods.visited}</strong> of {hoods.total} neighbourhoods
+          </p>
+          <ProgressBar
+            percent={Math.round((hoods.visited / hoods.total) * 100)}
+            label={`${hoods.visited} of ${hoods.total} neighbourhoods visited`}
+          />
+          <ul className="hood-chips">
+            {hoods.list.map((h) => (
+              <li key={h.name} className={h.count > 0 ? 'visited' : undefined}>
+                {h.name}
+                {h.count > 0 && <span className="hood-count">{h.count}</span>}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </div>

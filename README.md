@@ -75,10 +75,10 @@ src/
   screens/              one file per screen (Map, CheckOff, Collection, Friends, Login)
   components/           small reusable pieces (NavBar, CategoryFilter, ProgressBar)
   data/spots.js         THE list of spots (name, category, neighbourhood, coordinates)
-  data/sets.js          the sets ("All miradouros", "Bars in Bairro Alto", ...)
+  data/neighbourhoods.js the 24 parishes of Lisbon ("you've been to 7 of 24")
   data/categories.js    categories and their colours
   lib/geo.js            distance display and the 50 m "verified" threshold
-  lib/progress.js       percentages, monthly count, ranking (pure functions, tested)
+  lib/progress.js       monthly count, category counts, neighbourhoods, ranking (pure functions, tested)
   lib/api.js            the ONLY file that talks to Supabase (with demo mode)
   lib/supabase.js       Supabase connection from .env
   lib/useGeolocation.js live GPS position

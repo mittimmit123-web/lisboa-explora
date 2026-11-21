@@ -179,7 +179,9 @@ export function buildCharacter(id) {
 }
 
 // Light, floor and camera shared by the picker and the small buddy picture.
-export function createStage(canvas, { floorSize = 7 } = {}) {
+// floor: 'ground' = a beige round floor, 'shadow' = invisible floor that
+// only shows shadows (for coloured backgrounds like the intro).
+export function createStage(canvas, { floorSize = 7, floor = 'ground' } = {}) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true })
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
   renderer.shadowMap.enabled = true
@@ -195,7 +197,10 @@ export function createStage(canvas, { floorSize = 7 } = {}) {
   sun.shadow.normalBias = 0.03
   Object.assign(sun.shadow.camera, { left: -6, right: 6, top: 6, bottom: -6 })
   scene.add(sun)
-  const ground = new THREE.Mesh(new THREE.CircleGeometry(floorSize, 64), new THREE.MeshStandardMaterial({ color: '#ece4d4', roughness: 0.9 }))
+  const ground = new THREE.Mesh(
+    new THREE.CircleGeometry(floorSize, 64),
+    floor === 'shadow' ? new THREE.ShadowMaterial({ opacity: 0.22 }) : new THREE.MeshStandardMaterial({ color: '#ece4d4', roughness: 0.9 }),
+  )
   ground.rotation.x = -Math.PI / 2
   ground.receiveShadow = true
   scene.add(ground)

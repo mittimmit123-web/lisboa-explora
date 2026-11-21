@@ -2,6 +2,7 @@
 // competition lives on the Friends screen.
 import BuddyCard from '../components/BuddyCard.jsx'
 import ProgressBar from '../components/ProgressBar.jsx'
+import StorySection from '../components/StorySection.jsx'
 import { CATEGORIES, categoryById } from '../data/categories.js'
 import { NEIGHBOURHOODS } from '../data/neighbourhoods.js'
 import { categoryCounts, monthSummary, neighbourhoodCoverage, recentlyCollected } from '../lib/progress.js'
@@ -79,6 +80,8 @@ export default function CollectionScreen({ spots, checkOffs, collectedIds }) {
             ))}
           </ul>
         )}
+
+        <StorySection spots={spots} checkOffs={checkOffs} />
 
         <h2 className="section-label">By category</h2>
         <ul className="category-counts">

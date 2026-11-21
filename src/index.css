@@ -124,30 +124,19 @@ input[type='email'] { flex: 1; min-width: 0; min-height: 44px; border-radius: 10
 .nav-item { min-height: 64px; border: none; background: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--muted); font-size: 11px; font-weight: 600; }
 .nav-item.active { color: var(--accent); font-weight: 700; }
 
-/* Map zoom buttons: at least 44 px so they are easy to tap on a phone */
-.leaflet-touch .leaflet-bar a,
-.leaflet-bar a { width: 44px; height: 44px; line-height: 44px; font-size: 22px; }
-
-/* Friends: add-friend form and feedback */
-.add-friend .primary { flex-shrink: 0; }
-.note { margin: 0; font-size: 14px; line-height: 1.4; padding: 8px 10px; border-radius: 10px; }
-.note.ok { background: var(--ok-bg); color: var(--ok-ink); }
-.note.error { background: #fef2f2; color: var(--error); }
-.link-button { border: none; background: none; padding: 0; min-height: 44px; font: inherit; font-weight: 700; color: var(--accent); text-decoration: underline; cursor: pointer; }
-
-/* Friends: animated weather scene */
-.weather { margin: 0; border-radius: 18px; overflow: hidden; background: var(--card); box-shadow: 0 4px 14px rgba(20, 33, 61, 0.12); }
-.weather-canvas { display: block; width: 100%; aspect-ratio: 360 / 280; background: #9db4cc; }
-.weather-caption { padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 2px; font-size: 15px; font-weight: 600; line-height: 1.35; }
-.weather-caption small { font-size: 11px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
-
 /* Buttons: outlined second choice next to a primary one */
 .secondary { min-height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: inherit; font-weight: 700; padding: 0 14px; cursor: pointer; flex-shrink: 0; }
 
 /* Buddy character (#20) */
 .buddy { flex-direction: row; align-items: center; gap: 12px; }
 .buddy-avatar { width: 84px; height: 84px; flex-shrink: 0; display: block; border-radius: 14px; background: #f3eee4; }
-.buddy-placeholder { display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.buddy-placeholder { display: flex; align-items: center; justify-content: center; }
+/* while the 3D picture loads: a soft circle gently fading in and out */
+.buddy-placeholder::after { content: ''; width: 46px; height: 46px; border-radius: 50%; background: #e4dccd; animation: buddy-wait 1.2s ease-in-out infinite alternate; }
+/* no Explora chosen yet: an empty dashed circle */
+.buddy-placeholder.empty::after { background: none; border: 2px dashed #cfc6b5; animation: none; }
+@keyframes buddy-wait { from { opacity: 0.5; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .buddy-placeholder::after { animation: none; } }
 .buddy-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .buddy-text .section-label { margin: 0; }
 .picker { position: fixed; inset: 0; z-index: 2000; background: var(--ground); display: flex; flex-direction: column; max-width: 520px; margin: 0 auto; overflow-y: auto; padding-bottom: env(safe-area-inset-bottom, 0px); }
@@ -163,4 +152,151 @@ input[type='email'] { flex: 1; min-width: 0; min-height: 44px; border-radius: 10
 .picker-info p { margin: 0; line-height: 1.4; }
 .say { color: var(--ink); }
 .primary.done { background: #15803d; }
+
+/* Story (#32, #33): the Explora's postcard album and its chapters */
+.story { display: flex; flex-direction: column; gap: 8px; }
+.story-card { gap: 12px; }
+.chapters { display: flex; flex-direction: column; gap: 6px; }
+.chapters details { border-top: 1px solid #efeae0; padding-top: 6px; }
+.chapters summary { display: flex; align-items: center; gap: 8px; min-height: 44px; cursor: pointer; list-style: none; }
+.chapters summary::-webkit-details-marker { display: none; }
+.chapter-number { width: 26px; height: 26px; flex-shrink: 0; border-radius: 50%; background: var(--accent); color: #fff; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.chapter-title { flex: 1; min-width: 0; font-weight: 700; }
+.story-chapter p { margin: 0 0 8px; line-height: 1.5; }
+.story-meta { font-size: 11px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+.story-ending { font-style: italic; color: var(--muted); }
+.story-ending.verified { color: #92400e; }
+.story-next { margin: 0; font-size: 14px; color: var(--muted); }
+.story-next.done { color: var(--ink); font-weight: 600; }
+.story-popup-backdrop { position: fixed; inset: 0; z-index: 3000; background: rgba(20, 33, 61, 0.55); display: flex; align-items: flex-end; justify-content: center; padding: 16px; }
+.story-popup { width: 100%; max-width: 480px; max-height: 85dvh; overflow-y: auto; background: var(--card); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 8px; text-align: left; }
+.story-popup h2 { margin: 0; }
+
+/* Intro on the first opening (#33): muted purple, a big sun, the 3D tram */
+.intro { position: fixed; inset: 0; z-index: 4000; background: #5b4d7a; overflow: hidden; color: #2b2340; }
+.intro-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.intro-sun { position: absolute; right: -870px; top: -854px; width: 1800px; height: 1800px; pointer-events: none; }
+.intro-rays { position: absolute; inset: 0; border-radius: 50%; animation: intro-rays 90s linear infinite; background: repeating-conic-gradient(rgba(255, 226, 150, 0.3) 0 7deg, transparent 7deg 22deg); -webkit-mask: radial-gradient(circle, #000 4%, rgba(0, 0, 0, 0.55) 22%, transparent 48%); mask: radial-gradient(circle, #000 4%, rgba(0, 0, 0, 0.55) 22%, transparent 48%); }
+.intro-glow { position: absolute; left: 760px; top: 760px; width: 280px; height: 280px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 240, 180, 0.85) 0 30%, rgba(255, 214, 110, 0.35) 55%, transparent 72%); }
+.intro-disc { position: absolute; left: 840px; top: 840px; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle at 40% 38%, #fff8d6, #ffd34d 68%, #ffbf2e); box-shadow: 0 0 40px 14px rgba(255, 214, 90, 0.55); }
+.intro-skip { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 10px); left: 12px; min-height: 44px; padding: 0 12px; border: none; background: none; color: rgba(255, 255, 255, 0.9); font: inherit; font-weight: 800; font-size: 16px; cursor: pointer; }
+.intro-title { position: absolute; top: 13%; left: 0; right: 0; margin: 0; text-align: center; font-size: 56px; font-weight: 900; line-height: 1; color: #fff; text-shadow: 0 4px 0 rgba(58, 40, 92, 0.55), 0 0 18px rgba(58, 40, 92, 0.45); opacity: 0; }
+.intro-title.show { animation: intro-pop 0.5s cubic-bezier(0.3, 1.5, 0.6, 1) both; }
+.intro-bubble { position: absolute; left: 50%; margin: 0; width: max-content; max-width: min(320px, calc(100% - 40px)); padding: 16px 20px; border-radius: 24px; background: #fff; font-size: 23px; font-weight: 800; line-height: 1.25; text-align: center; box-shadow: 0 6px 0 rgba(0, 0, 0, 0.12); transform: translateX(-50%); transform-origin: center bottom; animation: intro-bubble 0.4s cubic-bezier(0.3, 1.5, 0.6, 1) both; }
+.intro-bubble::after { content: ''; position: absolute; bottom: -14px; left: 50%; margin-left: -12px; border: 12px solid transparent; border-top-color: #fff; border-bottom: 0; }
+.intro-bubble-welcome { top: 36%; }
+.intro-bubble-hello { top: 21%; }
+.intro-bubble-ask { top: 32%; }
+.intro-bubble-joy { top: 33%; }
+.intro-yes { position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 60px); height: 68px; padding: 0 36px; border: none; border-radius: 22px; background: #ffc93c; color: #5a3d00; box-shadow: 0 5px 0 #d79e00; font: inherit; font-weight: 900; font-size: 22px; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; cursor: pointer; transform: translateX(-50%); animation: intro-yes 1.2s ease-in-out 0.4s infinite; }
+.intro-yes:active { transform: translateX(-50%) translateY(4px); box-shadow: 0 1px 0 #d79e00; }
+@keyframes intro-pop { from { opacity: 0; transform: scale(0.3); } to { opacity: 1; transform: none; } }
+@keyframes intro-bubble { from { opacity: 0; transform: translateX(-50%) scale(0); } to { opacity: 1; transform: translateX(-50%) scale(1); } }
+@keyframes intro-yes { 0%, 100% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.05); } }
+@media (prefers-reduced-motion: reduce) { .intro-title.show, .intro-bubble, .intro-yes, .intro-rays { animation: none; } .intro-title.show { opacity: 1; } }
+@keyframes intro-rays { to { transform: rotate(360deg); } }
+
+/* Intro step 2: choose your buddy */
+.intro-pick { position: absolute; inset: 0; display: flex; flex-direction: column; padding: calc(env(safe-area-inset-top, 0px) + 48px) 20px calc(env(safe-area-inset-bottom, 0px) + 18px); }
+.intro-pick-title { margin: 0; text-align: center; font-size: 34px; font-weight: 900; line-height: 1.1; color: #fff; text-shadow: 0 3px 0 rgba(58, 40, 92, 0.55), 0 0 16px rgba(58, 40, 92, 0.45); position: relative; z-index: 1; }
+.intro-pick-stage { flex: 1; min-height: 260px; width: calc(100% + 40px); margin: 0 -20px; display: block; cursor: pointer; touch-action: manipulation; }
+.intro-bubble-pick { top: 24%; font-size: 21px; }
+.intro-pick-hint { position: absolute; left: 0; right: 0; top: 24%; margin: 0; text-align: center; color: rgba(255, 255, 255, 0.9); font-weight: 800; font-size: 18px; }
+.intro-pick-bottom { display: flex; flex-direction: column; gap: 12px; position: relative; z-index: 1; }
+.intro-pick-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.intro-tab { min-height: 52px; border-radius: 16px; border: 2px solid rgba(255, 255, 255, 0.35); background: rgba(255, 255, 255, 0.12); color: #fff; font: inherit; font-weight: 800; font-size: 15px; cursor: pointer; }
+.intro-tab[aria-pressed='true'] { background: #fff; color: #2b2340; border-color: #fff; }
+.intro-choose { height: 64px; border: none; border-radius: 20px; background: #ffc93c; color: #5a3d00; box-shadow: 0 5px 0 #d79e00; font: inherit; font-weight: 900; font-size: 20px; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; }
+.intro-choose:disabled { opacity: 0.5; cursor: not-allowed; }
+.intro-choose:not(:disabled):active { transform: translateY(4px); box-shadow: 0 1px 0 #d79e00; }
+.intro-later { min-height: 44px; border: none; background: none; color: rgba(255, 255, 255, 0.85); font: inherit; font-weight: 800; font-size: 15px; text-decoration: underline; cursor: pointer; }
+
+/* Character buttons: full names; long names wrap onto two lines */
+.tab, .intro-tab { display: flex; align-items: center; justify-content: center; min-height: 60px; padding: 6px 6px; line-height: 1.15; font-size: 18px; text-align: center; }
+
+/* Guided tour (#33): spotlight + the Explora explaining the app */
+.tour { position: fixed; inset: 0; z-index: 3500; }
+.tour-dim { position: absolute; inset: 0; background: rgba(25, 18, 45, 0.72); }
+.tour-spotlight { position: absolute; border-radius: 18px; box-shadow: 0 0 0 9999px rgba(25, 18, 45, 0.72); outline: 3px solid #ffc93c; outline-offset: 2px; transition: left 0.35s ease, top 0.35s ease, width 0.35s ease, height 0.35s ease; animation: tour-glow 1.6s ease-in-out infinite; pointer-events: none; }
+@keyframes tour-glow { 0%, 100% { outline-color: #ffc93c; } 50% { outline-color: #fff3c4; } }
+.tour-skip { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 8px); right: 10px; min-height: 44px; padding: 0 12px; border: none; background: none; color: #fff; font: inherit; font-weight: 800; font-size: 15px; cursor: pointer; }
+.tour-card { position: absolute; left: 12px; right: 12px; bottom: calc(env(safe-area-inset-bottom, 0px) + 92px); max-width: 496px; margin: 0 auto; background: #fff; border-radius: 24px; padding: 14px; display: grid; grid-template-columns: 84px 1fr; gap: 12px; align-items: center; box-shadow: 0 8px 0 rgba(0, 0, 0, 0.15); animation: tour-in 0.35s cubic-bezier(0.3, 1.4, 0.6, 1) both; }
+@keyframes tour-in { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: none; } }
+.tour-talk { min-width: 0; }
+.tour-name { font-size: 12px; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; color: #6b5b95; }
+.tour-talk p { margin: 2px 0 0; font-size: 18px; font-weight: 700; line-height: 1.3; color: #2b2340; }
+.tour-footer { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.tour-dots { display: flex; gap: 6px; }
+.tour-dots span { width: 8px; height: 8px; border-radius: 4px; background: #ddd6ea; transition: width 0.2s; }
+.tour-dots span.on { width: 22px; background: #6b5b95; }
+.tour-next { min-height: 50px; padding: 0 26px; border: none; border-radius: 16px; background: #ffc93c; color: #5a3d00; box-shadow: 0 4px 0 #d79e00; font: inherit; font-weight: 900; font-size: 17px; letter-spacing: 0.03em; text-transform: uppercase; cursor: pointer; }
+.tour-next:active { transform: translateY(3px); box-shadow: 0 1px 0 #d79e00; }
+@media (prefers-reduced-motion: reduce) { .tour-spotlight, .tour-card { animation: none; transition: none; } }
+
+/* Intro prologue: who is talking */
+.intro-who { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 18px); left: 0; right: 0; text-align: center; color: #fff; font-weight: 900; font-size: 18px; letter-spacing: 0.06em; text-transform: uppercase; text-shadow: 0 2px 0 rgba(58, 40, 92, 0.5); }
+.intro-bubble-enter { display: none; }
+
+/* Intro step 4: the tile map is explained */
+.intro-tiles { position: absolute; inset: 0; display: flex; flex-direction: column; gap: 14px; padding: calc(env(safe-area-inset-top, 0px) + 60px) 20px calc(env(safe-area-inset-bottom, 0px) + 22px); color: #fff; overflow-y: auto; }
+.intro-tiles-who { display: flex; align-items: center; gap: 12px; }
+.intro-tiles-who .buddy-avatar { width: 96px; height: 96px; border-radius: 50%; flex-shrink: 0; }
+.intro-tiles-bubble { position: relative; margin: 0; background: #fff; color: #2b2340; border-radius: 20px; padding: 12px 14px; font-size: 18px; font-weight: 800; line-height: 1.3; box-shadow: 0 5px 0 rgba(0, 0, 0, 0.12); animation: intro-pop 0.4s cubic-bezier(0.3, 1.5, 0.6, 1) both; }
+.intro-tiles-bubble.second { text-align: center; animation-delay: 2s; }
+.intro-tiles-map { background: rgba(255, 255, 255, 0.12); border: 2px solid rgba(255, 255, 255, 0.25); border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.intro-tiles-title { font-weight: 900; font-size: 18px; }
+.intro-tiles-count { font-weight: 800; font-size: 16px; opacity: 0.85; text-align: right; }
+.intro-tiles-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.intro-tiles-grid li { aspect-ratio: 3 / 2; border-radius: 5px; border: 2px dashed rgba(255, 255, 255, 0.55); background: rgba(255, 255, 255, 0.08); animation: intro-pop 0.35s cubic-bezier(0.3, 1.5, 0.6, 1) both; }
+.intro-tiles-grid li.first { border-style: solid; border-color: #ffc93c; box-shadow: 0 0 12px rgba(255, 201, 60, 0.7); }
+.intro-tiles .intro-choose { margin-top: auto; }
+@media (prefers-reduced-motion: reduce) { .intro-tiles-bubble, .intro-tiles-grid li { animation: none; } }
+
+/* Postcards from the player's photos (#33) */
+.postcard-front { position: relative; aspect-ratio: 3 / 2; border-radius: 10px; overflow: hidden; background: #fff; border: 6px solid #fff; box-shadow: 0 4px 12px rgba(20, 33, 61, 0.18); }
+.postcard-front img, .postcard-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
+.postcard-art { background: radial-gradient(circle at 75% 25%, #ffe9a8 0 12%, transparent 13%), linear-gradient(180deg, color-mix(in srgb, var(--pc) 35%, #8ec5ff) 0 58%, color-mix(in srgb, var(--pc) 70%, #000) 58% 100%); }
+.postcard-place { position: absolute; left: 8px; bottom: 6px; color: #fff; font-family: Georgia, 'Times New Roman', serif; font-style: italic; font-weight: 700; font-size: 26px; line-height: 1; text-shadow: 0 2px 6px rgba(0, 0, 0, 0.55); }
+.postcard-stamp { position: absolute; right: 6px; top: 6px; width: 34px; height: 40px; display: flex; align-items: center; justify-content: center; background: #fff7e6; color: #1e4d8c; font-weight: 900; font-size: 15px; border: 2px dashed #c9a75a; border-radius: 3px; transform: rotate(6deg); }
+.postcard-stamp.gold { background: #ffc93c; color: #7a4f00; border-color: #fff; }
+.postcard-front.mini { border-width: 3px; border-radius: 6px; box-shadow: 0 2px 5px rgba(20, 33, 61, 0.2); }
+.postcard-front.mini .postcard-place { font-size: 10px; left: 4px; bottom: 3px; }
+.postcard-front.mini .postcard-stamp { width: 14px; height: 16px; font-size: 8px; right: 3px; top: 3px; border-width: 1px; }
+.postcard-wrap { display: flex; flex-direction: column; gap: 10px; }
+.postcard { position: relative; aspect-ratio: 3 / 2; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.3, 1.2, 0.5, 1); }
+.postcard.flipped { transform: rotateY(180deg); }
+.postcard-side { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.postcard-side.back { transform: rotateY(180deg); }
+.postcard-side .postcard-front { height: 100%; }
+.postcard-back { height: 100%; background: #fffaf0; border-radius: 10px; box-shadow: 0 4px 12px rgba(20, 33, 61, 0.18); padding: 10px 12px; display: grid; grid-template-columns: 1.6fr 1fr; gap: 10px; overflow: hidden; }
+.postcard-write { min-width: 0; overflow-y: auto; border-right: 1px solid #e6dcc6; padding-right: 10px; font-size: 12px; line-height: 1.35; }
+.postcard-write p { margin: 4px 0; }
+.postcard-sign { display: block; font-family: Georgia, serif; font-style: italic; color: #6b5b95; }
+.postcard-address { display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; font-size: 10px; color: #4a5568; }
+.postcard-postmark { align-self: flex-end; width: 64px; height: 64px; border-radius: 50%; border: 2px solid #b0a58f; color: #8a7f68; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: 800; font-size: 9px; transform: rotate(-12deg); margin-bottom: auto; }
+.postcard-line { border-bottom: 1px solid #d7ccb4; padding-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.postcard-turn { align-self: center; }
+.postcard-arrive { animation: postcard-in 0.7s cubic-bezier(0.3, 1.4, 0.5, 1) both; }
+@keyframes postcard-in { from { opacity: 0; transform: translateY(30px) rotate(-8deg) scale(0.7); } to { opacity: 1; transform: rotate(-2deg); } }
+.album { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.album li { aspect-ratio: 3 / 2; }
+.album-card { display: block; width: 100%; height: 100%; padding: 0; border: none; background: none; cursor: pointer; }
+.album-card .postcard-front { height: 100%; }
+.album-empty { border: 2px dashed var(--line); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #c4bba9; font-weight: 800; font-size: 12px; }
+@media (prefers-reduced-motion: reduce) { .postcard, .postcard-arrive { transition: none; animation: none; } }
+/* Friends: add-friend form and feedback */
+.add-friend .primary { flex-shrink: 0; }
+.note { margin: 0; font-size: 14px; line-height: 1.4; padding: 8px 10px; border-radius: 10px; }
+.note.ok { background: var(--ok-bg); color: var(--ok-ink); }
+.note.error { background: #fef2f2; color: var(--error); }
+.link-button { border: none; background: none; padding: 0; min-height: 44px; font: inherit; font-weight: 700; color: var(--accent); text-decoration: underline; cursor: pointer; }
+
+/* Friends: animated weather scene */
+.weather { margin: 0; border-radius: 18px; overflow: hidden; background: var(--card); box-shadow: 0 4px 14px rgba(20, 33, 61, 0.12); }
+.weather-canvas { display: block; width: 100%; aspect-ratio: 360 / 280; background: #9db4cc; }
+.weather-caption { padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 2px; font-size: 15px; font-weight: 600; line-height: 1.35; }
+.weather-caption small { font-size: 11px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+/* Map zoom buttons: at least 44 px so they are easy to tap on a phone */
+.leaflet-touch .leaflet-bar a,
+.leaflet-bar a { width: 44px; height: 44px; line-height: 44px; font-size: 22px; }
 

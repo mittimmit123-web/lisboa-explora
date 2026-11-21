@@ -168,7 +168,7 @@ export default function MapScreen({ spots, collectedIds, position, onCheckOff, n
 
       <CategoryFilter value={filter} onChange={setFilter} />
 
-      <div className="map-wrap">
+      <div className="map-wrap" data-tour="map">
         {/* scrollWheelZoom is off: our own smooth wheel zoom replaces it
             (src/lib/smoothWheelZoom.js, #40). zoomSnap 0 = any zoom level is
             allowed, so the map does not jump to a whole level afterwards. */}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import NavBar from './components/NavBar.jsx'
 import MapScreen from './screens/MapScreen.jsx'
 import CheckOffScreen from './screens/CheckOffScreen.jsx'
@@ -13,9 +13,14 @@ import { getMyCheckOffs, getUser, onAuthChange } from './lib/api.js'
 import { isDemoMode } from './lib/supabase.js'
 import { newThisMonth } from './lib/progress.js'
 import { newlyUnlocked, unlockedChapters } from './lib/story.js'
+import { hasSeenIntro, markIntroSeen } from './lib/intro.js'
 import { useGeolocation } from './lib/useGeolocation.js'
 
+// The intro brings the 3D library, so it is only downloaded when it is shown.
+const IntroScreen = lazy(() => import('./components/IntroScreen.jsx'))
+
 export default function App() {
+  const [showIntro, setShowIntro] = useState(() => !hasSeenIntro()) // intro (#33)
   const [user, setUser] = useState(undefined) // undefined = still loading
   const [tab, setTab] = useState('map')
   const [checkOffs, setCheckOffs] = useState([])
@@ -35,6 +40,20 @@ export default function App() {
   useEffect(() => {
     if (user) reload()
   }, [user, reload])
+
+  const finishIntro = useCallback(() => {
+    markIntroSeen()
+    setShowIntro(false)
+  }, [])
+
+  // First opening: meet the tram before anything else.
+  if (showIntro) {
+    return (
+      <Suspense fallback={<div className="intro" />}>
+        <IntroScreen onDone={finishIntro} />
+      </Suspense>
+    )
+  }
 
   if (user === undefined) return <div className="screen center">Loading…</div>
   if (!user && !isDemoMode) return <LoginScreen />

@@ -25,7 +25,7 @@ export const CHARACTERS = [
   {
     id: 'cat',
     name: 'Miss Purrfect',
-    say: 'Miau! I’ll be purrfect at exploring. Probably.',
+    say: 'Lisbon, get ready… Miss Purrfect has arrived!',
     about: 'A fancy cat who arrived on a cruise ship and has only ever seen Lisbon on postcards.',
     hello: 'Miau! I just got off the cruise ship… Lisbon is even bigger than on my postcards! 😳',
     pronouns: { he: 'she', him: 'her', his: 'her' },

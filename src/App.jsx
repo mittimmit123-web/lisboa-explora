@@ -5,10 +5,14 @@ import CheckOffScreen from './screens/CheckOffScreen.jsx'
 import CollectionScreen from './screens/CollectionScreen.jsx'
 import FriendsScreen from './screens/FriendsScreen.jsx'
 import LoginScreen from './screens/LoginScreen.jsx'
+import StoryPopup from './components/StoryPopup.jsx'
 import { SPOTS } from './data/spots.js'
+import { NEIGHBOURHOODS } from './data/neighbourhoods.js'
+import { CHAPTERS } from './data/story.js'
 import { getMyCheckOffs, getUser, onAuthChange } from './lib/api.js'
 import { isDemoMode } from './lib/supabase.js'
 import { newThisMonth } from './lib/progress.js'
+import { newlyUnlocked, unlockedChapters } from './lib/story.js'
 import { useGeolocation } from './lib/useGeolocation.js'
 
 export default function App() {
@@ -16,6 +20,7 @@ export default function App() {
   const [tab, setTab] = useState('map')
   const [checkOffs, setCheckOffs] = useState([])
   const [checkOffSpot, setCheckOffSpot] = useState(null)
+  const [newChapter, setNewChapter] = useState(null) // story pop-up (#32)
   const { position, error: gpsError } = useGeolocation()
 
   useEffect(() => {
@@ -49,7 +54,12 @@ export default function App() {
             onBack={() => setCheckOffSpot(null)}
             onDone={() => {
               setCheckOffSpot(null)
-              reload()
+              // Story (#32): did this check-off open a new neighbourhood, and so a new chapter?
+              const before = unlockedChapters(checkOffs, SPOTS, NEIGHBOURHOODS, CHAPTERS)
+              getMyCheckOffs().then((rows) => {
+                setCheckOffs(rows)
+                setNewChapter(newlyUnlocked(before, unlockedChapters(rows, SPOTS, NEIGHBOURHOODS, CHAPTERS)))
+              })
             }}
           />
         ) : tab === 'map' ? (
@@ -66,6 +76,16 @@ export default function App() {
           <FriendsScreen newThisMonth={monthCount} />
         )}
       </main>
+      {newChapter && (
+        <StoryPopup
+          entry={newChapter}
+          onClose={() => setNewChapter(null)}
+          onRead={() => {
+            setNewChapter(null)
+            setTab('collection')
+          }}
+        />
+      )}
       <NavBar
         active={checkOffSpot ? null : tab}
         onChange={(t) => {

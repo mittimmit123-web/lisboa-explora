@@ -148,14 +148,23 @@ merge and a broken build is cheaper to find before the merge than after.
 
 ## 13. Zoomed out, the map shows only highlights
 
-Below zoom 15, only spots marked `highlight` are drawn; above it, everything
-inside the visible part of the map.
+Below zoom 16, only spots marked `highlight` are drawn; from 16 on, everything
+inside the visible part of the map (plus a 5 % margin, so panning looks smooth).
 
 **Why.** 1,930 markers at once is unusable and slow. The highlights are ten
 per category - five well-known ones so you can orient yourself, and five
 lesser-known ones, at most one per neighbourhood so they are spread across
 the city rather than piled up in the centre.
 
-**Accepted limit.** In the dense centre, zoom 15 still draws over 500 markers
-at once, which stutters on a phone. Raising `SHOW_ALL_ZOOM` from 15 to 16
-halves that and is a one-line change; we have not made it yet.
+**Changed in #40.** This used to start at zoom 15 with a 20 % margin, which
+drew about 680 markers at once on a phone in the city centre, and zooming
+stuttered. Zoom 16 and a 5 % margin bring that down to about 200. We
+considered marker clusters (bubbles with a number) as well; they would be
+faster still, but need an extra library and change the look of the map.
+
+**Smooth zooming (#40).** Leaflet's own trackpad / mouse-wheel zoom works in
+steps and ignores scrolling while a step's animation plays, so it felt slow
+and laggy. `src/lib/smoothWheelZoom.js` replaces it: the map follows the
+scrolling directly, like Google Maps. We wrote it ourselves (same idea as the
+Leaflet.SmoothWheelZoom plugin) rather than add a little-maintained library.
+Markers are also memoised, so a new GPS position does not redraw all of them.

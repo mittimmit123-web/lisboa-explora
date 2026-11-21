@@ -168,3 +168,24 @@ and laggy. `src/lib/smoothWheelZoom.js` replaces it: the map follows the
 scrolling directly, like Google Maps. We wrote it ourselves (same idea as the
 Leaflet.SmoothWheelZoom plugin) rather than add a little-maintained library.
 Markers are also memoised, so a new GPS position does not redraw all of them.
+
+## 14. Our own map design (vector map)
+
+The map background is painted by MapLibre in our own colours ("Lisboa warm":
+cream background, white roads, soft green parks, light blue water), defined
+in `src/lib/mapStyle.js`. The data comes from OpenFreeMap: OpenStreetMap
+data, free, with no account and no API key. Markers, filters and zooming
+are unchanged, because MapLibre runs as a layer inside the Leaflet map.
+
+**Why.** The standard OpenStreetMap map is busy: its own icons for churches
+and restaurants compete with our markers. Image-based maps cannot be
+recoloured; a vector map can. CARTO and Stadia have calm styles too, but now
+need an account and an API key.
+
+**Accepted limit.** The first load is about 440 KB larger (MapLibre 6 and its
+worker, gzipped): barely noticeable on Wi-Fi, a few seconds on a weak
+connection; afterwards the browser has it cached. We use MapLibre 6, not the
+smaller 5, because 5 has a known critical security issue. If the new map
+causes problems, e.g. on a very old phone, `USE_OWN_MAP_DESIGN = false` in
+`src/screens/MapScreen.jsx` switches back to the classic map.
+

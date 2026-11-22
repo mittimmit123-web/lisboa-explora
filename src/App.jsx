@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import NavBar from './components/NavBar.jsx'
 import MapScreen from './screens/MapScreen.jsx'
 import CheckOffScreen from './screens/CheckOffScreen.jsx'
@@ -40,6 +40,11 @@ export default function App() {
   const [checkOffSpot, setCheckOffSpot] = useState(null)
   const [newChapter, setNewChapter] = useState(null) // story pop-up (#32)
   const { position, error: gpsError } = useGeolocation()
+  // All screens share one scroll area: start each new screen at the top.
+  const mainRef = useRef(null)
+  useEffect(() => {
+    mainRef.current?.scrollTo(0, 0)
+  }, [tab, checkOffSpot])
 
   useEffect(() => {
     getUser().then((u) => setUser(u ?? null))
@@ -93,7 +98,7 @@ export default function App() {
   return (
     <div className="app">
       {isDemoMode && <div className="demo-banner">Demo mode: data is saved only in this browser</div>}
-      <main className="app-main">
+      <main className="app-main" ref={mainRef}>
         {checkOffSpot ? (
           <CheckOffScreen
             spot={checkOffSpot}

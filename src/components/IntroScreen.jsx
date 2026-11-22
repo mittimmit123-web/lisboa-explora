@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { characterById } from '../lib/characters.js'
 import {
+  HELLO_END,
   PROLOGUE_END,
   WELCOME_END,
   advancePrologue,
@@ -134,7 +135,7 @@ function PrologueFilm({ actorId, onDone }) {
   const explora = characterById(actorId)
   useFilm(canvasRef, actorId, {
     tick: (t, dt) => {
-      if (calm) return answeredRef.current ? PROLOGUE_END : 4.0
+      if (calm) return answeredRef.current ? PROLOGUE_END : HELLO_END + 0.8
       return advancePrologue(t, dt, answeredRef.current)
     },
     draw: (scene, t, live) => scene.drawPrologue(t, calm ? 0 : live),

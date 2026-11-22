@@ -13,7 +13,7 @@ describe('tour steps', () => {
   })
 
   it('opens a real tab in every step', () => {
-    for (const step of TOUR_STEPS) expect(['map', 'collection', 'friends']).toContain(step.tab)
+    for (const step of TOUR_STEPS) expect(['map', 'add', 'collection', 'friends']).toContain(step.tab)
   })
 })
 
@@ -52,5 +52,14 @@ describe('hasSeenTour / markTourSeen', () => {
     const blocked = { getItem: () => { throw new Error('blocked') }, setItem: () => { throw new Error('blocked') } }
     expect(hasSeenTour(blocked)).toBe(false)
     expect(() => markTourSeen(blocked)).not.toThrow()
+  })
+})
+
+describe('Add spot in the tour', () => {
+  it('shows the Add spot tab as the second way to add a spot, right after the map steps', () => {
+    const i = TOUR_STEPS.findIndex((s) => s.tab === 'add')
+    expect(i).toBeGreaterThan(0)
+    expect(TOUR_STEPS[i - 1].tab).toBe('map')
+    expect(TOUR_STEPS[i].target).toBe('nav-add')
   })
 })

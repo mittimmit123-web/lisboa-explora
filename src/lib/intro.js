@@ -27,17 +27,18 @@ export function welcomePhase(t) {
 
 // ---------- prologue film (seconds) ----------
 //   enter 0 - 0.8    the Explora pops in
-//   hello 0.8 - 3.2  its first words (shy)
-//   ask   3.2 - …    "Will you show me around?" + Yes button; waits for the answer
-//   joy   after Yes  jumps for joy, then the album step starts at PROLOGUE_END
-export const PROLOGUE_HOLD = 4.4
-export const PROLOGUE_JOY = 4.8
-export const PROLOGUE_END = 6.6
+//   hello 0.8 - 6    its first words (shy); 5 seconds, enough time to read them
+//   ask   6 - …      "Will you show me around?" + Yes button; waits for the answer
+//   joy   after Yes  jumps for joy, then the next step starts at PROLOGUE_END
+export const HELLO_END = 6
+export const PROLOGUE_HOLD = HELLO_END + 1.2
+export const PROLOGUE_JOY = HELLO_END + 1.6
+export const PROLOGUE_END = HELLO_END + 3.4
 
 export function prologuePhase(t, answered = false) {
   if (answered && t >= PROLOGUE_JOY) return 'joy'
   if (t < 0.8) return 'enter'
-  if (t < 3.2) return 'hello'
+  if (t < HELLO_END) return 'hello'
   return 'ask'
 }
 

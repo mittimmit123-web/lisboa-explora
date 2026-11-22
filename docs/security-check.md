@@ -29,7 +29,7 @@ anything important. The rules live in the database instead:
 | Use the server functions without logging in | ✅ | Every function checks `auth.uid()` first; the leaderboard returns nothing |
 | Check off a spot that does not exist | ✅ | `check_off` answers `unknown_spot` |
 | Fake the "verified on site" mark | ⚠️ | See weak spot 1 |
-| Check off without uploading a photo | ⚠️ | See weak spot 2 |
+| Point a check-off to a photo that was never uploaded | ✅ | Fixed: `check_off` now checks the photo exists (weak spot 2) |
 | Add someone as a friend without asking | ⚠️ | See weak spot 3 |
 
 ## Weak spots
@@ -48,22 +48,25 @@ whether a spot can be collected, so the damage is small.
 when the player would have moved impossibly fast since their last check-off
 (e.g. two spots 5 km apart within one minute).
 
-### 2. The photo is not checked to exist (small fix)
+### 2. The photo was not checked to exist (fixed)
 
-`check_off` checks that the photo path is in the player's own folder, but not
+`check_off` checked that the photo path is in the player's own folder, but not
 that a photo was really uploaded there. Calling the function directly with a
-made-up path saves a check-off without a photo.
+made-up path saved a check-off pointing to a photo that does not exist.
 
-**Suggested fix** for Tim, in `check_off` after the folder check:
+**Fixed** in `supabase/schema.sql`. Since #41 a photo is optional, so the
+check only runs when there is a photo:
 
 ```sql
-if not exists (select 1 from storage.objects
-               where bucket_id = 'photos' and name = p_photo_path) then
+if p_photo_path is not null and not exists (
+  select 1 from storage.objects where bucket_id = 'photos' and name = p_photo_path
+) then
   return jsonb_build_object('ok', false, 'reason', 'bad_photo');
 end if;
 ```
 
-The app already shows a clear message for `bad_photo`.
+The app already shows a clear message for `bad_photo`. The fix is active once
+`schema.sql` has been run again in the Supabase SQL Editor.
 
 ### 3. Friends are added without asking (medium fix)
 
@@ -83,5 +86,5 @@ request").
 - [ ] Try to insert a row into `check_offs` directly → refused
 - [ ] Upload a photo to `photos/<B's id>/` as player A → refused
 - [ ] Call `check_off` twice for the same spot → `already_collected`
-- [ ] Call `check_off` with a made-up photo path → `bad_photo` (after fix 2)
+- [ ] Call `check_off` with a made-up photo path → `bad_photo`
 - [ ] Log out and call `check_off` → `not_logged_in`

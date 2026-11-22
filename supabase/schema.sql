@@ -165,6 +165,15 @@ begin
     return jsonb_build_object('ok', false, 'reason', 'bad_photo');
   end if;
 
+  -- ...and it must really have been uploaded. Without this, someone calling
+  -- the function directly could point to a photo that does not exist
+  -- (security gap 2 in docs/security-check.md).
+  if p_photo_path is not null and not exists (
+    select 1 from storage.objects where bucket_id = 'photos' and name = p_photo_path
+  ) then
+    return jsonb_build_object('ok', false, 'reason', 'bad_photo');
+  end if;
+
   -- The note and the rating come from the browser, so the server checks them
   -- rather than trusting what arrives. A blank note is stored as nothing.
   v_note := nullif(btrim(coalesce(p_note, '')), '');

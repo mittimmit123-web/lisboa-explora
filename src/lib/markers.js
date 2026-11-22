@@ -67,6 +67,16 @@ export function isVisibleAtZoomForStatus(spot, zoom, status) {
   return status === 'collected' || isVisibleAtZoom(spot, zoom)
 }
 
+// The neighbourhoods where the player has collected at least one spot, as a
+// sorted list. The map shows these in a stronger colour (#12). Spots outside
+// Lisbon's 24 parishes (e.g. the campus in Carcavelos) are simply ignored by
+// the map, because there is no coloured area for them.
+export function unlockedNeighbourhoods(spots, collectedIds) {
+  const names = new Set()
+  for (const spot of spots) if (collectedIds.has(spot.id) && spot.neighbourhood) names.add(spot.neighbourhood)
+  return [...names].sort()
+}
+
 // Link that opens walking directions in Google Maps (new tab / Maps app).
 export function directionsUrl(spot) {
   return `https://www.google.com/maps/dir/?api=1&destination=${spot.lat},${spot.lng}&travelmode=walking`

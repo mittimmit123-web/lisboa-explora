@@ -189,3 +189,28 @@ smaller 5, because 5 has a known critical security issue. If the new map
 causes problems, e.g. on a very old phone, `USE_OWN_MAP_DESIGN = false` in
 `src/screens/MapScreen.jsx` switches back to the classic map.
 
+## 15. Every neighbourhood has its own colour on the map
+
+Lisbon's 24 parishes are drawn as soft, see-through colour areas under the
+markers. Where the player has collected at least one spot, the colour is
+stronger; everywhere else it is very light, a hint of what is left to
+discover. Colours are in `src/data/neighbourhoodColors.js`, borders in
+`src/data/parishes.js`.
+
+**Why.** It makes the player's "territory" visible at a glance and fits the
+neighbourhood leaderboard. We tried one colour for everything, one colour
+getting darker with more spots, and grey for locked areas; 24 pastels where
+locked areas are only lighter (not grey) looked the most like a map you want
+to fill in.
+
+**How the colours were chosen.** Same lightness and saturation for all, 24
+hues spread around the colour wheel. They are shared out so that two
+neighbourhoods that touch differ by at least 75 degrees of hue (pink next to
+green, never pink next to pink); a test checks this for all 54 borders.
+
+**Accepted limit.** The borders come from OpenStreetMap, downloaded once with
+`npm run import-parishes` (same idea as decision 4). The file is about 13 KB
+gzipped and is loaded only after the map is on screen, so the first start is
+not slower. The areas lie on top of the street names, so they are never
+solid. `SHOW_NEIGHBOURHOOD_COLOURS = false` in `src/screens/MapScreen.jsx`
+turns them off.

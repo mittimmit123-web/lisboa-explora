@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "seed": "node scripts/make-seed.mjs",
-    "import-osm": "node scripts/import-osm.mjs"
+    "import-osm": "node scripts/import-osm.mjs",
+    "import-parishes": "node scripts/import-parishes.mjs"
   },
   "dependencies": {
     "@maplibre/maplibre-gl-leaflet": "0.1.4",

@@ -68,7 +68,6 @@ export default function FriendsScreen({ newThisMonth }) {
     load()
   }
 
-  const me = players?.find((p) => p.isMe)
   const onlyMe = players && players.length <= 1
   // The sky shows how this month's race is going (null while loading).
   const weather = players ? weatherMood(players) : null
@@ -80,34 +79,6 @@ export default function FriendsScreen({ newThisMonth }) {
       </header>
       <div className="content">
         <WeatherScene mood={weather?.mood} sub={weather?.sub} text={weather?.text} buddy={getCharacter()} />
-
-        {me && (
-          <form className="card your-name" onSubmit={saveName} noValidate>
-            <label htmlFor="your-name">
-              <strong>Your name</strong> <span className="muted">(what friends see)</span>
-            </label>
-            {newName === null ? (
-              <div className="row between">
-                <span>{me.name}</span>
-                <button className="secondary" type="button" onClick={() => editName(me.name === 'You' ? '' : me.name)}>
-                  Change
-                </button>
-              </div>
-            ) : (
-              <div className="row add-friend">
-                <input id="your-name" type="text" autoComplete="nickname" autoFocus maxLength={NAME_MAX} value={newName} onChange={(e) => editName(e.target.value)} />
-                <button className="primary small" type="submit" disabled={busy}>
-                  Save
-                </button>
-              </div>
-            )}
-            {nameNote && (
-              <p className={nameNote.ok ? 'note ok' : 'note error'} role="status">
-                {nameNote.text}
-              </p>
-            )}
-          </form>
-        )}
 
         <h2 className="section-label">New spots this month</h2>
         {loadError ? (
@@ -134,11 +105,40 @@ export default function FriendsScreen({ newThisMonth }) {
                 <span className="avatar" aria-hidden="true">
                   {(p.name || 'Y')[0].toUpperCase()}
                 </span>
-                <span className="name">{playerLabel(p)}</span>
-                <strong>{p.count}</strong>
+                {p.isMe && newName !== null ? (
+                  <form className="row name-edit" onSubmit={saveName} noValidate>
+                    <input
+                      type="text"
+                      aria-label="Your name (what friends see)"
+                      autoComplete="nickname"
+                      autoFocus
+                      maxLength={NAME_MAX}
+                      value={newName}
+                      onChange={(e) => editName(e.target.value)}
+                    />
+                    <button className="primary small" type="submit" disabled={busy}>
+                      Save
+                    </button>
+                  </form>
+                ) : (
+                  <>
+                    <span className="name">{playerLabel(p)}</span>
+                    {p.isMe && (
+                      <button className="icon-btn edit-name" type="button" aria-label="Change your name" onClick={() => editName(p.name === 'You' ? '' : p.name)}>
+                        ✏️
+                      </button>
+                    )}
+                    <strong>{p.count}</strong>
+                  </>
+                )}
               </li>
             ))}
           </ol>
+        )}
+        {nameNote && (
+          <p className={nameNote.ok ? 'note ok' : 'note error'} role="status">
+            {nameNote.text}
+          </p>
         )}
         {onlyMe && <p className="muted">Add a friend below to start the race for this month.</p>}
 

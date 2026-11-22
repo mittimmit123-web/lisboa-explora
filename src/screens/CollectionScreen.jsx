@@ -23,6 +23,9 @@ function MonthText({ count, verified }) {
   return <>You discovered <strong>{count}</strong> new {places} this month, <strong>{verified}</strong> of them on site ⭐</>
 }
 
+// Tapping a number scrolls down to the part of the page that explains it.
+const jumpTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+
 export default function CollectionScreen({ spots, checkOffs, collectedIds }) {
   const month = monthSummary(checkOffs)
   const recent = recentlyCollected(checkOffs, spots)
@@ -43,17 +46,17 @@ export default function CollectionScreen({ spots, checkOffs, collectedIds }) {
             <strong>{collectedIds.size}</strong>
             <span>spots total</span>
           </div>
-          <div className="stat">
+          <button type="button" className="stat stat-link" onClick={() => jumpTo('recently-collected')}>
             <strong>{month.count}</strong>
-            <span>new this month</span>
-          </div>
-          <div className="stat">
+            <span>new this month ↓</span>
+          </button>
+          <button type="button" className="stat stat-link" onClick={() => jumpTo('neighbourhoods')}>
             <strong>
               {hoods.visited}
               <small>/{hoods.total}</small>
             </strong>
-            <span>neighbourhoods</span>
-          </div>
+            <span>neighbourhoods ↓</span>
+          </button>
         </div>
 
         <div className="card recap">
@@ -63,7 +66,9 @@ export default function CollectionScreen({ spots, checkOffs, collectedIds }) {
           </p>
         </div>
 
-        <h2 className="section-label">Recently collected</h2>
+        <h2 className="section-label" id="recently-collected">
+          Recently collected
+        </h2>
         {recent.length === 0 ? (
           <p className="muted">Nothing collected yet. Open the map and find your first spot!</p>
         ) : (
@@ -101,7 +106,9 @@ export default function CollectionScreen({ spots, checkOffs, collectedIds }) {
           ))}
         </ul>
 
-        <h2 className="section-label">Neighbourhoods</h2>
+        <h2 className="section-label" id="neighbourhoods">
+          Neighbourhoods
+        </h2>
         <div className="card">
           <p className="coverage">
             You&apos;ve been to <strong>{hoods.visited}</strong> of {hoods.total} neighbourhoods

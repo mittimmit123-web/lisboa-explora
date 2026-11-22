@@ -71,12 +71,15 @@ function buildScenery() {
 }
 
 // ---------- the scene ----------
-export function createWeatherScene(canvas, { animate = true, tram: withTram = true } = {}) {
+// mood: the weather to start with. Without one, nothing is drawn until
+// setMood() is called, so the player never sees the wrong weather first.
+export function createWeatherScene(canvas, { animate = true, tram: withTram = true, mood = null } = {}) {
   const ctx = canvas.getContext('2d')
   const scene = buildScenery()
-  const now = { top: hex(MOODS.golden.top), bottom: hex(MOODS.golden.bottom) }
-  DIALS.forEach((d) => (now[d] = MOODS.golden[d]))
-  let target = MOODS.golden
+  let ready = Boolean(MOODS[mood]) // false = mood unknown yet, draw nothing
+  let target = MOODS[mood] ?? MOODS.golden
+  const now = { top: hex(target.top), bottom: hex(target.bottom) }
+  DIALS.forEach((d) => (now[d] = target[d]))
   let frameId = null
   let last = null
   let time = 0
@@ -88,7 +91,8 @@ export function createWeatherScene(canvas, { animate = true, tram: withTram = tr
     canvas.width = Math.round(cssW * dpr)
     canvas.height = Math.round(cssH * dpr)
     ctx.setTransform(canvas.width / W, 0, 0, canvas.height / H, 0, 0)
-    if (!frameId) draw(0)
+    // Changing the canvas size wipes it, so draw again right away (no empty frame).
+    if (ready) draw(0)
   }
 
   // ----- layers -----
@@ -308,15 +312,19 @@ export function createWeatherScene(canvas, { animate = true, tram: withTram = tr
     const t = ms / 1000
     const dt = last === null ? 0 : clamp(t - last, 0, 0.1)
     last = t; time = t
-    turnDials(1 - Math.pow(0.18, dt))
-    draw(dt)
+    if (ready) {
+      turnDials(1 - Math.pow(0.18, dt))
+      draw(dt)
+    }
     frameId = requestAnimationFrame(frame)
   }
 
   return {
     setMood(name, { instant = false } = {}) {
       target = MOODS[name] ?? MOODS.golden
-      if (instant || !animate) { turnDials(1); draw(0) }
+      // The very first mood always appears at once (nothing to melt from).
+      if (instant || !animate || !ready) { turnDials(1); draw(0) }
+      ready = true
     },
     start() {
       if (!animate || frameId) return
@@ -330,7 +338,7 @@ export function createWeatherScene(canvas, { animate = true, tram: withTram = tr
     // Show or hide the drawn tram (it comes back if the 3D Explora fails).
     showTram(on) {
       withTram = on
-      if (!frameId) draw(0)
+      if (!frameId && ready) draw(0)
     },
     resize,
   }

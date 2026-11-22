@@ -3,6 +3,7 @@
 // src/lib/weatherScene.js. The player's 3D Explora (buddy) stands in front;
 // without a buddy the scene shows its own drawn tram.
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import { rememberMood, rememberedMood } from '../lib/friends.js'
 import { createWeatherScene } from '../lib/weatherScene.js'
 
 const WeatherBuddy = lazy(() => import('./WeatherBuddy.jsx'))
@@ -12,14 +13,17 @@ export default function WeatherScene({ mood, sub, text, buddy }) {
   const [buddyFailed, setBuddyFailed] = useState(false)
   const show3d = Boolean(buddy) && !buddyFailed
   const sceneRef = useRef(null)
-  const firstMood = useRef(true)
+  // Start with the last known weather; without one the scene stays empty
+  // until the leaderboard has loaded (never a wrong sunny sky first).
+  const startMood = useRef(rememberedMood())
+  const firstMood = useRef(!startMood.current)
 
   // Create the scene once, and stop it when the Friends screen closes.
   useEffect(() => {
     const canvas = canvasRef.current
     // People who turned on "reduce motion" on their phone get a still picture.
     const calm = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
-    const scene = createWeatherScene(canvas, { animate: !calm, tram: !show3d })
+    const scene = createWeatherScene(canvas, { animate: !calm, tram: !show3d, mood: startMood.current })
     sceneRef.current = scene
     scene.resize()
     scene.start()
@@ -51,6 +55,7 @@ export default function WeatherScene({ mood, sub, text, buddy }) {
     if (!sceneRef.current || !mood) return
     sceneRef.current.setMood(mood, { instant: firstMood.current })
     firstMood.current = false
+    rememberMood(mood)
   }, [mood])
 
   return (

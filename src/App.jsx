@@ -4,7 +4,7 @@ import MapScreen from './screens/MapScreen.jsx'
 import CheckOffScreen from './screens/CheckOffScreen.jsx'
 import CollectionScreen from './screens/CollectionScreen.jsx'
 import FriendsScreen from './screens/FriendsScreen.jsx'
-import NearbyScreen from './screens/NearbyScreen.jsx'
+import AddSpotScreen from './screens/AddSpotScreen.jsx'
 import LoginScreen from './screens/LoginScreen.jsx'
 import StoryPopup from './components/StoryPopup.jsx'
 import { SPOTS } from './data/spots.js'
@@ -118,8 +118,8 @@ export default function App() {
             newThisMonth={monthCount}
             onCheckOff={setCheckOffSpot}
           />
-        ) : tab === 'nearby' ? (
-          <NearbyScreen spots={SPOTS} collectedIds={collectedIds} position={position} onPick={setCheckOffSpot} />
+        ) : tab === 'add' ? (
+          <AddSpotScreen spots={SPOTS} collectedIds={collectedIds} position={position} onPick={setCheckOffSpot} />
         ) : tab === 'collection' ? (
           <CollectionScreen spots={SPOTS} checkOffs={checkOffs} collectedIds={collectedIds} />
         ) : (

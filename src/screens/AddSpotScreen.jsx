@@ -5,15 +5,15 @@ import { formatDistance } from '../lib/geo.js'
 import { emojiFor } from '../lib/markers.js'
 import { nearbySpots } from '../lib/nearby.js'
 
-export default function NearbyScreen({ spots, collectedIds, position, onPick }) {
+export default function AddSpotScreen({ spots, collectedIds, position, onPick }) {
   const [query, setQuery] = useState('')
   const list = nearbySpots(spots, collectedIds, position, { query })
 
   return (
     <div className="screen">
       <header className="screen-header">
-        <h1>Nearby</h1>
-        <p className="muted">Spots around you that you haven’t collected yet</p>
+        <h1>Add a spot</h1>
+        <p className="muted">Which spot are you at? The closest ones you haven’t collected yet:</p>
       </header>
       <div className="content">
         <input

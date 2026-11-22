@@ -1,4 +1,4 @@
-// The "Nearby" tab: spots the player has not collected yet, closest first.
+// The "Add spot" tab: spots the player has not collected yet, closest first.
 // Plain functions, tested in tests/nearby.test.js.
 import { distanceMeters } from './geo.js'
 

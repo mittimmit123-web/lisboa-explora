@@ -62,6 +62,11 @@ button { font: inherit; cursor: pointer; }
 .status { padding: 12px 14px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); font-weight: 600; font-size: 14px; }
 .status.ok { background: var(--ok-bg); color: var(--ok-ink); border-color: transparent; }
 .gps-accuracy { display: block; margin-top: 4px; font-weight: 400; font-size: 13px; opacity: 0.75; }
+.location-banner { margin: 0 12px 8px; background: var(--sun); color: var(--ink); padding: 10px 14px; border-radius: 14px; font-size: 14px; font-weight: 600; }
+.location-banner p { margin: 0; }
+.location-banner details { margin-top: 6px; font-weight: 400; }
+.location-banner summary { cursor: pointer; font-weight: 600; text-decoration: underline; }
+.location-banner ul { margin: 6px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
 .gps-warning { background: var(--sun); color: var(--ink); padding: 12px 14px; border-radius: 14px; font-weight: 600; font-size: 14px; }
 .photo-input { display: flex; align-items: center; justify-content: center; min-height: 220px; border-radius: 20px; border: 2px dashed var(--line); background: var(--card); color: var(--muted); font-weight: 600; text-align: center; padding: 16px; cursor: pointer; position: relative; }
 .photo-input input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }

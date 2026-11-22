@@ -258,6 +258,9 @@ input[type='email'], input[type='text'] { flex: 1; min-width: 0; min-height: 44p
 .intro-tiles-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; }
 .intro-tiles-grid li { aspect-ratio: 3 / 2; border-radius: 5px; border: 2px dashed rgba(255, 255, 255, 0.55); background: rgba(255, 255, 255, 0.08); animation: intro-pop 0.35s cubic-bezier(0.3, 1.5, 0.6, 1) both; }
 .intro-tiles-grid li.first { border-style: solid; border-color: #ffc93c; box-shadow: 0 0 12px rgba(255, 201, 60, 0.7); }
+/* Intro: choose your name */
+.intro-tiles .intro-name-input { flex: none; height: 60px; border: none; border-radius: 18px; padding: 0 18px; font: inherit; font-size: 20px; font-weight: 700; color: #2b2340; }
+.intro-name-hint { margin: 0; text-align: center; color: rgba(255, 255, 255, 0.85); font-weight: 700; }
 /* The empty album is small (6 x 4), so everything fits one phone screen */
 .intro-tiles .intro-choose { margin-top: auto; flex-shrink: 0; height: 76px; font-size: 22px; }
 @media (prefers-reduced-motion: reduce) { .intro-tiles-bubble, .intro-tiles-grid li { animation: none; } }

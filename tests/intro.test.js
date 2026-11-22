@@ -20,10 +20,11 @@ function fakeStorage() {
 }
 
 describe('nextStep', () => {
-  it('goes welcome -> pick -> prologue -> album -> done', () => {
+  it('goes welcome -> pick -> prologue -> name -> album -> done', () => {
     expect(nextStep('welcome')).toBe('pick')
     expect(nextStep('pick')).toBe('prologue')
-    expect(nextStep('prologue')).toBe('album')
+    expect(nextStep('prologue')).toBe('name')
+    expect(nextStep('name')).toBe('album')
     expect(nextStep('album')).toBe('done')
   })
 })

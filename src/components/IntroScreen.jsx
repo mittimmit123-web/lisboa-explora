@@ -18,6 +18,7 @@ import {
 import { createIntroScene } from '../lib/introScene.js'
 import IntroPicker from './IntroPicker.jsx'
 import IntroAlbum from './IntroAlbum.jsx'
+import IntroName from './IntroName.jsx'
 
 const HOST = 'tram' // Trammy welcomes everyone, and stands in if no Explora is chosen
 const prefersCalm = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
@@ -50,6 +51,7 @@ export default function IntroScreen({ onDone }) {
         />
       )}
       {step === 'prologue' && <PrologueFilm actorId={actorId} onDone={next} />}
+      {step === 'name' && <IntroName actorId={actorId} onDone={next} />}
       {step === 'album' && <IntroAlbum actorId={actorId} onDone={next} />}
     </div>
   )

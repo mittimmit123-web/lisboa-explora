@@ -6,10 +6,11 @@
 //   welcome   Trammy, the app's host, rolls in and cheers ("Lisboa Explora")
 //   pick      the player chooses their Explora
 //   prologue  the chosen Explora says hello and asks "Will you show me around?"
+//   name      it asks what to call you: the name your friends will see
 //   album     it explains the postcard album: your photo becomes a postcard
 //             in every new neighbourhood, 24 in total
 // Then the guided tour starts (src/lib/tour.js).
-export const STEPS = ['welcome', 'pick', 'prologue', 'album']
+export const STEPS = ['welcome', 'pick', 'prologue', 'name', 'album']
 
 export function nextStep(step) {
   const i = STEPS.indexOf(step)

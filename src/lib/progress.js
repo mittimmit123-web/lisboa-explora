@@ -89,3 +89,44 @@ export function neighbourhoodCoverage(spots, collectedIds, neighbourhoods) {
     list,
   }
 }
+
+// Everything behind one category tile in the Collection: which spots of that
+// category are in the journal, how far they are spread over the city, and
+// which neighbourhoods still have none.
+//
+// Counts, never percentages. With ~1900 spots a percentage of a category
+// stays near 0% however much someone collects - that is why the old sets
+// were removed (#10). "1 of 24 neighbourhoods" moves visibly instead.
+export function categoryDetail(spots, checkOffs, collectedIds, categoryId, neighbourhoods) {
+  const inCategory = spots.filter((s) => s.category === categoryId)
+  const byId = new Map(checkOffs.map((c) => [c.spot_id, c]))
+
+  const collected = inCategory
+    .filter((s) => collectedIds.has(s.id))
+    .map((spot) => {
+      const entry = byId.get(spot.id)
+      return {
+        spot,
+        date: entry ? new Date(entry.created_at) : null,
+        verified: entry?.verified === true,
+        note: cleanJournalNote(entry?.note),
+        rating: cleanRating(entry?.rating),
+      }
+    })
+    .sort((a, b) => (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0))
+
+  const perNeighbourhood = neighbourhoods.map((name) => ({
+    name,
+    count: collected.filter((e) => e.spot.neighbourhood === name).length,
+    // How many of this category exist there at all. A neighbourhood with
+    // none cannot be "missing", it simply has nothing to collect.
+    available: inCategory.filter((s) => s.neighbourhood === name).length,
+  }))
+
+  return {
+    collected,
+    visited: perNeighbourhood.filter((n) => n.count > 0),
+    missing: perNeighbourhood.filter((n) => n.count === 0 && n.available > 0).map((n) => n.name),
+    totalNeighbourhoods: neighbourhoods.length,
+  }
+}

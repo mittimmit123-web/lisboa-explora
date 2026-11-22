@@ -39,7 +39,7 @@ export default function App() {
   const [checkOffs, setCheckOffs] = useState([])
   const [checkOffSpot, setCheckOffSpot] = useState(null)
   const [newChapter, setNewChapter] = useState(null) // story pop-up (#32)
-  const { position, error: gpsError } = useGeolocation()
+  const { position, error: gpsError, blocked: locationBlocked } = useGeolocation()
   // Spots per neighbourhood, for the leaderboard; only recounted when check-offs change
   const myHoodCounts = useMemo(() => neighbourhoodCounts(checkOffs, SPOTS), [checkOffs])
   // All screens share one scroll area: start each new screen at the top.
@@ -123,6 +123,7 @@ export default function App() {
             spots={SPOTS}
             collectedIds={collectedIds}
             position={position}
+            locationBlocked={locationBlocked}
             newThisMonth={monthCount}
             onCheckOff={setCheckOffSpot}
           />

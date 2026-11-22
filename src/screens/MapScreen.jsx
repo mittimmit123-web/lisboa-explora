@@ -13,6 +13,7 @@ import CategoryFilter from '../components/CategoryFilter.jsx'
 import StatusFilter from '../components/StatusFilter.jsx'
 import { categoryById } from '../data/categories.js'
 import { LOCKED_OPACITY, NEIGHBOURHOOD_COLORS, UNLOCKED_OPACITY } from '../data/neighbourhoodColors.js'
+import { LOCATION_STEPS, locationOffMessage } from '../lib/location.js'
 import { distanceMeters, formatDistance } from '../lib/geo.js'
 import { enableSmoothWheelZoom } from '../lib/smoothWheelZoom.js'
 import { MAP_ATTRIBUTION, mapStyle } from '../lib/mapStyle.js'
@@ -198,7 +199,7 @@ function readView(map) {
   return { zoom: map.getZoom(), bounds: { south: b.getSouth(), west: b.getWest(), north: b.getNorth(), east: b.getEast() } }
 }
 
-export default function MapScreen({ spots, collectedIds, position, onCheckOff, newThisMonth }) {
+export default function MapScreen({ spots, collectedIds, position, locationBlocked, onCheckOff, newThisMonth }) {
   const [filter, setFilter] = useState([]) // selected category ids, [] = all
   const [status, setStatus] = useState('all') // 'all' | 'collected' | 'missing'
   const [selectedId, setSelectedId] = useState(null)
@@ -251,6 +252,23 @@ export default function MapScreen({ spots, collectedIds, position, onCheckOff, n
 
       <CategoryFilter value={filter} onChange={setFilter} />
       <StatusFilter value={status} onChange={setStatus} />
+
+      {/* Shown when location is blocked, so players know why their pin is missing. */}
+      {locationBlocked && (
+        <div className="location-banner" role="status">
+          <p>{locationOffMessage(window.location.host)}</p>
+          <details>
+            <summary>How do I turn it on?</summary>
+            <ul>
+              {LOCATION_STEPS.map((s) => (
+                <li key={s.device}>
+                  <b>{s.device}:</b> {s.steps}
+                </li>
+              ))}
+            </ul>
+          </details>
+        </div>
+      )}
 
       <div className="map-wrap" data-tour="map">
         {/* scrollWheelZoom is off: our own smooth wheel zoom replaces it

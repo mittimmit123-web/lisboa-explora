@@ -44,6 +44,30 @@ export function addFriendMessage({ email, result, error }) {
 //   'golden'  you lead by 2 or more        'clouds'  you lead by 0-1 (or a tie)
 //   'wind'    1-2 spots behind first        'drizzle' 3 or more behind
 //   'rain'    you have no spots this month
+// ---------- remember the last weather ----------
+// The leaderboard takes a moment to load. Remembering the last mood lets the
+// Friends screen open with the right sky at once instead of a wrong one.
+const MOOD_KEY = 'lisboa-explora-weather'
+const KNOWN_MOODS = ['golden', 'clouds', 'wind', 'drizzle', 'rain']
+
+export function rememberedMood(storage = globalThis.localStorage) {
+  try {
+    const mood = storage?.getItem(MOOD_KEY)
+    return KNOWN_MOODS.includes(mood) ? mood : null
+  } catch {
+    return null // storage blocked: wait for the leaderboard instead
+  }
+}
+
+export function rememberMood(mood, storage = globalThis.localStorage) {
+  if (!KNOWN_MOODS.includes(mood)) return
+  try {
+    storage?.setItem(MOOD_KEY, mood)
+  } catch {
+    // storage blocked: the sky simply waits for the leaderboard next time
+  }
+}
+
 export function weatherMood(players) {
   const me = players.find((p) => p.isMe)
   const others = players.filter((p) => !p.isMe)

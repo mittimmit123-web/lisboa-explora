@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addFriendMessage, friendEmailProblem, playerLabel, weatherMood } from '../src/lib/friends.js'
+import { addFriendMessage, friendEmailProblem, playerLabel, rememberMood, rememberedMood, weatherMood } from '../src/lib/friends.js'
 
 describe('playerLabel', () => {
   it('shows other players by name', () => {
@@ -103,5 +103,43 @@ describe('weatherMood', () => {
 
   it('works when I am missing from the list', () => {
     expect(weatherMood([{ name: 'Marta', count: 3 }]).mood).toBe('rain')
+  })
+})
+
+describe('remembered weather', () => {
+  const fakeStorage = () => {
+    const data = {}
+    return { getItem: (k) => data[k] ?? null, setItem: (k, v) => (data[k] = String(v)) }
+  }
+
+  it('gives back the last mood', () => {
+    const storage = fakeStorage()
+    rememberMood('drizzle', storage)
+    expect(rememberedMood(storage)).toBe('drizzle')
+  })
+
+  it('is null the first time', () => {
+    expect(rememberedMood(fakeStorage())).toBeNull()
+  })
+
+  it('ignores unknown moods', () => {
+    const storage = fakeStorage()
+    rememberMood('snow', storage)
+    expect(rememberedMood(storage)).toBeNull()
+    storage.setItem('lisboa-explora-weather', 'tornado')
+    expect(rememberedMood(storage)).toBeNull()
+  })
+
+  it('does not crash when storage is blocked', () => {
+    const blocked = {
+      getItem: () => {
+        throw new Error('blocked')
+      },
+      setItem: () => {
+        throw new Error('blocked')
+      },
+    }
+    expect(rememberedMood(blocked)).toBeNull()
+    expect(() => rememberMood('rain', blocked)).not.toThrow()
   })
 })

@@ -26,7 +26,11 @@ export default function WelcomeBack({ exploraId, onDone }) {
             <WeatherBuddy id={exploraId} />
           </Suspense>
         </span>
-        <span className="welcome-logo">Lisboa Explora</span>
+        <span className="welcome-logo">
+          Lisboa
+          <br />
+          Explora
+        </span>
       </button>
     )
   }

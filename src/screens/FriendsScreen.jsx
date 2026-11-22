@@ -1,9 +1,9 @@
 // Person 4: Friends & leaderboard — the competitive part of the game.
 import { useCallback, useEffect, useState } from 'react'
-import { addFriend, getCharacter, getFriendsLeaderboard, getUser } from '../lib/api.js'
+import { addFriend, getCharacter, getFriendsLeaderboard, getUser, setDisplayName } from '../lib/api.js'
 import { isDemoMode } from '../lib/supabase.js'
 import WeatherScene from '../components/WeatherScene.jsx'
-import { addFriendMessage, friendEmailProblem, playerLabel, weatherMood } from '../lib/friends.js'
+import { addFriendMessage, friendEmailProblem, NAME_MAX, nameProblem, playerLabel, weatherMood } from '../lib/friends.js'
 import { rankPlayers } from '../lib/progress.js'
 
 export default function FriendsScreen({ newThisMonth }) {
@@ -12,6 +12,8 @@ export default function FriendsScreen({ newThisMonth }) {
   const [email, setEmail] = useState('')
   const [busy, setBusy] = useState(false)
   const [note, setNote] = useState(null) // { ok, text }
+  const [newName, setNewName] = useState(null) // null = not editing
+  const [nameNote, setNameNote] = useState(null) // { ok, text }
 
   const load = useCallback(() => {
     getFriendsLeaderboard(newThisMonth)
@@ -44,6 +46,26 @@ export default function FriendsScreen({ newThisMonth }) {
       setEmail('')
       load()
     }
+  }
+
+  function editName(value) {
+    setNewName(value)
+    setNameNote(null)
+  }
+
+  async function saveName(e) {
+    e.preventDefault()
+    const problem = nameProblem(newName)
+    if (problem) return setNameNote(problem)
+    setBusy(true)
+    const result = await setDisplayName(newName).catch(() => null)
+    setBusy(false)
+    if (!result?.ok) {
+      return setNameNote(result?.reason === 'bad_name' ? nameProblem('') : { ok: false, text: 'Couldn’t save your name. Check your internet and try again.' })
+    }
+    setNewName(null)
+    setNameNote({ ok: true, text: 'Saved! Your friends now see this name.' })
+    load()
   }
 
   const onlyMe = players && players.length <= 1
@@ -83,11 +105,40 @@ export default function FriendsScreen({ newThisMonth }) {
                 <span className="avatar" aria-hidden="true">
                   {(p.name || 'Y')[0].toUpperCase()}
                 </span>
-                <span className="name">{playerLabel(p)}</span>
-                <strong>{p.count}</strong>
+                {p.isMe && newName !== null ? (
+                  <form className="row name-edit" onSubmit={saveName} noValidate>
+                    <input
+                      type="text"
+                      aria-label="Your name (what friends see)"
+                      autoComplete="nickname"
+                      autoFocus
+                      maxLength={NAME_MAX}
+                      value={newName}
+                      onChange={(e) => editName(e.target.value)}
+                    />
+                    <button className="primary small" type="submit" disabled={busy}>
+                      Save
+                    </button>
+                  </form>
+                ) : (
+                  <>
+                    <span className="name">{playerLabel(p)}</span>
+                    {p.isMe && (
+                      <button className="icon-btn edit-name" type="button" aria-label="Change your name" onClick={() => editName(p.name === 'You' ? '' : p.name)}>
+                        ✏️
+                      </button>
+                    )}
+                    <strong>{p.count}</strong>
+                  </>
+                )}
               </li>
             ))}
           </ol>
+        )}
+        {nameNote && (
+          <p className={nameNote.ok ? 'note ok' : 'note error'} role="status">
+            {nameNote.text}
+          </p>
         )}
         {onlyMe && <p className="muted">Add a friend below to start the race for this month.</p>}
 

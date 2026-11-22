@@ -58,6 +58,36 @@ export function nameResultMessage({ result }) {
   return { ok: false, text: 'Couldn’t save your name. Check your internet and try again.' }
 }
 
+// ---------- Leaderboard: neighbourhoods and titles ----------
+// Adds to every player: neighbourhoods (how many they explored) and titles
+// (the neighbourhoods where they have the MOST spots of everyone; a tie means
+// nobody holds that title yet, until someone collects one more).
+export function withTitles(players) {
+  const best = {} // neighbourhood -> { name, spots, tie }
+  for (const p of players) {
+    for (const [hood, spots] of Object.entries(p.hoodCounts ?? {})) {
+      const b = best[hood]
+      if (!b || spots > b.spots) best[hood] = { name: p.name, spots, tie: false }
+      else if (spots === b.spots) b.tie = true
+    }
+  }
+  return players.map((p) => ({
+    ...p,
+    neighbourhoods: Object.keys(p.hoodCounts ?? {}).length,
+    // strongest title first (most spots there)
+    titles: Object.keys(best)
+      .filter((hood) => best[hood].name === p.name && !best[hood].tie)
+      .sort((a, b) => best[b].spots - best[a].spots || a.localeCompare(b)),
+  }))
+}
+
+// One short line for the leaderboard: "👑 Ruler of Belém + 2 more", or '' if none.
+export function titleLine(titles) {
+  if (!titles.length) return ''
+  const more = titles.length > 1 ? ` + ${titles.length - 1} more` : ''
+  return `👑 Ruler of ${titles[0]}${more}`
+}
+
 // ---------- remember the last weather ----------
 // The leaderboard takes a moment to load. Remembering the last mood lets the
 // Friends screen open with the right sky at once instead of a wrong one.

@@ -4,6 +4,7 @@ import {
   monthSummary,
   neighbourhoodCoverage,
   newThisMonth,
+  neighbourhoodCounts,
   rankPlayers,
   recentlyCollected,
 } from '../src/lib/progress.js'
@@ -144,5 +145,31 @@ describe('neighbourhoodCoverage', () => {
   it('is 0 of N for a new player', () => {
     const result = neighbourhoodCoverage(spots, new Set(), hoods)
     expect([result.visited, result.total]).toEqual([0, 3])
+  })
+})
+
+describe('rankPlayers by another number', () => {
+  it('ranks by neighbourhoods when asked', () => {
+    const ranked = rankPlayers(
+      [
+        { name: 'A', count: 5, neighbourhoods: 1 },
+        { name: 'B', count: 1, neighbourhoods: 4 },
+      ],
+      'neighbourhoods',
+    )
+    expect(ranked.map((p) => p.name)).toEqual(['B', 'A'])
+    expect(ranked[0].rank).toBe(1)
+  })
+})
+
+describe('neighbourhoodCounts', () => {
+  it('counts the player\'s spots per neighbourhood and skips unknown spots', () => {
+    const spots = [
+      { id: 'a', neighbourhood: 'Belém' },
+      { id: 'b', neighbourhood: 'Belém' },
+      { id: 'c', neighbourhood: 'Ajuda' },
+    ]
+    const checkOffs = [{ spot_id: 'a' }, { spot_id: 'b' }, { spot_id: 'c' }, { spot_id: 'gone' }]
+    expect(neighbourhoodCounts(checkOffs, spots)).toEqual({ Belém: 2, Ajuda: 1 })
   })
 })

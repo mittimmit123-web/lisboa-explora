@@ -239,24 +239,36 @@ begin
 end;
 $$;
 
--- Me + my friends, with the number of new spots this calendar month.
--- Counts EVERY check-off, verified or not: the leaderboard is a friendly
--- comparison, not a competition.
-create or replace function public.friends_leaderboard()
-returns table (display_name text, new_this_month bigint, is_me boolean)
+-- Me + my friends, with the number of new spots this calendar month, and
+-- (since the start) how many spots each one has in every neighbourhood:
+-- hood_counts = {"Belém": 3, "Alfama": 1}. The app ranks by spots or by
+-- neighbourhoods and gives titles ("Ruler of Belém") from hood_counts.
+-- Counts EVERY check-off, verified or not: the leaderboard is a friendly race.
+-- The return type changed, so the old function must be dropped first.
+drop function if exists public.friends_leaderboard();
+create function public.friends_leaderboard()
+returns table (display_name text, new_this_month bigint, is_me boolean, hood_counts jsonb)
 language sql security definer set search_path = public as $$
   with players as (
     select auth.uid() as id
     union
     select friend_id from public.friendships where user_id = auth.uid()
+  ),
+  per_hood as (
+    select c.user_id, s.neighbourhood, count(*) as spots
+    from public.check_offs c
+    join public.spots s on s.id = c.spot_id
+    where c.user_id in (select id from players)
+    group by c.user_id, s.neighbourhood
   )
   select p.display_name,
-         count(c.id) filter (where c.created_at >= date_trunc('month', now())) as new_this_month,
-         p.id = auth.uid() as is_me
+         (select count(*) from public.check_offs c
+           where c.user_id = p.id and c.created_at >= date_trunc('month', now())) as new_this_month,
+         p.id = auth.uid() as is_me,
+         coalesce((select jsonb_object_agg(h.neighbourhood, h.spots) from per_hood h where h.user_id = p.id),
+                  '{}'::jsonb) as hood_counts
   from players pl
   join public.profiles p on p.id = pl.id
-  left join public.check_offs c on c.user_id = p.id
-  group by p.id, p.display_name
   order by new_this_month desc;
 $$;
 

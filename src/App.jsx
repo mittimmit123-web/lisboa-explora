@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import NavBar from './components/NavBar.jsx'
 import MapScreen from './screens/MapScreen.jsx'
 import CheckOffScreen from './screens/CheckOffScreen.jsx'
@@ -12,7 +12,7 @@ import { NEIGHBOURHOODS } from './data/neighbourhoods.js'
 import { CHAPTERS } from './data/story.js'
 import { getCharacter, getMyCheckOffs, getUser, onAuthChange } from './lib/api.js'
 import { isDemoMode } from './lib/supabase.js'
-import { newThisMonth } from './lib/progress.js'
+import { neighbourhoodCounts, newThisMonth } from './lib/progress.js'
 import { newlyUnlocked, unlockedChapters } from './lib/story.js'
 import { hasSeenIntro, markIntroSeen, markWelcomed, welcomeDue } from './lib/intro.js'
 import { TOUR_HOST, TOUR_STEPS, hasSeenTour, isLastStep, markTourSeen } from './lib/tour.js'
@@ -40,6 +40,8 @@ export default function App() {
   const [checkOffSpot, setCheckOffSpot] = useState(null)
   const [newChapter, setNewChapter] = useState(null) // story pop-up (#32)
   const { position, error: gpsError } = useGeolocation()
+  // Spots per neighbourhood, for the leaderboard; only recounted when check-offs change
+  const myHoodCounts = useMemo(() => neighbourhoodCounts(checkOffs, SPOTS), [checkOffs])
   // All screens share one scroll area: start each new screen at the top.
   const mainRef = useRef(null)
   useEffect(() => {
@@ -129,7 +131,7 @@ export default function App() {
         ) : tab === 'collection' ? (
           <CollectionScreen spots={SPOTS} checkOffs={checkOffs} collectedIds={collectedIds} />
         ) : (
-          <FriendsScreen newThisMonth={monthCount} />
+          <FriendsScreen newThisMonth={monthCount} myHoodCounts={myHoodCounts} />
         )}
       </main>
       {welcome && (

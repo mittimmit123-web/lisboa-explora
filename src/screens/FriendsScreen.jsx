@@ -3,11 +3,15 @@ import { useCallback, useEffect, useState } from 'react'
 import { addFriend, getCharacter, getFriendsLeaderboard, getUser, setDisplayName } from '../lib/api.js'
 import { isDemoMode } from '../lib/supabase.js'
 import WeatherScene from '../components/WeatherScene.jsx'
-import { addFriendMessage, friendEmailProblem, NAME_MAX, nameProblem, nameResultMessage, playerLabel, weatherMood } from '../lib/friends.js'
+import { addFriendMessage, friendEmailProblem, NAME_MAX, nameProblem, nameResultMessage, playerLabel, titleLine, weatherMood, withTitles } from '../lib/friends.js'
 import { rankPlayers } from '../lib/progress.js'
 
-export default function FriendsScreen({ newThisMonth }) {
+const MEDALS = ['🥇', '🥈', '🥉']
+const MONTH = new Date().toLocaleString('en', { month: 'long' })
+
+export default function FriendsScreen({ newThisMonth, myHoodCounts }) {
   const [players, setPlayers] = useState(null) // null = still loading
+  const [rankBy, setRankBy] = useState('count') // 'count' (spots this month) | 'neighbourhoods'
   const [loadError, setLoadError] = useState(false)
   const [email, setEmail] = useState('')
   const [busy, setBusy] = useState(false)
@@ -16,10 +20,10 @@ export default function FriendsScreen({ newThisMonth }) {
   const [nameNote, setNameNote] = useState(null) // { ok, text }
 
   const load = useCallback(() => {
-    getFriendsLeaderboard(newThisMonth)
-      .then((rows) => setPlayers(rankPlayers(rows)))
+    getFriendsLeaderboard(newThisMonth, myHoodCounts)
+      .then((rows) => setPlayers(withTitles(rows)))
       .catch(() => setLoadError(true))
-  }, [newThisMonth])
+  }, [newThisMonth, myHoodCounts])
 
   useEffect(load, [load])
 
@@ -68,6 +72,7 @@ export default function FriendsScreen({ newThisMonth }) {
     load()
   }
 
+  const ranked = players && rankPlayers(players, rankBy)
   const onlyMe = players && players.length <= 1
   // The sky shows how this month's race is going (null while loading).
   const weather = players ? weatherMood(players) : null
@@ -80,7 +85,15 @@ export default function FriendsScreen({ newThisMonth }) {
       <div className="content">
         <WeatherScene mood={weather?.mood} sub={weather?.sub} text={weather?.text} buddy={getCharacter()} />
 
-        <h2 className="section-label">New spots this month</h2>
+        <h2 className="section-label">🏆 Leaderboard</h2>
+        <div className="row" role="group" aria-label="Rank by">
+          <button type="button" className={rankBy === 'count' ? 'chip selected' : 'chip'} aria-pressed={rankBy === 'count'} onClick={() => setRankBy('count')}>
+            📍 Spots in {MONTH}
+          </button>
+          <button type="button" className={rankBy === 'neighbourhoods' ? 'chip selected' : 'chip'} aria-pressed={rankBy === 'neighbourhoods'} onClick={() => setRankBy('neighbourhoods')}>
+            🗺️ Neighbourhoods
+          </button>
+        </div>
         {loadError ? (
           <div className="status">
             Couldn’t load the leaderboard. Check your internet.{' '}
@@ -99,9 +112,9 @@ export default function FriendsScreen({ newThisMonth }) {
           <p className="muted">Loading…</p>
         ) : (
           <ol className="leaderboard">
-            {players.map((p) => (
+            {ranked.map((p) => (
               <li key={`${p.rank}-${p.name}`} className={p.isMe ? 'me' : undefined}>
-                <span className="rank">{p.rank}</span>
+                <span className="rank">{MEDALS[p.rank - 1] ?? p.rank}</span>
                 <span className="avatar" aria-hidden="true">
                   {(p.name || 'Y')[0].toUpperCase()}
                 </span>
@@ -122,13 +135,20 @@ export default function FriendsScreen({ newThisMonth }) {
                   </form>
                 ) : (
                   <>
-                    <span className="name">{playerLabel(p)}</span>
+                    <span className="name">
+                      {playerLabel(p)}
+                      {p.titles.length > 0 && (
+                        <small className="player-title" title={p.titles.join(', ')}>
+                          {titleLine(p.titles)}
+                        </small>
+                      )}
+                    </span>
                     {p.isMe && (
                       <button className="icon-btn edit-name" type="button" aria-label="Change your name" onClick={() => editName(p.name === 'You' ? '' : p.name)}>
                         ✏️
                       </button>
                     )}
-                    <strong>{p.count}</strong>
+                    <strong>{rankBy === 'count' ? p.count : `${p.neighbourhoods}/24`}</strong>
                   </>
                 )}
               </li>
@@ -140,7 +160,11 @@ export default function FriendsScreen({ newThisMonth }) {
             {nameNote.text}
           </p>
         )}
-        {onlyMe && <p className="muted">Add a friend below to start the race for this month.</p>}
+        {onlyMe ? (
+          <p className="muted">Add a friend below to start the race for this month.</p>
+        ) : (
+          players && <p className="muted">👑 Whoever has the most spots in a neighbourhood rules it, until a friend collects more there.</p>
+        )}
 
         <form className="card" onSubmit={submit} noValidate>
           <label htmlFor="friend-email">

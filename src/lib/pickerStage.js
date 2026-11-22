@@ -32,7 +32,7 @@ export function createPickerStage(canvas, { getSelected, onSelect, floor = 'grou
   function resize() {
     stage.resize()
     // On narrow phones move the camera back so all three fit
-    const dist = Math.max(10, 12.5 / camera.aspect)
+    const dist = Math.max(10, 14.5 / camera.aspect) // 14.5: some space next to the outer characters
     camera.position.set(0, dist * 0.3, dist)
     camera.lookAt(0, lookAtY, 0)
   }

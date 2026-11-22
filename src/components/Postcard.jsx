@@ -3,6 +3,7 @@
 // was verified on site). Back: the story chapter, written by the Explora.
 // Without a photo, the front is a colourful illustration with the name.
 import { useEffect, useState } from 'react'
+import { FACTS } from '../data/facts.js'
 import { ENDINGS } from '../data/story.js'
 import { categoryById } from '../data/categories.js'
 import { getPhotoUrl } from '../lib/api.js'
@@ -50,6 +51,7 @@ export function PostcardBack({ entry, explora }) {
           {entry.number}. {entry.chapter.title}
         </strong>
         <p>{fillStory(entry.chapter.text, values)}</p>
+        {FACTS[entry.place] && <p className="story-fact">💡 {FACTS[entry.place]}</p>}
         <p className={entry.verified ? 'story-ending verified' : 'story-ending'}>
           {entry.verified ? ENDINGS.verified : ENDINGS.later}
         </p>

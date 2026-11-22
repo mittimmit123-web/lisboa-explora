@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  HELLO_END,
   PROLOGUE_END,
   PROLOGUE_HOLD,
   PROLOGUE_JOY,
@@ -19,10 +20,11 @@ function fakeStorage() {
 }
 
 describe('nextStep', () => {
-  it('goes welcome -> pick -> prologue -> album -> done', () => {
+  it('goes welcome -> pick -> prologue -> name -> album -> done', () => {
     expect(nextStep('welcome')).toBe('pick')
     expect(nextStep('pick')).toBe('prologue')
-    expect(nextStep('prologue')).toBe('album')
+    expect(nextStep('prologue')).toBe('name')
+    expect(nextStep('name')).toBe('album')
     expect(nextStep('album')).toBe('done')
   })
 })
@@ -38,24 +40,25 @@ describe('prologuePhase', () => {
   it('plays enter, hello and ask in order', () => {
     expect(prologuePhase(0.2)).toBe('enter')
     expect(prologuePhase(2)).toBe('hello')
-    expect(prologuePhase(4)).toBe('ask')
+    expect(prologuePhase(5)).toBe('hello') // the first words stay about 5 s, long enough to read
+    expect(prologuePhase(HELLO_END + 0.1)).toBe('ask')
   })
 
   it('stays at the question until the player answers', () => {
-    expect(prologuePhase(6)).toBe('ask')
-    expect(prologuePhase(6, true)).toBe('joy')
+    expect(prologuePhase(PROLOGUE_JOY + 1)).toBe('ask')
+    expect(prologuePhase(PROLOGUE_JOY + 1, true)).toBe('joy')
   })
 })
 
 describe('advancePrologue', () => {
   it('waits at the question before the answer', () => {
-    expect(advancePrologue(4.3, 0.5, false)).toBe(PROLOGUE_HOLD)
+    expect(advancePrologue(PROLOGUE_HOLD - 0.1, 0.5, false)).toBe(PROLOGUE_HOLD)
     expect(advancePrologue(PROLOGUE_HOLD, 5, false)).toBe(PROLOGUE_HOLD)
   })
 
   it('jumps to the happy part after "Yes" and plays on to the end', () => {
     expect(advancePrologue(PROLOGUE_HOLD, 0.1, true)).toBeCloseTo(PROLOGUE_JOY + 0.1)
-    expect(advancePrologue(6.5, 1, true)).toBeGreaterThanOrEqual(PROLOGUE_END)
+    expect(advancePrologue(PROLOGUE_END - 0.5, 1, true)).toBeGreaterThanOrEqual(PROLOGUE_END)
   })
 })
 

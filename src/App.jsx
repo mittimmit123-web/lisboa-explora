@@ -80,7 +80,11 @@ export default function App() {
     setTab(TOUR_STEPS[tourStep + 1].tab)
   }
 
-  // First opening: meet the tram before anything else.
+  // Log in (or sign up) first: the intro saves the player's name.
+  if (user === undefined) return <div className="screen center">Loading…</div>
+  if (!user && !isDemoMode) return <LoginScreen />
+
+  // First opening after signing up: meet the tram before anything else.
   if (showIntro) {
     return (
       <Suspense fallback={<div className="intro" />}>
@@ -88,9 +92,6 @@ export default function App() {
       </Suspense>
     )
   }
-
-  if (user === undefined) return <div className="screen center">Loading…</div>
-  if (!user && !isDemoMode) return <LoginScreen />
 
   const collectedIds = new Set(checkOffs.map((c) => c.spot_id))
   const monthCount = newThisMonth(checkOffs)

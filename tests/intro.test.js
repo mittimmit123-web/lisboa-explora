@@ -6,8 +6,10 @@ import {
   advancePrologue,
   hasSeenIntro,
   markIntroSeen,
+  markWelcomed,
   nextStep,
   prologuePhase,
+  welcomeDue,
   welcomePhase,
 } from '../src/lib/intro.js'
 
@@ -69,5 +71,41 @@ describe('hasSeenIntro / markIntroSeen', () => {
     const blocked = { getItem: () => { throw new Error('blocked') }, setItem: () => { throw new Error('blocked') } }
     expect(hasSeenIntro(blocked)).toBe(false)
     expect(() => markIntroSeen(blocked)).not.toThrow()
+  })
+})
+
+describe('welcome card once per day', () => {
+  const fakeStorage = () => {
+    const data = {}
+    return { getItem: (k) => data[k] ?? null, setItem: (k, v) => (data[k] = String(v)) }
+  }
+  const morning = new Date(2026, 10, 23, 9, 0)
+  const evening = new Date(2026, 10, 23, 21, 0)
+  const nextDay = new Date(2026, 10, 24, 8, 0)
+
+  it('shows the card on the first opening of the day only', () => {
+    const storage = fakeStorage()
+    expect(welcomeDue(storage, morning)).toBe(true)
+    markWelcomed(storage, morning)
+    expect(welcomeDue(storage, evening)).toBe(false)
+  })
+
+  it('shows it again the next day', () => {
+    const storage = fakeStorage()
+    markWelcomed(storage, evening)
+    expect(welcomeDue(storage, nextDay)).toBe(true)
+  })
+
+  it('skips the card when storage is blocked', () => {
+    const blocked = {
+      getItem: () => {
+        throw new Error('blocked')
+      },
+      setItem: () => {
+        throw new Error('blocked')
+      },
+    }
+    expect(welcomeDue(blocked, morning)).toBe(false)
+    expect(() => markWelcomed(blocked, morning)).not.toThrow()
   })
 })

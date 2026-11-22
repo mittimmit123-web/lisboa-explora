@@ -164,6 +164,13 @@ function readDemoName() {
     return null
   }
 }
+// The name friends see, for "Welcome back, <name>!". null if not set yet.
+export async function getMyName() {
+  if (isDemoMode) return readDemoName()
+  const { data } = await supabase.from('profiles').select('display_name').maybeSingle()
+  return data?.display_name ?? null
+}
+
 export async function setDisplayName(name) {
   if (isDemoMode) {
     localStorage.setItem(DEMO_NAME_KEY, name.trim())

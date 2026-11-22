@@ -5,6 +5,8 @@
 // ("12 food spots") and neighbourhood coverage ("7 of 24"), never a ranking.
 // Percentages of all spots would stay near 0% because we have ~1900 spots.
 
+import { cleanJournalNote, cleanRating } from './journal.js'
+
 // True if the date is in the same calendar month as `now`.
 function isThisMonth(date, now) {
   const d = new Date(date)
@@ -43,6 +45,9 @@ export function recentlyCollected(checkOffs, spots, limit = 5) {
       spot: spots.find((s) => s.id === c.spot_id),
       date: new Date(c.created_at),
       verified: c.verified === true,
+      // Both optional, and missing on entries made before they existed.
+      note: cleanJournalNote(c.note),
+      rating: cleanRating(c.rating),
     }))
     .filter((item) => item.spot)
     .slice(0, limit)

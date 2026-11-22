@@ -9,6 +9,7 @@ import { supabase, isDemoMode } from './supabase.js'
 import { distanceMeters, isWithinRadius } from './geo.js'
 import { cleanCharacterId } from './characters.js'
 import { makePostcardPhoto } from './postcards.js'
+import { cleanJournalNote, cleanRating as cleanRating_ } from './journal.js'
 
 const DEMO_KEY = 'lisboa-explora-demo-checkoffs'
 
@@ -66,7 +67,7 @@ export async function getMyCheckOffs() {
   if (isDemoMode) return readDemo()
   const { data, error } = await supabase
     .from('check_offs')
-    .select('spot_id, created_at, photo_path, verified')
+    .select('spot_id, created_at, photo_path, verified, note, rating')
     .order('created_at', { ascending: false })
   if (error) throw error
   return data
@@ -78,7 +79,10 @@ export async function getMyCheckOffs() {
 // position: { lat, lng } from the phone's GPS, or null if there is none
 // photo: a File from the camera input
 // Returns { ok: true, verified, distance } or { ok: false, reason }
-export async function checkOff({ spot, position, photo }) {
+export async function checkOff({ spot, position, photo, note, rating }) {
+  const cleanNote = cleanJournalNote(note)
+  const cleanRating = cleanRating_(rating)
+
   if (isDemoMode) {
     const distance = position ? distanceMeters(position, spot) : null
     const verified = position ? isWithinRadius(position, spot) : false
@@ -87,24 +91,37 @@ export async function checkOff({ spot, position, photo }) {
     // Keep a small copy of the photo for the postcard (#33). If the browser's
     // storage is full, save the spot without the photo rather than losing it.
     const photo_thumb = photo ? await makePostcardPhoto(photo) : null
-    const row = { spot_id: spot.id, created_at: new Date().toISOString(), photo_path: null, verified }
+    const row = {
+      spot_id: spot.id,
+      created_at: new Date().toISOString(),
+      photo_path: null,
+      verified,
+      note: cleanNote,
+      rating: cleanRating,
+    }
     if (!writeDemo([{ ...row, photo_thumb }, ...rows])) writeDemo([row, ...rows])
     return { ok: true, verified, distance }
   }
 
-  // 1. Upload the photo to storage: photos/<user id>/<spot id>-<time>.jpg
-  const user = await getUser()
-  const path = `${user.id}/${spot.id}-${Date.now()}.jpg`
-  const upload = await supabase.storage.from('photos').upload(path, photo, { contentType: photo.type })
-  if (upload.error) return { ok: false, reason: 'upload_failed' }
+  // 1. Upload the photo, if there is one, to photos/<user id>/<spot id>-<time>.jpg
+  let path = null
+  if (photo) {
+    const user = await getUser()
+    path = `${user.id}/${spot.id}-${Date.now()}.jpg`
+    const upload = await supabase.storage.from('photos').upload(path, photo, { contentType: photo.type })
+    if (upload.error) return { ok: false, reason: 'upload_failed' }
+  }
 
-  // 2. Save the check-off. The server measures the distance and sets the
-  //    "verified on site" mark. The browser cannot set it itself.
+  // 2. Save the check-off. The server measures the distance, sets the
+  //    "verified on site" mark and checks the note and the rating itself.
+  //    The browser cannot set any of them.
   const { data, error } = await supabase.rpc('check_off', {
     p_spot_id: spot.id,
     p_lat: position?.lat ?? null,
     p_lng: position?.lng ?? null,
     p_photo_path: path,
+    p_note: cleanNote,
+    p_rating: cleanRating,
   })
   if (error) return { ok: false, reason: 'server_error' }
   return data // { ok, verified, distance } or { ok: false, reason }

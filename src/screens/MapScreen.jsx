@@ -8,6 +8,7 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 // MapLibre paints the map with a helper script (a "worker") running in the
 // background. Vite has to be told where that file is, otherwise it is not found.
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
+import { getCharacter } from '../lib/api.js'
 import CategoryFilter from '../components/CategoryFilter.jsx'
 import StatusFilter from '../components/StatusFilter.jsx'
 import { categoryById } from '../data/categories.js'
@@ -124,6 +125,29 @@ function OwnMapDesign() {
   return null
 }
 
+// The player's location marker: their Explora on a red 3D pin (see
+// src/lib/exploraPin.js). The 3D code is loaded only after the map is on
+// screen, and the icon is made once, so GPS updates only move it. Returns
+// null until it is ready (or without an Explora / 3D): then the blue dot shows.
+function useExploraPinIcon() {
+  const [icon, setIcon] = useState(null)
+  useEffect(() => {
+    const id = getCharacter()
+    if (!id) return
+    let cancelled = false
+    import('../lib/exploraPin.js')
+      .then(({ exploraPinPicture, PIN_SIZE, PIN_ANCHOR }) => {
+        const iconUrl = exploraPinPicture(id)
+        if (!cancelled) setIcon(L.icon({ iconUrl, iconSize: PIN_SIZE, iconAnchor: PIN_ANCHOR, className: 'me-pin' }))
+      })
+      .catch(() => {}) // no 3D on this phone: keep the blue dot
+    return () => {
+      cancelled = true
+    }
+  }, [])
+  return icon
+}
+
 function readView(map) {
   // pad(0.05): also draw spots just outside the screen, so panning looks
   // smooth. Kept small, because every extra marker makes zooming slower (#40).
@@ -138,6 +162,7 @@ export default function MapScreen({ spots, collectedIds, position, onCheckOff, n
   const [map, setMap] = useState(null)
   const [view, setView] = useState(null)
   const flewToMe = useRef(false)
+  const meIcon = useExploraPinIcon()
   // useCallback keeps the same function between renders, otherwise
   // MapWatcher would report the view again after every render (endless loop).
   const handleViewChange = useCallback((m) => setView(readView(m)), [])
@@ -218,13 +243,16 @@ export default function MapScreen({ spots, collectedIds, position, onCheckOff, n
               onSelect={setSelectedId}
             />
           ))}
-          {position && (
-            <CircleMarker
-              center={[position.lat, position.lng]}
-              radius={7}
-              pathOptions={{ color: '#FFFFFF', weight: 3, fillColor: '#2563EB', fillOpacity: 1 }}
-            />
-          )}
+          {position &&
+            (meIcon ? (
+              <Marker position={[position.lat, position.lng]} icon={meIcon} zIndexOffset={1000} keyboard={false} />
+            ) : (
+              <CircleMarker
+                center={[position.lat, position.lng]}
+                radius={7}
+                pathOptions={{ color: '#FFFFFF', weight: 3, fillColor: '#2563EB', fillOpacity: 1 }}
+              />
+            ))}
         </MapContainer>
 
         {view && view.zoom < SHOW_ALL_ZOOM && status !== 'collected' && (

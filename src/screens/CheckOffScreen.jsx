@@ -76,7 +76,7 @@ export default function CheckOffScreen({ spot, position, gpsError, onDone, onBac
   return (
     <div className="screen">
       <header className="screen-header row">
-        <button className="icon-btn" aria-label="Back to map" onClick={onBack}>
+        <button className="icon-btn" aria-label="Back" onClick={onBack}>
           ‹
         </button>
         <div>

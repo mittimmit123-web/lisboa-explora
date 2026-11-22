@@ -342,14 +342,22 @@ input[type='email'], input[type='text'] { flex: 1; min-width: 0; min-height: 44p
 .leaflet-bar a { width: 44px; height: 44px; line-height: 44px; font-size: 22px; }
 
 
-/* Collected filter: the second, quieter chip row under the categories */
-.chips-status { padding-top: 0; padding-bottom: 10px; }
-/* Quieter than the category chips. Only the unselected ones are muted:
-   .chips-status .chip and .chip.selected have the same specificity, so
-   colouring every chip here would beat the white text of the selected one
-   and leave its label grey on dark. */
-.chips-status .chip { min-height: 44px; font-size: 12px; }
-.chips-status .chip:not(.selected) { color: var(--muted); }
+/* Map category filter: smaller chips that wrap onto two lines, so every
+   category is visible at once. No sideways scrolling, so no scroll bar on a
+   laptop either. Chips stay 44 px high: easy to tap on a phone. */
+.chips-wrap { flex-wrap: wrap; overflow-x: visible; gap: 6px; padding-bottom: 8px; }
+.chips-wrap .chip { padding: 0 8px; font-size: 11.5px; gap: 4px; }
+.chips-wrap .dot { width: 8px; height: 8px; }
+/* Narrow phones (many Androids are 360 px wide): a little less space inside
+   each chip, so the categories still fit on two lines. */
+@media (max-width: 374px) { .chips-wrap .chip { padding: 0 6px; } }
+
+/* Collected filter: a switch under the categories (All · Collected · Not yet).
+   One beige track, the chosen option is a white pill on it, so it looks
+   different from the category chips above. */
+.chips-status { margin: 0 20px 10px; padding: 2px; gap: 0; background: #ebe5d9; border-radius: 999px; overflow: visible; }
+.chips-status .chip { flex: 1; justify-content: center; min-height: 40px; border: none; background: none; font-size: 12px; color: var(--muted); }
+.chips-status .chip.selected { background: var(--card); color: var(--ink); box-shadow: 0 1px 3px rgba(20, 33, 61, 0.15); }
 
 /* Journal entry: the optional note and rating on a check-off */
 .journal-note { display: flex; flex-direction: column; gap: 6px; }

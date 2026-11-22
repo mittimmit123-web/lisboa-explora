@@ -3,9 +3,11 @@ import { toggleCategory } from '../lib/markers.js'
 
 // Row of chips: "All" plus one per category. Several categories can be
 // selected at once. `value` is a list of category ids; an empty list = "All".
+// The chips wrap onto a second line, so every category is visible at once,
+// with no sideways scrolling (see .chips-wrap in src/index.css).
 export default function CategoryFilter({ value, onChange }) {
   return (
-    <div className="chips" role="group" aria-label="Filter by category">
+    <div className="chips chips-wrap" role="group" aria-label="Filter by category">
       <button
         className={value.length === 0 ? 'chip selected' : 'chip'}
         aria-pressed={value.length === 0}

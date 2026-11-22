@@ -287,7 +287,7 @@ input[type='email'], input[type='text'] { flex: 1; min-width: 0; min-height: 44p
 /* Friends: add-friend form and feedback */
 .add-friend .primary { flex-shrink: 0; }
 .name-edit { flex: 1; min-width: 0; }
-.edit-name { width: 36px; height: 36px; font-size: 16px; }
+.edit-name { width: 36px; height: 36px; font-size: 16px; transform: scaleX(-1); } /* pencil tip on the left */
 .note { margin: 0; font-size: 14px; line-height: 1.4; padding: 8px 10px; border-radius: 10px; }
 .note.ok { background: var(--ok-bg); color: var(--ok-ink); }
 .note.error { background: #fef2f2; color: var(--error); }

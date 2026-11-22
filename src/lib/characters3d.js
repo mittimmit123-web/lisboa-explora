@@ -180,7 +180,8 @@ export function buildCharacter(id) {
 
 // Light, floor and camera shared by the picker and the small buddy picture.
 // floor: 'ground' = a beige round floor, 'shadow' = invisible floor that
-// only shows shadows (for coloured backgrounds like the intro).
+// only shows shadows (for coloured backgrounds like the intro), 'none' = no
+// floor at all (for the map pin picture).
 export function createStage(canvas, { floorSize = 7, floor = 'ground' } = {}) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true })
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
@@ -203,7 +204,7 @@ export function createStage(canvas, { floorSize = 7, floor = 'ground' } = {}) {
   )
   ground.rotation.x = -Math.PI / 2
   ground.receiveShadow = true
-  scene.add(ground)
+  if (floor !== 'none') scene.add(ground)
 
   function resize() {
     const w = canvas.clientWidth || 300

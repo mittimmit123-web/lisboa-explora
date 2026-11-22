@@ -312,3 +312,16 @@ input[type='email'] { flex: 1; min-width: 0; min-height: 44px; border-radius: 10
    and leave its label grey on dark. */
 .chips-status .chip { min-height: 44px; font-size: 12px; }
 .chips-status .chip:not(.selected) { color: var(--muted); }
+
+/* Journal entry: the optional note and rating on a check-off */
+.journal-note { display: flex; flex-direction: column; gap: 6px; }
+.journal-note textarea { width: 100%; box-sizing: border-box; min-height: 88px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font: inherit; line-height: 1.4; resize: vertical; }
+.journal-rating { display: flex; flex-direction: column; gap: 6px; }
+.stars { display: flex; align-items: center; gap: 2px; }
+.star { min-width: 44px; min-height: 44px; border: none; background: none; font-size: 26px; line-height: 1; color: var(--line); cursor: pointer; }
+.star.on { color: #d97706; }
+.star-clear { margin-left: 8px; font-size: 13px; }
+.photo-input small { display: block; margin-top: 4px; font-weight: 600; color: var(--muted); }
+/* In the Collection list, under the spot name */
+.entry-rating { display: block; margin-top: 2px; font-size: 13px; color: #d97706; letter-spacing: 1px; }
+.entry-note { display: block; margin-top: 4px; font-size: 14px; line-height: 1.4; color: var(--ink); font-style: italic; }

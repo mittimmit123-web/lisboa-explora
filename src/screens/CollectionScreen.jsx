@@ -68,12 +68,19 @@ export default function CollectionScreen({ spots, checkOffs, collectedIds }) {
           <p className="muted">Nothing collected yet. Open the map and find your first spot!</p>
         ) : (
           <ul className="recent">
-            {recent.map(({ spot, date, verified }) => (
+            {recent.map(({ spot, date, verified, note, rating }) => (
               <li key={spot.id} className={verified ? 'verified' : undefined}>
                 <span className="dot" style={{ background: categoryById(spot.category)?.color }} />
                 <span className="name">
                   {spot.name}
                   {verified && <span className="verified-note">⭐ You were really there</span>}
+                  {rating != null && (
+                    <span className="entry-rating" aria-label={`You rated it ${rating} out of 5`}>
+                      {'★'.repeat(rating)}
+                      <span className="muted">{'★'.repeat(5 - rating)}</span>
+                    </span>
+                  )}
+                  {note && <span className="entry-note">{note}</span>}
                 </span>
                 <span className="muted">{formatDate(date)}</span>
               </li>

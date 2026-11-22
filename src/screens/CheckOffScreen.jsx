@@ -6,6 +6,8 @@ import { CHECK_RADIUS_M, distanceMeters, formatDistance, isGpsWeak } from '../li
 import { categoryById } from '../data/categories.js'
 import { checkOffErrorMessage } from '../lib/messages.js'
 import { isPhotoTooBig, shrinkPhoto } from '../lib/photo.js'
+import { MAX_NOTE_LENGTH, charactersLeft } from '../lib/journal.js'
+import StarRating from '../components/StarRating.jsx'
 
 export default function CheckOffScreen({ spot, position, gpsError, onDone, onBack }) {
   const [photo, setPhoto] = useState(null)
@@ -14,6 +16,8 @@ export default function CheckOffScreen({ spot, position, gpsError, onDone, onBac
   const [message, setMessage] = useState(null)
   const [pretendHere, setPretendHere] = useState(false) // demo mode only
   const [previewUrl, setPreviewUrl] = useState(null) // temporary link to show the photo
+  const [note, setNote] = useState('') // optional journal entry
+  const [rating, setRating] = useState(null) // optional 1-5, null = no rating
 
   // Runs when the player takes or picks a photo: shrink it, keep it,
   // and make a temporary link so the <img> below can show it.
@@ -56,7 +60,7 @@ export default function CheckOffScreen({ spot, position, gpsError, onDone, onBac
     setMessage(null)
     let result
     try {
-      result = await checkOff({ spot, position: effectivePosition, photo })
+      result = await checkOff({ spot, position: effectivePosition, photo, note, rating })
     } catch {
       // e.g. the internet dropped completely: treat it like a server problem
       result = { ok: false, reason: 'server_error' }
@@ -115,16 +119,37 @@ export default function CheckOffScreen({ spot, position, gpsError, onDone, onBac
           {previewUrl ? (
             <img src={previewUrl} alt={`Your photo of ${spot.name}`} />
           ) : (
-            <span>Take a photo of the spot</span>
+            <span>Take a photo of the spot
+              <small>optional</small>
+            </span>
           )}
           {/* capture="environment" opens the back camera on phones */}
           <input type="file" accept="image/*" capture="environment" onChange={choosePhoto} />
         </label>
         {photo && <p className="muted">Tap the photo to take a new one</p>}
 
+        <label className="journal-note">
+          <span className="section-label">Your note</span>
+          <textarea
+            value={note}
+            maxLength={MAX_NOTE_LENGTH}
+            rows={3}
+            placeholder="What do you want to remember about this place?"
+            onChange={(e) => setNote(e.target.value)}
+          />
+          <small className="muted">{charactersLeft(note)} characters left · optional</small>
+        </label>
+
+        <div className="journal-rating">
+          <span className="section-label">How was it?</span>
+          <StarRating value={rating} onChange={setRating} />
+        </div>
+
         {message && <p className="error" role="alert">{message}</p>}
 
-        <button className="primary" disabled={busy || preparing || !photo} onClick={submit}>
+        {/* Nothing is required but the spot itself: no photo, no note and no
+            rating still makes a valid entry. See DECISIONS.md. */}
+        <button className="primary" disabled={busy || preparing} onClick={submit}>
           {preparing ? 'Preparing photo…' : busy ? 'Saving…' : willVerify ? 'Check off' : 'Add to journal'}
         </button>
       </div>

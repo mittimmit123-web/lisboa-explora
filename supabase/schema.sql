@@ -40,9 +40,25 @@ create table if not exists public.check_offs (
   lng double precision,
   -- true only if the server measured the player within 50 m of the spot
   verified boolean not null default false,
+  -- What the player wrote and how they liked it. Both optional: a check-off
+  -- needs nothing but the spot. See DECISIONS.md.
+  note text,
+  rating smallint check (rating between 1 and 5),
   created_at timestamptz not null default now(),
   unique (user_id, spot_id)
 );
+
+-- The two columns above were added later, so a database created before them
+-- gets them here. Running this file again is safe either way.
+alter table public.check_offs add column if not exists note text;
+alter table public.check_offs add column if not exists rating smallint;
+do $$
+begin
+  alter table public.check_offs add constraint check_offs_rating_check check (rating between 1 and 5);
+exception
+  when duplicate_object then null;
+end
+$$;
 
 -- Friendships are stored in both directions (A->B and B->A).
 create table if not exists public.friendships (
@@ -112,15 +128,27 @@ $$;
 -- ---------- Check off a spot ----------
 -- A check-off NEVER fails because of distance. The server only decides
 -- whether the entry gets the "verified on site" mark (within 50 m).
+--
+-- Photo, note and rating are ALL optional: the spot itself is the entry,
+-- everything else is something the player may add. See DECISIONS.md.
 
-create or replace function public.check_off(p_spot_id text, p_lat double precision,
-                                            p_lng double precision, p_photo_path text)
+-- The function used to take four arguments. Drop that one, or the database
+-- would keep both and not know which to call.
+drop function if exists public.check_off(text, double precision, double precision, text);
+
+create or replace function public.check_off(p_spot_id text,
+                                            p_lat double precision default null,
+                                            p_lng double precision default null,
+                                            p_photo_path text default null,
+                                            p_note text default null,
+                                            p_rating int default null)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare
   v_user uuid := auth.uid();
   v_spot public.spots;
   v_distance double precision;
   v_verified boolean := false;
+  v_note text;
 begin
   if v_user is null then
     return jsonb_build_object('ok', false, 'reason', 'not_logged_in');
@@ -131,9 +159,20 @@ begin
     return jsonb_build_object('ok', false, 'reason', 'unknown_spot');
   end if;
 
-  -- The photo must be in the player's own folder: photos/<user id>/...
-  if p_photo_path is null or split_part(p_photo_path, '/', 1) <> v_user::text then
+  -- A photo is optional. If there is one, it must be in the player's own
+  -- folder: photos/<user id>/...
+  if p_photo_path is not null and split_part(p_photo_path, '/', 1) <> v_user::text then
     return jsonb_build_object('ok', false, 'reason', 'bad_photo');
+  end if;
+
+  -- The note and the rating come from the browser, so the server checks them
+  -- rather than trusting what arrives. A blank note is stored as nothing.
+  v_note := nullif(btrim(coalesce(p_note, '')), '');
+  if length(v_note) > 500 then
+    return jsonb_build_object('ok', false, 'reason', 'note_too_long');
+  end if;
+  if p_rating is not null and (p_rating < 1 or p_rating > 5) then
+    return jsonb_build_object('ok', false, 'reason', 'bad_rating');
   end if;
 
   -- Distance decides the "verified on site" mark and nothing else.
@@ -143,8 +182,8 @@ begin
     v_verified := v_distance <= 50;
   end if;
 
-  insert into public.check_offs (user_id, spot_id, photo_path, lat, lng, verified)
-  values (v_user, p_spot_id, p_photo_path, p_lat, p_lng, v_verified)
+  insert into public.check_offs (user_id, spot_id, photo_path, lat, lng, verified, note, rating)
+  values (v_user, p_spot_id, p_photo_path, p_lat, p_lng, v_verified, v_note, p_rating)
   on conflict (user_id, spot_id) do nothing;
 
   if not found then

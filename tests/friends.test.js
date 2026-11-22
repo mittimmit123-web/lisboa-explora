@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addFriendMessage, friendEmailProblem, playerLabel, rememberMood, rememberedMood, weatherMood } from '../src/lib/friends.js'
+import { addFriendMessage, friendEmailProblem, nameProblem, playerLabel, rememberMood, rememberedMood, weatherMood } from '../src/lib/friends.js'
 
 describe('playerLabel', () => {
   it('shows other players by name', () => {
@@ -141,5 +141,25 @@ describe('remembered weather', () => {
     }
     expect(rememberedMood(blocked)).toBeNull()
     expect(() => rememberMood('rain', blocked)).not.toThrow()
+  })
+})
+
+describe('nameProblem', () => {
+  it('accepts a normal name or nickname', () => {
+    expect(nameProblem('Marleen')).toBeNull()
+    expect(nameProblem('Jo')).toBeNull()
+    expect(nameProblem('Captain Lisbon 2026')).toBeNull()
+  })
+
+  it('rejects names that are too short or too long', () => {
+    expect(nameProblem('M').ok).toBe(false)
+    expect(nameProblem('x'.repeat(21)).ok).toBe(false)
+  })
+
+  it('rejects blank names and ignores spaces around the name', () => {
+    expect(nameProblem('').ok).toBe(false)
+    expect(nameProblem('     ').ok).toBe(false)
+    expect(nameProblem(null).ok).toBe(false)
+    expect(nameProblem('  Jo  ')).toBeNull()
   })
 })

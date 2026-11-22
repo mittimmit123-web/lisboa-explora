@@ -35,15 +35,20 @@ export function addFriendMessage({ email, result, error }) {
   }
 }
 
-// ---------- Weather mood ----------
-// The sky on the Friends screen shows how the month's race is going.
-// Rain is never a punishment: it always comes with a rainbow or kind words.
-//
-// players: [{ name, count, isMe }] (the friends leaderboard)
-// Returns { mood, sub, text } where mood is one of:
-//   'golden'  you lead by 2 or more        'clouds'  you lead by 0-1 (or a tie)
-//   'wind'    1-2 spots behind first        'drizzle' 3 or more behind
-//   'rain'    you have no spots this month
+// ---------- Your name ----------
+// Must match the check in set_display_name (supabase/schema.sql).
+export const NAME_MIN = 2
+export const NAME_MAX = 20
+
+// Returns a message { ok: false, text } if the name can't be used, else null.
+export function nameProblem(name) {
+  const length = (name ?? '').trim().length
+  if (length < NAME_MIN || length > NAME_MAX) {
+    return { ok: false, text: `Please use ${NAME_MIN}–${NAME_MAX} characters.` }
+  }
+  return null
+}
+
 // ---------- remember the last weather ----------
 // The leaderboard takes a moment to load. Remembering the last mood lets the
 // Friends screen open with the right sky at once instead of a wrong one.
@@ -68,6 +73,15 @@ export function rememberMood(mood, storage = globalThis.localStorage) {
   }
 }
 
+// ---------- Weather mood ----------
+// The sky on the Friends screen shows how the month's race is going.
+// Rain is never a punishment: it always comes with a rainbow or kind words.
+//
+// players: [{ name, count, isMe }] (the friends leaderboard)
+// Returns { mood, sub, text } where mood is one of:
+//   'golden'  you lead by 2 or more        'clouds'  you lead by 0-1 (or a tie)
+//   'wind'    1-2 spots behind first        'drizzle' 3 or more behind
+//   'rain'    you have no spots this month
 export function weatherMood(players) {
   const me = players.find((p) => p.isMe)
   const others = players.filter((p) => !p.isMe)

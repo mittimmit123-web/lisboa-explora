@@ -143,7 +143,7 @@ export async function getPhotoUrl(checkOffRow) {
 export async function getFriendsLeaderboard(myCount) {
   if (isDemoMode) {
     return [
-      { name: 'You', count: myCount, isMe: true },
+      { name: readDemoName() ?? 'You', count: myCount, isMe: true },
       { name: 'Marta', count: 6 },
       { name: 'João', count: 4 },
       { name: 'Lukas', count: 2 },
@@ -152,6 +152,26 @@ export async function getFriendsLeaderboard(myCount) {
   const { data, error } = await supabase.rpc('friends_leaderboard')
   if (error) throw error
   return data.map((row) => ({ name: row.display_name, count: row.new_this_month, isMe: row.is_me }))
+}
+
+// Changes the name friends see. Returns { ok: true } or { ok: false, reason }.
+// The server checks the name (2-20 characters), see set_display_name.
+const DEMO_NAME_KEY = 'lisboa-explora-demo-name'
+function readDemoName() {
+  try {
+    return localStorage.getItem(DEMO_NAME_KEY)
+  } catch {
+    return null
+  }
+}
+export async function setDisplayName(name) {
+  if (isDemoMode) {
+    localStorage.setItem(DEMO_NAME_KEY, name.trim())
+    return { ok: true }
+  }
+  const { data, error } = await supabase.rpc('set_display_name', { p_name: name })
+  if (error) throw error
+  return data
 }
 
 // Sends a friend request by email address.

@@ -1,9 +1,9 @@
 // Person 4: Friends & leaderboard — the competitive part of the game.
 import { useCallback, useEffect, useState } from 'react'
-import { addFriend, getCharacter, getFriendsLeaderboard, getUser } from '../lib/api.js'
+import { addFriend, getCharacter, getFriendsLeaderboard, getUser, setDisplayName } from '../lib/api.js'
 import { isDemoMode } from '../lib/supabase.js'
 import WeatherScene from '../components/WeatherScene.jsx'
-import { addFriendMessage, friendEmailProblem, playerLabel, weatherMood } from '../lib/friends.js'
+import { addFriendMessage, friendEmailProblem, NAME_MAX, nameProblem, playerLabel, weatherMood } from '../lib/friends.js'
 import { rankPlayers } from '../lib/progress.js'
 
 export default function FriendsScreen({ newThisMonth }) {
@@ -12,6 +12,8 @@ export default function FriendsScreen({ newThisMonth }) {
   const [email, setEmail] = useState('')
   const [busy, setBusy] = useState(false)
   const [note, setNote] = useState(null) // { ok, text }
+  const [newName, setNewName] = useState(null) // null = not editing
+  const [nameNote, setNameNote] = useState(null) // { ok, text }
 
   const load = useCallback(() => {
     getFriendsLeaderboard(newThisMonth)
@@ -46,6 +48,27 @@ export default function FriendsScreen({ newThisMonth }) {
     }
   }
 
+  function editName(value) {
+    setNewName(value)
+    setNameNote(null)
+  }
+
+  async function saveName(e) {
+    e.preventDefault()
+    const problem = nameProblem(newName)
+    if (problem) return setNameNote(problem)
+    setBusy(true)
+    const result = await setDisplayName(newName).catch(() => null)
+    setBusy(false)
+    if (!result?.ok) {
+      return setNameNote(result?.reason === 'bad_name' ? nameProblem('') : { ok: false, text: 'Couldn’t save your name. Check your internet and try again.' })
+    }
+    setNewName(null)
+    setNameNote({ ok: true, text: 'Saved! Your friends now see this name.' })
+    load()
+  }
+
+  const me = players?.find((p) => p.isMe)
   const onlyMe = players && players.length <= 1
   // The sky shows how this month's race is going (null while loading).
   const weather = players ? weatherMood(players) : null
@@ -57,6 +80,34 @@ export default function FriendsScreen({ newThisMonth }) {
       </header>
       <div className="content">
         <WeatherScene mood={weather?.mood} sub={weather?.sub} text={weather?.text} buddy={getCharacter()} />
+
+        {me && (
+          <form className="card your-name" onSubmit={saveName} noValidate>
+            <label htmlFor="your-name">
+              <strong>Your name</strong> <span className="muted">(what friends see)</span>
+            </label>
+            {newName === null ? (
+              <div className="row between">
+                <span>{me.name}</span>
+                <button className="secondary" type="button" onClick={() => editName(me.name === 'You' ? '' : me.name)}>
+                  Change
+                </button>
+              </div>
+            ) : (
+              <div className="row add-friend">
+                <input id="your-name" type="text" autoComplete="nickname" autoFocus maxLength={NAME_MAX} value={newName} onChange={(e) => editName(e.target.value)} />
+                <button className="primary small" type="submit" disabled={busy}>
+                  Save
+                </button>
+              </div>
+            )}
+            {nameNote && (
+              <p className={nameNote.ok ? 'note ok' : 'note error'} role="status">
+                {nameNote.text}
+              </p>
+            )}
+          </form>
+        )}
 
         <h2 className="section-label">New spots this month</h2>
         {loadError ? (

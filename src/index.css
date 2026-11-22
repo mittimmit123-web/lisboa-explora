@@ -113,7 +113,7 @@ button { font: inherit; cursor: pointer; }
 .avatar { width: 34px; height: 34px; border-radius: 50%; background: #fde68a; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; }
 .leaderboard li.me .avatar { background: var(--accent); color: #fff; }
 .name { flex: 1; font-weight: 600; }
-input[type='email'] { flex: 1; min-width: 0; min-height: 44px; border-radius: 10px; border: 1px solid var(--line); padding: 0 12px; font: inherit; }
+input[type='email'], input[type='text'] { flex: 1; min-width: 0; min-height: 44px; border-radius: 10px; border: 1px solid var(--line); padding: 0 12px; font: inherit; }
 
 /* Login */
 .login { justify-content: center; }

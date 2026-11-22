@@ -196,6 +196,27 @@ begin
 end;
 $$;
 
+-- ---------- Your name ----------
+
+-- The name friends see on the leaderboard. Starts as the email name (see
+-- handle_new_user); the player can change it. Checked here, never trusted
+-- from the browser: 2-20 characters after trimming spaces.
+create or replace function public.set_display_name(p_name text)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  v_name text := btrim(coalesce(p_name, ''));
+begin
+  if auth.uid() is null then
+    return jsonb_build_object('ok', false, 'reason', 'not_logged_in');
+  end if;
+  if length(v_name) not between 2 and 20 then
+    return jsonb_build_object('ok', false, 'reason', 'bad_name');
+  end if;
+  update public.profiles set display_name = v_name where id = auth.uid();
+  return jsonb_build_object('ok', true);
+end;
+$$;
+
 -- ---------- Friends ----------
 
 create or replace function public.add_friend(p_email text)

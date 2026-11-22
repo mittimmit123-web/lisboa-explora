@@ -5,7 +5,9 @@ import {
   emojiFor,
   isInBounds,
   isVisibleAtZoom,
+  isVisibleAtZoomForStatus,
   matchesFilter,
+  matchesStatus,
   toggleCategory,
 } from '../src/lib/markers.js'
 
@@ -85,5 +87,50 @@ describe('directionsUrl', () => {
     expect(directionsUrl({ lat: 38.7118, lng: -9.1301 })).toBe(
       'https://www.google.com/maps/dir/?api=1&destination=38.7118,-9.1301&travelmode=walking',
     )
+  })
+})
+
+describe('matchesStatus', () => {
+  const collectedIds = new Set(['a'])
+  const seen = { id: 'a' }
+  const missing = { id: 'b' }
+
+  it('"all" lets every spot through', () => {
+    expect(matchesStatus(seen, 'all', collectedIds)).toBe(true)
+    expect(matchesStatus(missing, 'all', collectedIds)).toBe(true)
+  })
+
+  it('"collected" keeps only spots in the journal', () => {
+    expect(matchesStatus(seen, 'collected', collectedIds)).toBe(true)
+    expect(matchesStatus(missing, 'collected', collectedIds)).toBe(false)
+  })
+
+  it('"missing" keeps only the ones still to visit', () => {
+    expect(matchesStatus(seen, 'missing', collectedIds)).toBe(false)
+    expect(matchesStatus(missing, 'missing', collectedIds)).toBe(true)
+  })
+
+  it('treats an unknown status as "all", so a stale value cannot empty the map', () => {
+    expect(matchesStatus(missing, 'something-else', collectedIds)).toBe(true)
+  })
+})
+
+describe('isVisibleAtZoomForStatus', () => {
+  const normal = { category: 'food' }
+  const famous = { category: 'monument', highlight: true }
+  const zoomedOut = SHOW_ALL_ZOOM - 1
+
+  it('keeps the zoom rule for "all" and "missing"', () => {
+    expect(isVisibleAtZoomForStatus(normal, zoomedOut, 'all')).toBe(false)
+    expect(isVisibleAtZoomForStatus(normal, zoomedOut, 'missing')).toBe(false)
+    expect(isVisibleAtZoomForStatus(famous, zoomedOut, 'all')).toBe(true)
+  })
+
+  it('shows collected spots at every zoom, highlight or not', () => {
+    expect(isVisibleAtZoomForStatus(normal, zoomedOut, 'collected')).toBe(true)
+  })
+
+  it('still shows everything when zoomed in', () => {
+    expect(isVisibleAtZoomForStatus(normal, SHOW_ALL_ZOOM, 'missing')).toBe(true)
   })
 })

@@ -9,11 +9,20 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 // background. Vite has to be told where that file is, otherwise it is not found.
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
 import CategoryFilter from '../components/CategoryFilter.jsx'
+import StatusFilter from '../components/StatusFilter.jsx'
 import { categoryById } from '../data/categories.js'
 import { distanceMeters, formatDistance } from '../lib/geo.js'
 import { enableSmoothWheelZoom } from '../lib/smoothWheelZoom.js'
 import { MAP_ATTRIBUTION, mapStyle } from '../lib/mapStyle.js'
-import { SHOW_ALL_ZOOM, directionsUrl, emojiFor, isInBounds, isVisibleAtZoom, matchesFilter } from '../lib/markers.js'
+import {
+  SHOW_ALL_ZOOM,
+  directionsUrl,
+  emojiFor,
+  isInBounds,
+  isVisibleAtZoomForStatus,
+  matchesFilter,
+  matchesStatus,
+} from '../lib/markers.js'
 
 const LISBON = [38.725, -9.15]
 const START_ZOOM = 12 // overview of the whole city
@@ -124,6 +133,7 @@ function readView(map) {
 
 export default function MapScreen({ spots, collectedIds, position, onCheckOff, newThisMonth }) {
   const [filter, setFilter] = useState([]) // selected category ids, [] = all
+  const [status, setStatus] = useState('all') // 'all' | 'collected' | 'missing'
   const [selectedId, setSelectedId] = useState(null)
   const [map, setMap] = useState(null)
   const [view, setView] = useState(null)
@@ -147,12 +157,16 @@ export default function MapScreen({ spots, collectedIds, position, onCheckOff, n
   const visible = useMemo(() => {
     if (!view) return []
     const list = spots.filter(
-      (s) => matchesFilter(s, filter) && isVisibleAtZoom(s, view.zoom) && isInBounds(s, view.bounds),
+      (s) =>
+        matchesFilter(s, filter) &&
+        matchesStatus(s, status, collectedIds) &&
+        isVisibleAtZoomForStatus(s, view.zoom, status) &&
+        isInBounds(s, view.bounds),
     )
     // The selected spot always stays on the map, even after zooming out.
     if (selected && !list.includes(selected)) list.push(selected)
     return list
-  }, [spots, filter, view, selected])
+  }, [spots, filter, status, collectedIds, view, selected])
 
   const category = selected && categoryById(selected.category)
   const collected = selected && collectedIds.has(selected.id)
@@ -167,6 +181,7 @@ export default function MapScreen({ spots, collectedIds, position, onCheckOff, n
       </header>
 
       <CategoryFilter value={filter} onChange={setFilter} />
+      <StatusFilter value={status} onChange={setStatus} />
 
       <div className="map-wrap" data-tour="map">
         {/* scrollWheelZoom is off: our own smooth wheel zoom replaces it
@@ -212,8 +227,11 @@ export default function MapScreen({ spots, collectedIds, position, onCheckOff, n
           )}
         </MapContainer>
 
-        {view && view.zoom < SHOW_ALL_ZOOM && (
+        {view && view.zoom < SHOW_ALL_ZOOM && status !== 'collected' && (
           <div style={styles.hint}>Showing highlights · zoom in to see all spots</div>
+        )}
+        {view && view.zoom < SHOW_ALL_ZOOM && status === 'collected' && (
+          <div style={styles.hint}>Everything you have collected so far</div>
         )}
 
         <div style={styles.bottom}>

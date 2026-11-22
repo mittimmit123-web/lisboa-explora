@@ -46,6 +46,27 @@ export function matchesFilter(spot, selected) {
   return selected.length === 0 || selected.includes(spot.category)
 }
 
+// Collected filter, a second question next to the categories: show every
+// spot, only the ones already in the journal, or only the ones still
+// missing. The two filters work independently, so "Viewpoints" + "missing"
+// answers "where do I still have to go?".
+export const STATUSES = ['all', 'collected', 'missing']
+
+export function matchesStatus(spot, status, collectedIds) {
+  if (status === 'collected') return collectedIds.has(spot.id)
+  if (status === 'missing') return !collectedIds.has(spot.id)
+  return true
+}
+
+// Below SHOW_ALL_ZOOM only highlights are drawn, otherwise the city view is
+// a wall of pins. Collected spots are the exception: there are only ever a
+// few dozen, and someone asking "where have I been?" wants to see them from
+// above. Without this, filtering to "collected" while zoomed out shows an
+// empty map, because a collected spot is rarely a highlight.
+export function isVisibleAtZoomForStatus(spot, zoom, status) {
+  return status === 'collected' || isVisibleAtZoom(spot, zoom)
+}
+
 // Link that opens walking directions in Google Maps (new tab / Maps app).
 export function directionsUrl(spot) {
   return `https://www.google.com/maps/dir/?api=1&destination=${spot.lat},${spot.lng}&travelmode=walking`

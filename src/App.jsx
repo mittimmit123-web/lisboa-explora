@@ -13,7 +13,7 @@ import { getCharacter, getMyCheckOffs, getUser, onAuthChange } from './lib/api.j
 import { isDemoMode } from './lib/supabase.js'
 import { newThisMonth } from './lib/progress.js'
 import { newlyUnlocked, unlockedChapters } from './lib/story.js'
-import { hasSeenIntro, markIntroSeen } from './lib/intro.js'
+import { hasSeenIntro, markIntroSeen, markWelcomed, welcomeDue } from './lib/intro.js'
 import { TOUR_HOST, TOUR_STEPS, hasSeenTour, isLastStep, markTourSeen } from './lib/tour.js'
 import { characterById } from './lib/characters.js'
 import TourOverlay from './components/TourOverlay.jsx'
@@ -27,6 +27,11 @@ export default function App() {
   const [showIntro, setShowIntro] = useState(() => !hasSeenIntro()) // intro (#33)
   // Later openings: splash with the player's Explora + "welcome back" card
   const [welcome, setWelcome] = useState(() => hasSeenIntro() && Boolean(getCharacter()))
+  const [welcomeCard] = useState(() => {
+    const due = welcomeDue() // the card only on the first opening of the day
+    if (due) markWelcomed()
+    return due
+  })
   const [tourStep, setTourStep] = useState(null) // guided tour after the intro (#33), null = no tour
   const [user, setUser] = useState(undefined) // undefined = still loading
   const [tab, setTab] = useState('map')
@@ -120,7 +125,7 @@ export default function App() {
       </main>
       {welcome && (
         <Suspense fallback={<div className="welcome-splash" />}>
-          <WelcomeBack exploraId={getCharacter()} onDone={() => setWelcome(false)} />
+          <WelcomeBack exploraId={getCharacter()} withCard={welcomeCard} onDone={() => setWelcome(false)} />
         </Suspense>
       )}
       {tourStep !== null && (

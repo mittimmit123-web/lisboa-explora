@@ -67,3 +67,25 @@ export function markIntroSeen(storage = globalThis.localStorage) {
     // storage blocked: the intro may show again next time, that's fine
   }
 }
+
+// ---------- the "welcome back" card: once per day ----------
+// The splash with the Explora shows on every opening; the welcome card only
+// on the first opening of each day, so it never gets in the way.
+const WELCOME_KEY = 'lisboa-explora-welcome-day'
+const today = (now) => `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`
+
+export function welcomeDue(storage = globalThis.localStorage, now = new Date()) {
+  try {
+    return storage?.getItem(WELCOME_KEY) !== today(now)
+  } catch {
+    return false // storage blocked: skip the card rather than show it every time
+  }
+}
+
+export function markWelcomed(storage = globalThis.localStorage, now = new Date()) {
+  try {
+    storage?.setItem(WELCOME_KEY, today(now))
+  } catch {
+    // storage blocked: nothing to remember
+  }
+}

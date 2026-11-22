@@ -30,9 +30,10 @@ export function monthSummary(checkOffs, now = new Date()) {
 }
 
 // Sort players by new spots this month, highest first, and add a rank.
-export function rankPlayers(players) {
+// key: which number to rank by, e.g. 'count' (spots) or 'neighbourhoods'.
+export function rankPlayers(players, key = 'count') {
   return [...players]
-    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+    .sort((a, b) => b[key] - a[key] || a.name.localeCompare(b.name))
     .map((p, i) => ({ ...p, rank: i + 1 }))
 }
 
@@ -66,6 +67,17 @@ export function categoryCounts(spots, collectedIds, categories) {
 // Returns { visited, total, list } where list = [{ name, count }] in the order
 // of `neighbourhoods` and count = collected spots there. Spots outside the
 // list (e.g. the campus in Carcavelos) are ignored here.
+// How many spots the player has in each neighbourhood: { Belém: 3, Ajuda: 1 }
+export function neighbourhoodCounts(checkOffs, spots) {
+  const hoodOf = new Map(spots.map((s) => [s.id, s.neighbourhood]))
+  const counts = {}
+  for (const c of checkOffs) {
+    const hood = hoodOf.get(c.spot_id)
+    if (hood) counts[hood] = (counts[hood] ?? 0) + 1
+  }
+  return counts
+}
+
 export function neighbourhoodCoverage(spots, collectedIds, neighbourhoods) {
   const list = neighbourhoods.map((name) => ({
     name,

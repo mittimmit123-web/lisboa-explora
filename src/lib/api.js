@@ -139,19 +139,21 @@ export async function getPhotoUrl(checkOffRow) {
 
 // ---------- Friends ----------
 
-// [{ name, count, isMe }] with count = new spots this month
-export async function getFriendsLeaderboard(myCount) {
+// [{ name, count, isMe, hoodCounts }]: count = new spots this month,
+// hoodCounts = spots per neighbourhood since the start, e.g. { Belém: 3 }.
+// In demo mode the player's own numbers come from the app (myCount, myHoodCounts).
+export async function getFriendsLeaderboard(myCount, myHoodCounts = {}) {
   if (isDemoMode) {
     return [
-      { name: readDemoName() ?? 'You', count: myCount, isMe: true },
-      { name: 'Marta', count: 6 },
-      { name: 'João', count: 4 },
-      { name: 'Lukas', count: 2 },
+      { name: readDemoName() ?? 'You', count: myCount, isMe: true, hoodCounts: myHoodCounts },
+      { name: 'Marta', count: 6, hoodCounts: { Belém: 4, Alcântara: 2, Ajuda: 1, Estrela: 1, Misericórdia: 1 } },
+      { name: 'João', count: 4, hoodCounts: { Misericórdia: 3, Arroios: 2, 'Santo António': 1, 'Penha de França': 1, 'São Vicente': 1, Estrela: 1, 'Avenidas Novas': 1, 'Santa Maria Maior': 1 } },
+      { name: 'Lukas', count: 2, hoodCounts: { Alvalade: 1, Areeiro: 1 } },
     ]
   }
   const { data, error } = await supabase.rpc('friends_leaderboard')
   if (error) throw error
-  return data.map((row) => ({ name: row.display_name, count: row.new_this_month, isMe: row.is_me }))
+  return data.map((row) => ({ name: row.display_name, count: row.new_this_month, isMe: row.is_me, hoodCounts: row.hood_counts ?? {} }))
 }
 
 // Changes the name friends see. Returns { ok: true } or { ok: false, reason }.

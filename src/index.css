@@ -111,6 +111,8 @@ button { font: inherit; cursor: pointer; }
 .leaderboard li { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid #efeae0; }
 .leaderboard li:last-child { border-bottom: none; }
 .leaderboard li.me { background: #eef3fb; }
+.leaderboard .name { display: flex; flex-direction: column; min-width: 0; }
+.player-title { color: #92400e; font-weight: 700; font-size: 13px; }
 .rank { width: 18px; font-weight: 700; color: var(--muted); }
 .avatar { width: 34px; height: 34px; border-radius: 50%; background: #fde68a; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; }
 .leaderboard li.me .avatar { background: var(--accent); color: #fff; }

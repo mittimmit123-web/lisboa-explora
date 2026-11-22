@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addFriendMessage, friendEmailProblem, nameProblem, nameResultMessage, playerLabel, rememberMood, rememberedMood, weatherMood } from '../src/lib/friends.js'
+import { addFriendMessage, friendEmailProblem, nameProblem, nameResultMessage, playerLabel, rememberMood, rememberedMood, titleLine, weatherMood, withTitles } from '../src/lib/friends.js'
 
 describe('playerLabel', () => {
   it('shows other players by name', () => {
@@ -181,5 +181,51 @@ describe('nameResultMessage', () => {
 
   it('asks to check the internet when the request fails', () => {
     expect(nameResultMessage({ error: new Error('offline') }).text).toMatch(/internet/)
+  })
+})
+
+describe('withTitles', () => {
+  const players = [
+    { name: 'Marta', hoodCounts: { Belém: 4, Ajuda: 1 } },
+    { name: 'João', hoodCounts: { Belém: 2, Arroios: 3, Ajuda: 1 } },
+    { name: 'Ana', hoodCounts: {} },
+  ]
+  const byName = (list) => Object.fromEntries(list.map((p) => [p.name, p]))
+
+  it('gives a title to whoever has the most spots in a neighbourhood', () => {
+    const p = byName(withTitles(players))
+    expect(p.Marta.titles).toEqual(['Belém'])
+    expect(p.João.titles).toEqual(['Arroios'])
+  })
+
+  it('puts the strongest title first', () => {
+    const p = byName(withTitles([{ name: 'A', hoodCounts: { Ajuda: 1, Belém: 5 } }]))
+    expect(p.A.titles).toEqual(['Belém', 'Ajuda'])
+  })
+
+  it('gives nobody the title when two players are tied', () => {
+    const p = byName(withTitles(players))
+    expect(p.Marta.titles).not.toContain('Ajuda')
+    expect(p.João.titles).not.toContain('Ajuda')
+  })
+
+  it('counts how many neighbourhoods each player explored', () => {
+    const p = byName(withTitles(players))
+    expect(p.Marta.neighbourhoods).toBe(2)
+    expect(p.João.neighbourhoods).toBe(3)
+    expect(p.Ana.neighbourhoods).toBe(0)
+    expect(p.Ana.titles).toEqual([])
+  })
+
+  it('works when a player has no neighbourhood data', () => {
+    expect(withTitles([{ name: 'X' }])[0]).toMatchObject({ neighbourhoods: 0, titles: [] })
+  })
+})
+
+describe('titleLine', () => {
+  it('shows one title, or the first one and how many more', () => {
+    expect(titleLine([])).toBe('')
+    expect(titleLine(['Belém'])).toBe('👑 Ruler of Belém')
+    expect(titleLine(['Belém', 'Ajuda', 'Estrela'])).toBe('👑 Ruler of Belém + 2 more')
   })
 })

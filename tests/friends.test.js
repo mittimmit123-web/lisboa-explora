@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addFriendMessage, friendEmailProblem, nameProblem, playerLabel, rememberMood, rememberedMood, weatherMood } from '../src/lib/friends.js'
+import { addFriendMessage, friendEmailProblem, nameProblem, nameResultMessage, playerLabel, rememberMood, rememberedMood, weatherMood } from '../src/lib/friends.js'
 
 describe('playerLabel', () => {
   it('shows other players by name', () => {
@@ -161,5 +161,25 @@ describe('nameProblem', () => {
     expect(nameProblem('     ').ok).toBe(false)
     expect(nameProblem(null).ok).toBe(false)
     expect(nameProblem('  Jo  ')).toBeNull()
+  })
+})
+
+describe('nameResultMessage', () => {
+  it('confirms a saved name', () => {
+    expect(nameResultMessage({ result: { ok: true } }).ok).toBe(true)
+  })
+
+  it('says when the name is already taken', () => {
+    const message = nameResultMessage({ result: { ok: false, reason: 'name_taken' } })
+    expect(message.ok).toBe(false)
+    expect(message.text).toMatch(/already taken/)
+  })
+
+  it('explains the length rule when the server refuses the name', () => {
+    expect(nameResultMessage({ result: { ok: false, reason: 'bad_name' } }).text).toMatch(/2–20/)
+  })
+
+  it('asks to check the internet when the request fails', () => {
+    expect(nameResultMessage({ error: new Error('offline') }).text).toMatch(/internet/)
   })
 })

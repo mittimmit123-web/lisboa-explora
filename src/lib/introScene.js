@@ -8,6 +8,7 @@
 //
 // Two clocks: `t` is the story clock (it waits at the question), `live` keeps
 // running, so the Explora blinks, sways and talks even while it waits.
+import { HELLO_END, PROLOGUE_JOY } from './intro.js'
 import * as THREE from 'three'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
 
@@ -347,25 +348,25 @@ export function createIntroScene(canvas, { actorId = 'tram' } = {}) {
     if (t < 0.8) { // pop in: grow from small with a little overshoot
       const k = clamp(t / 0.8)
       p.scale = 1.15 * (k < 0.7 ? ease(k / 0.7) * 1.12 : lerp(1.12, 1, (k - 0.7) / 0.3))
-    } else if (t < 3.2) { // shy: looks around while talking
+    } else if (t < HELLO_END) { // shy: looks around while talking
       const k = ease(clamp((t - 0.8) / 0.4))
       p.face = mixFaces(FACES.happy, FACES.shy, k)
-      p.talking = t > 1.0 && t < 3.0
+      p.talking = t > 1.0 && t < HELLO_END - 1
       p.turn = -0.25 + Math.sin(live * 1.6) * 0.35
-    } else if (t < 4.8) { // hopeful: leans in and asks
-      const k = ease(clamp((t - 3.2) / 0.4))
+    } else if (t < PROLOGUE_JOY) { // hopeful: leans in and asks
+      const k = ease(clamp((t - HELLO_END) / 0.4))
       p.face = mixFaces(FACES.shy, FACES.hope, k)
-      p.talking = t > 3.4 && t < 4.2
+      p.talking = t > HELLO_END + 0.2 && t < HELLO_END + 1
       p.lean = k * 0.18 + Math.sin(live * 2) * 0.02
       p.turn = lerp(-0.25, -0.1, k)
       p.armUp = k * 0.35
     } else { // "Yes!" -> jump for joy
-      const k = clamp((t - 4.8) / 0.3)
+      const k = clamp((t - PROLOGUE_JOY) / 0.3)
       p.face = mixFaces(FACES.hope, FACES.joy, k)
       p.armUp = 1
       p.wave = Math.sin(live * 12) * 0.4
-      p.hop = Math.abs(Math.sin((t - 4.8) * 7)) * 0.6
-      p.talking = t > 5.2 && t < 6.2
+      p.hop = Math.abs(Math.sin((t - PROLOGUE_JOY) * 7)) * 0.6
+      p.talking = t > PROLOGUE_JOY + 0.4 && t < PROLOGUE_JOY + 1.4
       p.turn = -0.1
       p.party = true
       p.energy = 1

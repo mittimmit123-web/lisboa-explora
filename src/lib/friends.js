@@ -49,6 +49,15 @@ export function nameProblem(name) {
   return null
 }
 
+// The answer of setDisplayName as a message { ok, text }. Without a result
+// (the request failed) it asks the player to check the internet.
+export function nameResultMessage({ result }) {
+  if (result?.ok) return { ok: true, text: 'Saved! Your friends now see this name.' }
+  if (result?.reason === 'name_taken') return { ok: false, text: 'This name is already taken. Try another one!' }
+  if (result?.reason === 'bad_name') return nameProblem('')
+  return { ok: false, text: 'Couldn’t save your name. Check your internet and try again.' }
+}
+
 // ---------- remember the last weather ----------
 // The leaderboard takes a moment to load. Remembering the last mood lets the
 // Friends screen open with the right sky at once instead of a wrong one.

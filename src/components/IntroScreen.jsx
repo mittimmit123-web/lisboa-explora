@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { characterById } from '../lib/characters.js'
 import {
+  HELLO_END,
   PROLOGUE_END,
   WELCOME_END,
   advancePrologue,
@@ -17,6 +18,7 @@ import {
 import { createIntroScene } from '../lib/introScene.js'
 import IntroPicker from './IntroPicker.jsx'
 import IntroAlbum from './IntroAlbum.jsx'
+import IntroName from './IntroName.jsx'
 
 const HOST = 'tram' // Trammy welcomes everyone, and stands in if no Explora is chosen
 const prefersCalm = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
@@ -49,6 +51,7 @@ export default function IntroScreen({ onDone }) {
         />
       )}
       {step === 'prologue' && <PrologueFilm actorId={actorId} onDone={next} />}
+      {step === 'name' && <IntroName actorId={actorId} onDone={next} />}
       {step === 'album' && <IntroAlbum actorId={actorId} onDone={next} />}
     </div>
   )
@@ -134,7 +137,7 @@ function PrologueFilm({ actorId, onDone }) {
   const explora = characterById(actorId)
   useFilm(canvasRef, actorId, {
     tick: (t, dt) => {
-      if (calm) return answeredRef.current ? PROLOGUE_END : 4.0
+      if (calm) return answeredRef.current ? PROLOGUE_END : HELLO_END + 0.8
       return advancePrologue(t, dt, answeredRef.current)
     },
     draw: (scene, t, live) => scene.drawPrologue(t, calm ? 0 : live),

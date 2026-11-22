@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { addFriend, getCharacter, getFriendsLeaderboard, getUser, setDisplayName } from '../lib/api.js'
 import { isDemoMode } from '../lib/supabase.js'
 import WeatherScene from '../components/WeatherScene.jsx'
-import { addFriendMessage, friendEmailProblem, NAME_MAX, nameProblem, playerLabel, weatherMood } from '../lib/friends.js'
+import { addFriendMessage, friendEmailProblem, NAME_MAX, nameProblem, nameResultMessage, playerLabel, weatherMood } from '../lib/friends.js'
 import { rankPlayers } from '../lib/progress.js'
 
 export default function FriendsScreen({ newThisMonth }) {
@@ -58,13 +58,13 @@ export default function FriendsScreen({ newThisMonth }) {
     const problem = nameProblem(newName)
     if (problem) return setNameNote(problem)
     setBusy(true)
-    const result = await setDisplayName(newName).catch(() => null)
+    const message = await setDisplayName(newName)
+      .then((result) => nameResultMessage({ result }))
+      .catch((error) => nameResultMessage({ error }))
     setBusy(false)
-    if (!result?.ok) {
-      return setNameNote(result?.reason === 'bad_name' ? nameProblem('') : { ok: false, text: 'Couldn’t save your name. Check your internet and try again.' })
-    }
+    setNameNote(message)
+    if (!message.ok) return
     setNewName(null)
-    setNameNote({ ok: true, text: 'Saved! Your friends now see this name.' })
     load()
   }
 

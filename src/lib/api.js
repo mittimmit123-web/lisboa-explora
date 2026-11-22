@@ -173,6 +173,7 @@ export async function getMyName() {
 
 export async function setDisplayName(name) {
   if (isDemoMode) {
+    if (['marta', 'joão', 'lukas'].includes(name.trim().toLowerCase())) return { ok: false, reason: 'name_taken' }
     localStorage.setItem(DEMO_NAME_KEY, name.trim())
     return { ok: true }
   }

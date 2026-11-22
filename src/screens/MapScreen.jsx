@@ -1,6 +1,6 @@
 // Person 1: Map & Spots
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { MapContainer, TileLayer, CircleMarker, Marker, useMap, useMapEvents } from 'react-leaflet'
+import { MapContainer, TileLayer, CircleMarker, Marker, Polygon, useMap, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import { maplibreGL } from '@maplibre/maplibre-gl-leaflet'
 import { setWorkerUrl } from 'maplibre-gl'
@@ -12,6 +12,7 @@ import { getCharacter } from '../lib/api.js'
 import CategoryFilter from '../components/CategoryFilter.jsx'
 import StatusFilter from '../components/StatusFilter.jsx'
 import { categoryById } from '../data/categories.js'
+import { LOCKED_OPACITY, NEIGHBOURHOOD_COLORS, UNLOCKED_OPACITY } from '../data/neighbourhoodColors.js'
 import { distanceMeters, formatDistance } from '../lib/geo.js'
 import { enableSmoothWheelZoom } from '../lib/smoothWheelZoom.js'
 import { MAP_ATTRIBUTION, mapStyle } from '../lib/mapStyle.js'
@@ -23,6 +24,7 @@ import {
   isVisibleAtZoomForStatus,
   matchesFilter,
   matchesStatus,
+  unlockedNeighbourhoods,
 } from '../lib/markers.js'
 
 const LISBON = [38.725, -9.15]
@@ -36,6 +38,11 @@ setWorkerUrl(maplibreWorkerUrl)
 // false = the classic OpenStreetMap map. Safe way back if the new map ever
 //         causes problems, e.g. on a very old phone: change this one line.
 const USE_OWN_MAP_DESIGN = true
+
+// true  = each neighbourhood has its own soft colour, stronger once you have
+//         collected a spot there (#12)
+// false = no coloured neighbourhoods. Same idea: one line to switch it off.
+const SHOW_NEIGHBOURHOOD_COLOURS = true
 
 const FOOD_KIND_LABEL = { cafe: 'café', restaurant: 'restaurant', market: 'market' }
 const RARITY_STYLE = {
@@ -148,6 +155,42 @@ function useExploraPinIcon() {
   return icon
 }
 
+// Lisbon's 24 neighbourhoods as coloured areas under the markers (#12).
+// The borders (src/data/parishes.js) are loaded only after the map is on
+// screen, so the first start is not slower. memo + `unlocked` as one text
+// ("Belém|Estrela"): the areas are only redrawn when a new neighbourhood is
+// unlocked, not on every GPS update.
+const NeighbourhoodColours = memo(function NeighbourhoodColours({ unlocked }) {
+  const [parishes, setParishes] = useState(null)
+  useEffect(() => {
+    let cancelled = false
+    import('../data/parishes.js')
+      .then((m) => !cancelled && setParishes(m.PARISHES))
+      .catch(() => {}) // not loaded (e.g. offline): the map simply has no colours
+    return () => {
+      cancelled = true
+    }
+  }, [])
+  if (!parishes) return null
+  const isUnlocked = new Set(unlocked.split('|'))
+  return parishes.flatMap((parish) =>
+    parish.polygons.map((ring, i) => (
+      <Polygon
+        key={`${parish.name}-${i}`}
+        positions={ring}
+        interactive={false} // taps go through to the map and the markers
+        pathOptions={{
+          fillColor: NEIGHBOURHOOD_COLORS[parish.name] ?? '#CCCCCC',
+          fillOpacity: isUnlocked.has(parish.name) ? UNLOCKED_OPACITY : LOCKED_OPACITY,
+          color: '#FFFFFF', // thin white line between neighbourhoods
+          weight: 1.5,
+          opacity: 0.9,
+        }}
+      />
+    )),
+  )
+})
+
 function readView(map) {
   // pad(0.05): also draw spots just outside the screen, so panning looks
   // smooth. Kept small, because every extra marker makes zooming slower (#40).
@@ -177,6 +220,7 @@ export default function MapScreen({ spots, collectedIds, position, onCheckOff, n
   }, [map, position])
 
   const selected = useMemo(() => spots.find((s) => s.id === selectedId), [spots, selectedId])
+  const unlockedKey = unlockedNeighbourhoods(spots, collectedIds).join('|')
   // useMemo: only recalculated when the map moves, the filter changes or
   // another spot is selected, not on every GPS update.
   const visible = useMemo(() => {
@@ -232,6 +276,7 @@ export default function MapScreen({ spots, collectedIds, position, onCheckOff, n
               url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
           )}
+          {SHOW_NEIGHBOURHOOD_COLOURS && <NeighbourhoodColours unlocked={unlockedKey} />}
           <MapWatcher onChange={handleViewChange} />
           <SmoothWheelZoom />
           {visible.map((spot) => (

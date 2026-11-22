@@ -21,9 +21,12 @@ import { useGeolocation } from './lib/useGeolocation.js'
 
 // The intro brings the 3D library, so it is only downloaded when it is shown.
 const IntroScreen = lazy(() => import('./components/IntroScreen.jsx'))
+const WelcomeBack = lazy(() => import('./components/WelcomeBack.jsx'))
 
 export default function App() {
   const [showIntro, setShowIntro] = useState(() => !hasSeenIntro()) // intro (#33)
+  // Later openings: splash with the player's Explora + "welcome back" card
+  const [welcome, setWelcome] = useState(() => hasSeenIntro() && Boolean(getCharacter()))
   const [tourStep, setTourStep] = useState(null) // guided tour after the intro (#33), null = no tour
   const [user, setUser] = useState(undefined) // undefined = still loading
   const [tab, setTab] = useState('map')
@@ -115,6 +118,11 @@ export default function App() {
           <FriendsScreen newThisMonth={monthCount} />
         )}
       </main>
+      {welcome && (
+        <Suspense fallback={<div className="welcome-splash" />}>
+          <WelcomeBack exploraId={getCharacter()} onDone={() => setWelcome(false)} />
+        </Suspense>
+      )}
       {tourStep !== null && (
         <TourOverlay
           index={tourStep}

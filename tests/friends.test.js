@@ -246,10 +246,10 @@ describe('withTitles', () => {
 })
 
 describe('titleLine', () => {
-  it('shows one title, or the first one and how many more', () => {
+  it('shows only the strongest title, so at most one crown', () => {
     expect(titleLine([])).toBe('')
     expect(titleLine(['Belém'])).toBe('👑 Ruler of Belém')
-    expect(titleLine(['Belém', 'Ajuda', 'Estrela'])).toBe('👑 Ruler of Belém + 2 more')
+    expect(titleLine(['Belém', 'Ajuda', 'Estrela'])).toBe('👑 Ruler of Belém')
   })
 })
 

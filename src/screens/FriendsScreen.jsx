@@ -207,7 +207,7 @@ export default function FriendsScreen({ newThisMonth, myHoodCounts }) {
                     <span className="name">
                       {playerLabel(p)}
                       {p.titles.length > 0 && (
-                        <small className="player-title" title={p.titles.join(', ')}>
+                        <small className="player-title">
                           {titleLine(p.titles)}
                         </small>
                       )}

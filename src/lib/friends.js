@@ -100,11 +100,10 @@ export function withTitles(players) {
   }))
 }
 
-// One short line for the leaderboard: "👑 Ruler of Belém + 2 more", or '' if none.
+// One short line for the leaderboard: only the strongest title, so everyone
+// shows at most one crown: "👑 Ruler of Belém", or '' if none.
 export function titleLine(titles) {
-  if (!titles.length) return ''
-  const more = titles.length > 1 ? ` + ${titles.length - 1} more` : ''
-  return `👑 Ruler of ${titles[0]}${more}`
+  return titles.length ? `👑 Ruler of ${titles[0]}` : ''
 }
 
 // ---------- remember the last weather ----------

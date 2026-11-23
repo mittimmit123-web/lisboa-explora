@@ -24,7 +24,7 @@ How to run the app and the tests: see [Run it on your computer](#run-it-on-your-
 | Screen | What you can do |
 | --- | --- |
 | **Map** | See all spots, filter by category, tap a spot to see the distance |
-| **Check off** | Take a photo and add the spot to your journal. Within 50 m it also gets a "verified on site" mark |
+| **Check off** | Take a photo and add the spot to your journal. Within 150 m it also gets a "verified on site" mark |
 | **Collection** | Total spots, new this month, sets in % (e.g. "Bars in Bairro Alto: 20%"), neighbourhoods in % |
 | **Friends** | Leaderboard "new spots this month" (live), add friends by email |
 
@@ -77,7 +77,7 @@ src/
   data/spots.js         THE list of spots (name, category, neighbourhood, coordinates)
   data/neighbourhoods.js the 24 parishes of Lisbon ("you've been to 7 of 24")
   data/categories.js    categories and their colours
-  lib/geo.js            distance display and the 50 m "verified" threshold
+  lib/geo.js            distance display and the 150 m "verified" threshold
   lib/progress.js       monthly count, category counts, neighbourhoods, ranking (pure functions, tested)
   lib/api.js            the ONLY file that talks to Supabase (with demo mode)
   lib/supabase.js       Supabase connection from .env

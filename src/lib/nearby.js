@@ -21,7 +21,8 @@ export function nearbySpots(spots, collectedIds, position, { query = '', limit =
     .slice(0, limit)
 }
 
-// ⭐ next to a spot: close enough (50 m) for the "verified on site" mark.
+// ⭐ next to a spot: close enough (CHECK_RADIUS_M) for the "verified on
+// site" mark, so the hint follows the radius instead of repeating a number.
 // The server decides the real mark; this is only a hint. No GPS = no star.
 export function inStarRange(distance) {
   return distance !== null && distance <= CHECK_RADIUS_M

@@ -359,8 +359,8 @@ The map fills the whole screen. A white bar floats on top ("Lisbon · N
 collected", a filter button and "?"); the filters open in a small card only
 when the filter button is tapped. The nav bar floats as a white pill, with Add
 spot as a separate round yellow "+". The "Near you" screen shows the closest
-spot as a big card with a Check off button, and a ⭐ hint for spots within 50
-m.
+spot as a big card with a Check off button, and a ⭐ hint for spots close
+enough for the "verified on site" mark (the same radius as the server).
 
 **Why.** The map is the heart of the app, but the title, two rows of category
 chips, the collected filter and the location warning used about half of the

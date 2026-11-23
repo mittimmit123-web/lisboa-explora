@@ -1,11 +1,13 @@
 // Person 4: Collection — the player's own journal. No ranking here on purpose:
 // competition lives on the Friends screen.
+import { useState } from 'react'
 import BuddyCard from '../components/BuddyCard.jsx'
+import CategoryDetail from '../components/CategoryDetail.jsx'
 import ProgressBar from '../components/ProgressBar.jsx'
 import StorySection from '../components/StorySection.jsx'
 import { CATEGORIES, categoryById } from '../data/categories.js'
 import { NEIGHBOURHOODS } from '../data/neighbourhoods.js'
-import { categoryCounts, monthSummary, neighbourhoodCoverage, recentlyCollected } from '../lib/progress.js'
+import { categoryCounts, categoryDetail, monthSummary, neighbourhoodCoverage, recentlyCollected } from '../lib/progress.js'
 
 // "17 Nov"
 function formatDate(date) {
@@ -28,6 +30,7 @@ const jumpTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: '
 
 export default function CollectionScreen({ spots, checkOffs, collectedIds }) {
   const month = monthSummary(checkOffs)
+  const [openCategory, setOpenCategory] = useState(null) // which tile is open, null = none
   const recent = recentlyCollected(checkOffs, spots)
   const categories = categoryCounts(spots, collectedIds, CATEGORIES)
   const hoods = neighbourhoodCoverage(spots, collectedIds, NEIGHBOURHOODS)
@@ -96,15 +99,31 @@ export default function CollectionScreen({ spots, checkOffs, collectedIds }) {
         <StorySection spots={spots} checkOffs={checkOffs} />
 
         <h2 className="section-label">By category</h2>
+        {/* Tapping a tile opens the detail below the whole grid rather than
+            inside it: on a phone the grid is two columns, and growing one
+            cell would push its neighbour around. */}
         <ul className="category-counts">
           {categories.map((c) => (
             <li key={c.id} className={c.count === 0 ? 'empty' : undefined}>
-              <span className="dot" style={{ background: c.color }} />
-              <span className="name">{c.label}</span>
-              <strong>{c.count}</strong>
+              <button
+                type="button"
+                aria-expanded={openCategory === c.id}
+                onClick={() => setOpenCategory(openCategory === c.id ? null : c.id)}
+              >
+                <span className="dot" style={{ background: c.color }} />
+                <span className="name">{c.label}</span>
+                <strong>{c.count}</strong>
+              </button>
             </li>
           ))}
         </ul>
+        {openCategory && (
+          <CategoryDetail
+            category={CATEGORIES.find((c) => c.id === openCategory)}
+            detail={categoryDetail(spots, checkOffs, collectedIds, openCategory, NEIGHBOURHOODS)}
+            onClose={() => setOpenCategory(null)}
+          />
+        )}
 
         <h2 className="section-label" id="neighbourhoods">
           Neighbourhoods

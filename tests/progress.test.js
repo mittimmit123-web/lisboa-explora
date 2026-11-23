@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
   categoryCounts,
+  categoryDetail,
   monthSummary,
+  neighbourhoodCounts,
   neighbourhoodCoverage,
   newThisMonth,
-  neighbourhoodCounts,
   rankPlayers,
   recentlyCollected,
 } from '../src/lib/progress.js'
@@ -171,5 +172,51 @@ describe('neighbourhoodCounts', () => {
     ]
     const checkOffs = [{ spot_id: 'a' }, { spot_id: 'b' }, { spot_id: 'c' }, { spot_id: 'gone' }]
     expect(neighbourhoodCounts(checkOffs, spots)).toEqual({ Belém: 2, Ajuda: 1 })
+  })
+})
+
+describe('categoryDetail', () => {
+  const spots = [
+    { id: 'f1', category: 'food', neighbourhood: 'Belém', name: 'Pastéis' },
+    { id: 'f2', category: 'food', neighbourhood: 'Belém', name: 'Tasca' },
+    { id: 'f3', category: 'food', neighbourhood: 'Alfama', name: 'Petisqueira' },
+    { id: 'v1', category: 'viewpoint', neighbourhood: 'Graça', name: 'Miradouro' },
+  ]
+  const hoods = ['Belém', 'Alfama', 'Graça', 'Benfica']
+  const checkOffs = [
+    { spot_id: 'f1', created_at: '2026-11-20T10:00:00Z', verified: true, note: '  Best ones  ', rating: 5 },
+    { spot_id: 'f2', created_at: '2026-11-22T10:00:00Z', verified: false, note: '', rating: 9 },
+  ]
+  const collectedIds = new Set(['f1', 'f2'])
+  const detail = () => categoryDetail(spots, checkOffs, collectedIds, 'food', hoods)
+
+  it('lists only the collected spots of that category, newest first', () => {
+    expect(detail().collected.map((e) => e.spot.id)).toEqual(['f2', 'f1'])
+  })
+
+  it('cleans the note and the rating like the rest of the app', () => {
+    const [newest, older] = detail().collected
+    expect(older.note).toBe('Best ones')
+    expect(older.rating).toBe(5)
+    expect(newest.note).toBeNull() // blank
+    expect(newest.rating).toBeNull() // 9 is out of range
+  })
+
+  it('counts the neighbourhoods where something was collected', () => {
+    expect(detail().visited).toEqual([{ name: 'Belém', count: 2, available: 2 }])
+    expect(detail().totalNeighbourhoods).toBe(4)
+  })
+
+  it('names only neighbourhoods that have this category but none collected', () => {
+    // Alfama has a food spot and none collected; Graça has only a viewpoint;
+    // Benfica has nothing at all.
+    expect(detail().missing).toEqual(['Alfama'])
+  })
+
+  it('copes with a category nobody has collected', () => {
+    const empty = categoryDetail(spots, checkOffs, collectedIds, 'viewpoint', hoods)
+    expect(empty.collected).toEqual([])
+    expect(empty.visited).toEqual([])
+    expect(empty.missing).toEqual(['Graça'])
   })
 })

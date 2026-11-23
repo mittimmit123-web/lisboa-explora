@@ -390,3 +390,15 @@ input[type='email'], input[type='text'] { flex: 1; min-width: 0; min-height: 44p
 @keyframes welcome-fade { from { opacity: 0; } }
 @keyframes welcome-up { from { transform: translateY(100%); } }
 @media (prefers-reduced-motion: reduce) { .welcome-splash, .welcome-backdrop, .welcome-sheet { animation: none; } }
+
+/* Category tiles open a detail panel below the grid */
+.category-counts li button { width: 100%; display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0; border: none; background: none; font: inherit; color: inherit; cursor: pointer; text-align: left; }
+.category-counts li button[aria-expanded='true'] { font-weight: 700; }
+.category-detail { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+.category-detail-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.category-detail-head h3 { margin: 0; display: flex; align-items: center; gap: 8px; }
+.category-spread { margin: 0; font-size: 14px; }
+.chips-inline { flex-wrap: wrap; overflow-x: visible; padding: 0; gap: 6px; }
+.chips-inline .chip { min-height: 32px; font-size: 12px; gap: 4px; }
+.category-missing-label { margin: 0; font-size: 13px; }
+.category-missing { margin: 0; font-size: 13px; line-height: 1.5; }

@@ -11,6 +11,7 @@ import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
 import { getCharacter } from '../lib/api.js'
 import CategoryFilter from '../components/CategoryFilter.jsx'
 import StatusFilter from '../components/StatusFilter.jsx'
+import HelpMenu from '../components/HelpMenu.jsx'
 import { categoryById } from '../data/categories.js'
 import { LOCKED_OPACITY, NEIGHBOURHOOD_COLORS, UNLOCKED_OPACITY } from '../data/neighbourhoodColors.js'
 import { LOCATION_STEPS, locationOffMessage } from '../lib/location.js'
@@ -200,7 +201,7 @@ function readView(map) {
   return { zoom: map.getZoom(), bounds: { south: b.getSouth(), west: b.getWest(), north: b.getNorth(), east: b.getEast() } }
 }
 
-export default function MapScreen({ spots, collectedIds, position, locationBlocked, onCheckOff, newThisMonth }) {
+export default function MapScreen({ spots, collectedIds, position, locationBlocked, onCheckOff, newThisMonth, onReplayIntro, onReplayTour }) {
   const [filter, setFilter] = useState([]) // selected category ids, [] = all
   const [status, setStatus] = useState('all') // 'all' | 'collected' | 'missing'
   const [selectedId, setSelectedId] = useState(null)
@@ -251,6 +252,7 @@ export default function MapScreen({ spots, collectedIds, position, locationBlock
         <p className="muted">
           {collectedIds.size} collected · {newThisMonth} new this month
         </p>
+        <HelpMenu onIntro={onReplayIntro} onTour={onReplayTour} />
       </header>
 
       <CategoryFilter value={filter} onChange={setFilter} />

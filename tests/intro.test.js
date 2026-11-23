@@ -27,6 +27,12 @@ describe('nextStep', () => {
     expect(nextStep('name')).toBe('album')
     expect(nextStep('album')).toBe('done')
   })
+
+  it('skips choosing an Explora and the name when watched again', () => {
+    expect(nextStep('welcome', true)).toBe('prologue')
+    expect(nextStep('prologue', true)).toBe('album')
+    expect(nextStep('album', true)).toBe('done')
+  })
 })
 
 describe('welcomePhase', () => {

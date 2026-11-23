@@ -533,3 +533,8 @@ input[type='email'], input[type='text'] { flex: 1; min-width: 0; min-height: 44p
 .intro-pick, .intro-tiles { max-width: 480px; margin: 0 auto; }
 
 @media (max-height: 600px) { .intro-bubble { font-size: 17px; padding: 10px 14px; } .intro-bubble-purpose { font-size: 15px; } } /* small phones: bubbles don't cover the Explora's head */
+/* The Explora's name is only a label: clicks go through it to Skip */
+.intro-who { pointer-events: none; }
+/* Skip sits at the left of the phone-width column, also on laptops */
+.intro-skip { left: max(12px, calc(50% - 228px)); }
+

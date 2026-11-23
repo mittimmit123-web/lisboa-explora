@@ -6,7 +6,7 @@ any of us can explain any part of the project, not only the part we wrote.
 
 ## 1. A check-off is never refused because of distance
 
-Being within 50 m of a spot only earns a "verified on site" mark. The spot
+Being within 150 m of a spot only earns a "verified on site" mark. The spot
 always goes into the player's journal.
 
 **Why.** The app is a travel diary first and a game second. Our first version
@@ -376,3 +376,25 @@ hint: the server still decides the real mark (decision 2).
 
 **Could change.** A bottom sheet over the map for "Near you" instead of a
 separate screen, and a search field in the top bar.
+
+## 25. The "verified on site" radius is 150 m, not 50 m
+
+The server marks a check-off "verified on site" when it measures the player
+within 150 metres of the spot.
+
+**Why.** We started at 50 m and then looked at what actually happened. Of the
+ten closest attempts in our database, nine missed the mark, by 11 to 29
+metres. Almost all of them came from one afternoon of testing in Santo
+António, where the testers were standing in front of the spots. In the narrow
+streets of central Lisbon the signal bounces off the buildings and the phone
+reports a position that is tens of metres off, which is why the app already
+warns about weak GPS before the check-off. At 50 m the mark was measuring the
+quality of the signal, not whether someone had been there.
+
+**Accepted limit.** Someone a block away, 150 m from the spot, now gets the
+mark as well. We decided that is the better mistake to make: this is a travel
+diary, the players are collecting for themselves, and losing a real visit to
+a bad reading is worse than crediting one that was nearly a visit. The number
+lives in two places that have to agree, `CHECK_RADIUS_M` in `src/lib/geo.js`
+for what the app shows and `check_off` in `supabase/schema.sql` for what
+counts. The server is still the one that decides, see decision 2.

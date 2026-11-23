@@ -25,8 +25,13 @@ describe('isWithinRadius', () => {
     expect(isWithinRadius(near, santaLuzia)).toBe(true)
   })
 
-  it('rejects a player 120 m away', () => {
-    const far = { lat: santaLuzia.lat + 0.00108, lng: santaLuzia.lng } // ~120 m
+  it('accepts a player 120 m away, inside the 150 m radius', () => {
+    const near = { lat: santaLuzia.lat + 0.00108, lng: santaLuzia.lng } // ~120 m
+    expect(isWithinRadius(near, santaLuzia)).toBe(true)
+  })
+
+  it('rejects a player 250 m away', () => {
+    const far = { lat: santaLuzia.lat + 0.00225, lng: santaLuzia.lng } // ~250 m
     expect(isWithinRadius(far, santaLuzia)).toBe(false)
   })
 })
@@ -44,11 +49,15 @@ describe('isGpsWeak', () => {
   it('is fine when GPS is accurate to 25 m', () => {
     expect(isGpsWeak(25)).toBe(false)
   })
-  it('is fine at exactly 50 m', () => {
+  it('is fine at exactly 50 m, the weak-GPS threshold', () => {
     expect(isGpsWeak(50)).toBe(false)
   })
   it('is weak when GPS is only accurate to 120 m', () => {
     expect(isGpsWeak(120)).toBe(true)
+  })
+  it('stays tied to WEAK_GPS_M, not to the 150 m check-off radius', () => {
+    // Regression: when the radius grew to 150 m this silently stopped warning.
+    expect(isGpsWeak(85)).toBe(true)
   })
 })
 

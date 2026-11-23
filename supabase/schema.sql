@@ -38,7 +38,7 @@ create table if not exists public.check_offs (
   -- lat/lng may be null: the player can add a spot without a GPS position
   lat double precision,
   lng double precision,
-  -- true only if the server measured the player within 50 m of the spot
+  -- true only if the server measured the player within 150 m of the spot
   verified boolean not null default false,
   -- What the player wrote and how they liked it. Both optional: a check-off
   -- needs nothing but the spot. See DECISIONS.md.
@@ -139,7 +139,7 @@ $$;
 
 -- ---------- Check off a spot ----------
 -- A check-off NEVER fails because of distance. The server only decides
--- whether the entry gets the "verified on site" mark (within 50 m).
+-- whether the entry gets the "verified on site" mark (within 150 m).
 --
 -- Photo, note and rating are ALL optional: the spot itself is the entry,
 -- everything else is something the player may add. See DECISIONS.md.
@@ -200,7 +200,7 @@ begin
   -- No GPS position (null) simply means "not verified".
   if p_lat is not null and p_lng is not null then
     v_distance := public.distance_m(p_lat, p_lng, v_spot.lat, v_spot.lng);
-    v_verified := v_distance <= 50;
+    v_verified := v_distance <= 150;
   end if;
 
   insert into public.check_offs (user_id, spot_id, photo_path, lat, lng, verified, note, rating)

@@ -7,6 +7,7 @@ import { addFriendMessage, answerMessage, friendEmailProblem, NAME_MAX, nameProb
 import { rankPlayers } from '../lib/progress.js'
 
 const MEDALS = ['🥇', '🥈', '🥉']
+const NOTE_SECONDS = 4
 const MONTH = new Date().toLocaleString('en', { month: 'long' })
 
 export default function FriendsScreen({ newThisMonth, myHoodCounts }) {
@@ -37,6 +38,14 @@ export default function FriendsScreen({ newThisMonth, myHoodCounts }) {
   }, [])
 
   useEffect(loadRequests, [loadRequests])
+
+  // A green "friends now" message goes away by itself after 4 seconds (it fades
+  // out in the last moment, see .note.fade-out). Errors stay so they can be read.
+  useEffect(() => {
+    if (!requestNote?.ok) return
+    const timer = setTimeout(() => setRequestNote(null), NOTE_SECONDS * 1000)
+    return () => clearTimeout(timer)
+  }, [requestNote])
 
   async function answer(request, accept) {
     setBusy(true)
@@ -132,7 +141,7 @@ export default function FriendsScreen({ newThisMonth, myHoodCounts }) {
               </ul>
             )}
             {requestNote && (
-              <p className={requestNote.ok ? 'note ok' : 'note error'} role="status">
+              <p className={requestNote.ok ? 'note ok fade-out' : 'note error'} role="status">
                 {requestNote.text}
               </p>
             )}

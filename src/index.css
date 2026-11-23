@@ -348,6 +348,10 @@ input[type='email'], input[type='text'] { flex: 1; min-width: 0; min-height: 44p
 .request-list .name small { font-weight: 400; font-size: 13px; }
 .request-buttons { flex-basis: 100%; display: flex; gap: 8px; }
 .request-buttons .primary, .request-buttons .secondary { flex: 1; }
+/* The success message fades out just before it is removed (after 4 s) */
+.note.fade-out { animation: note-fade 0.4s ease 3.6s forwards; }
+@keyframes note-fade { to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .note.fade-out { animation: none; } }
 .add-friend .primary { flex-shrink: 0; }
 .name-edit { flex: 1; min-width: 0; }
 .edit-name { width: 36px; height: 36px; font-size: 16px; transform: scaleX(-1); } /* pencil tip on the left */

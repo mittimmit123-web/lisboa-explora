@@ -10,6 +10,7 @@ import { getCharacter } from '../lib/api.js'
 import {
   HELLO_END,
   PROLOGUE_END,
+  PROLOGUE_HOLD,
   WELCOME_END,
   advancePrologue,
   nextStep,
@@ -19,7 +20,6 @@ import {
 import { createIntroScene } from '../lib/introScene.js'
 import IntroPicker from './IntroPicker.jsx'
 import IntroAlbum from './IntroAlbum.jsx'
-import IntroPurpose from './IntroPurpose.jsx'
 import IntroName from './IntroName.jsx'
 
 const HOST = 'tram' // Trammy welcomes everyone, and stands in if no Explora is chosen
@@ -46,7 +46,6 @@ export default function IntroScreen({ onDone, replay = false }) {
         <div className="intro-disc" />
       </div>
       {step === 'welcome' && <WelcomeFilm onDone={next} />}
-      {step === 'purpose' && <IntroPurpose hostId={HOST} onDone={next} />}
       {step === 'pick' && (
         <IntroPicker
           onChosen={(id) => {
@@ -56,6 +55,7 @@ export default function IntroScreen({ onDone, replay = false }) {
         />
       )}
       {step === 'prologue' && <PrologueFilm actorId={actorId} onDone={next} />}
+      {step === 'purpose' && <PurposeFilm actorId={actorId} onDone={next} />}
       {step === 'name' && <IntroName actorId={actorId} onDone={next} />}
       {step === 'album' && <IntroAlbum actorId={actorId} onDone={next} />}
     </div>
@@ -173,6 +173,39 @@ function PrologueFilm({ actorId, onDone }) {
           Yes, let&apos;s go!
         </button>
       )}
+    </>
+  )
+}
+
+// After "Yes, let's go!": the Explora stands in the middle and explains WHY
+// the app exists. Waits for the button (no timer), still blinking.
+function PurposeFilm({ actorId, onDone }) {
+  const canvasRef = useRef(null)
+  const doneRef = useRef(false)
+  const [calm] = useState(prefersCalm)
+  const explora = characterById(actorId)
+  useFilm(canvasRef, actorId, {
+    tick: () => PROLOGUE_HOLD, // the standing pose from the prologue
+    draw: (scene, t, live) => scene.drawPrologue(t, calm ? 0 : live),
+    finished: () => doneRef.current,
+    phaseOf: () => 'purpose',
+    onPhase: () => {},
+    onDone,
+  })
+  return (
+    <>
+      <canvas ref={canvasRef} className="intro-canvas" aria-hidden="true" />
+      <button className="intro-skip" type="button" onClick={onDone}>
+        Skip
+      </button>
+      <span className="intro-who">{explora.name}</span>
+      <p className="intro-bubble intro-bubble-purpose" aria-live="polite">
+        Did you know Lisbon has 24 neighbourhoods, each full of surprises? Most people only ever see their own neighbourhood and never
+        discover the rest of Lisbon. Let&apos;s explore them together!
+      </p>
+      <button className="intro-yes" type="button" onClick={() => (doneRef.current = true)}>
+        Let&apos;s explore!
+      </button>
     </>
   )
 }

@@ -4,19 +4,19 @@
 //
 // The intro has six steps:
 //   welcome   Trammy, the app's host, rolls in and cheers ("Lisboa Explora")
-//   purpose   Trammy explains why the app exists (most people only know their
-//             own neighbourhood; Lisbon has 24) and how it works
 //   pick      the player chooses their Explora
 //   prologue  the chosen Explora says hello and asks "Will you show me around?"
+//   purpose   it explains WHY the app exists: most people only ever see their
+//             own neighbourhood, but Lisbon has 24
 //   name      it asks what to call you: the name your friends will see
-//   album     it explains the postcard album: your photo becomes a postcard
-//             in every new neighbourhood, 24 in total
+//   album     HOW it works: walk to a real place, snap a photo, and in every
+//             new neighbourhood it becomes a postcard (24 in total)
 // Then the guided tour starts (src/lib/tour.js).
-export const STEPS = ['welcome', 'purpose', 'pick', 'prologue', 'name', 'album']
+export const STEPS = ['welcome', 'pick', 'prologue', 'purpose', 'name', 'album']
 
 // Watching the intro again (the "?" button on the map) shows only the story:
 // the player already has an Explora and a name, so those steps are skipped.
-export const REPLAY_STEPS = ['welcome', 'purpose', 'prologue', 'album']
+export const REPLAY_STEPS = ['welcome', 'prologue', 'purpose', 'album']
 
 export function nextStep(step, replay = false) {
   const steps = replay ? REPLAY_STEPS : STEPS

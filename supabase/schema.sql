@@ -69,6 +69,16 @@ create table if not exists public.friendships (
   check (user_id <> friend_id)
 );
 
+-- Friend requests that are still waiting for an answer (from -> to).
+-- Accepting one turns it into a friendship; denying deletes it.
+create table if not exists public.friend_requests (
+  from_id uuid not null references public.profiles (id) on delete cascade,
+  to_id uuid not null references public.profiles (id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (from_id, to_id),
+  check (from_id <> to_id)
+);
+
 -- ---------- Row Level Security ----------
 -- RLS on = nobody can read or write a table unless a policy allows it.
 
@@ -76,6 +86,8 @@ alter table public.profiles enable row level security;
 alter table public.spots enable row level security;
 alter table public.check_offs enable row level security;
 alter table public.friendships enable row level security;
+-- No policies at all: requests are only read and changed through the functions below.
+alter table public.friend_requests enable row level security;
 
 drop policy if exists "read own profile" on public.profiles;
 create policy "read own profile" on public.profiles
@@ -232,18 +244,69 @@ $$;
 
 -- ---------- Friends ----------
 
+-- Sends a friend request (security check, weak spot 3). Nobody becomes friends
+-- without saying yes. The answer is the same whether the email has an account
+-- or not ('sent'), so this can't be used to find out who plays.
+-- Special cases, only for people who already know each other:
+--   'already_friends' = you are friends already
+--   'friends'         = they had already asked you, so this counts as yes
 create or replace function public.add_friend(p_email text)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare
   v_user uuid := auth.uid();
   v_friend uuid;
 begin
-  select id into v_friend from public.profiles where lower(email) = lower(trim(p_email));
-  if v_user is null or v_friend is null or v_friend = v_user then
-    return jsonb_build_object('ok', false);
+  if v_user is null then
+    return jsonb_build_object('ok', false, 'reason', 'not_logged_in');
   end if;
-  insert into public.friendships (user_id, friend_id) values (v_user, v_friend), (v_friend, v_user)
+  select id into v_friend from public.profiles where lower(email) = lower(trim(p_email));
+  if v_friend is null or v_friend = v_user then
+    return jsonb_build_object('ok', true, 'status', 'sent');
+  end if;
+  if exists (select 1 from public.friendships where user_id = v_user and friend_id = v_friend) then
+    return jsonb_build_object('ok', true, 'status', 'already_friends');
+  end if;
+  if exists (select 1 from public.friend_requests where from_id = v_friend and to_id = v_user) then
+    delete from public.friend_requests where from_id = v_friend and to_id = v_user;
+    insert into public.friendships (user_id, friend_id) values (v_user, v_friend), (v_friend, v_user)
+    on conflict do nothing;
+    return jsonb_build_object('ok', true, 'status', 'friends');
+  end if;
+  insert into public.friend_requests (from_id, to_id) values (v_user, v_friend)
   on conflict do nothing;
+  return jsonb_build_object('ok', true, 'status', 'sent');
+end;
+$$;
+
+-- Requests other players sent to me: their id and the name they chose.
+create or replace function public.my_friend_requests()
+returns table (from_id uuid, display_name text)
+language sql security definer set search_path = public as $$
+  select r.from_id, p.display_name
+  from public.friend_requests r
+  join public.profiles p on p.id = r.from_id
+  where r.to_id = auth.uid()
+  order by r.created_at;
+$$;
+
+-- Yes (p_accept = true) or no to a request someone sent me. Either way the
+-- request is gone afterwards. A "no" is quiet: the sender is not told.
+create or replace function public.answer_friend_request(p_from uuid, p_accept boolean)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  v_user uuid := auth.uid();
+begin
+  if v_user is null then
+    return jsonb_build_object('ok', false, 'reason', 'not_logged_in');
+  end if;
+  delete from public.friend_requests where from_id = p_from and to_id = v_user;
+  if not found then
+    return jsonb_build_object('ok', false, 'reason', 'no_request');
+  end if;
+  if p_accept then
+    insert into public.friendships (user_id, friend_id) values (v_user, p_from), (p_from, v_user)
+    on conflict do nothing;
+  end if;
   return jsonb_build_object('ok', true);
 end;
 $$;

@@ -30,7 +30,7 @@ anything important. The rules live in the database instead:
 | Check off a spot that does not exist | ✅ | `check_off` answers `unknown_spot` |
 | Fake the "verified on site" mark | ⚠️ | See weak spot 1 |
 | Point a check-off to a photo that was never uploaded | ✅ | Fixed: `check_off` now checks the photo exists (weak spot 2) |
-| Add someone as a friend without asking | ⚠️ | See weak spot 3 |
+| Add someone as a friend without asking | ✅ | Fixed: friend requests the other player accepts (weak spot 3) |
 
 ## Weak spots
 
@@ -79,6 +79,12 @@ account.
 that the other player accepts, and give the same answer whether the email
 exists or not ("If this person uses Lisboa Explora, they'll get your
 request").
+
+**Fixed:** `add_friend` now only sends a request (table `friend_requests`).
+The other player sees it in their Friends tab and answers with
+`answer_friend_request` (Accept or Deny; a "no" is not shown to the sender).
+`add_friend` answers `sent` whether the email has an account or not. The fix
+is active once `schema.sql` has been run again in the Supabase SQL Editor.
 
 ## Live tests to do after #7
 

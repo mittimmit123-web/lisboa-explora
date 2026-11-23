@@ -18,21 +18,40 @@ export function friendEmailProblem({ email, myEmail, demo }) {
     return { ok: false, text: 'That’s your own email. Add a friend’s email instead.' }
   }
   if (demo) {
-    return { ok: false, text: 'Friends can’t be added in demo mode. The players above are examples.' }
+    return { ok: false, text: 'Friend requests can’t be sent in demo mode. The players above are examples.' }
   }
   return null
 }
 
 // Step 2, AFTER asking the server: what to tell the player.
-// result = what addFriend() returned ({ ok: true } or { ok: false })
+// result = what addFriend() returned ({ ok: true, status } or { ok: false })
 // error  = set if the request itself failed (no internet, server down)
+// The server says 'sent' even if nobody has that email (so nobody can look
+// up who plays), so the message must not promise that the person exists.
 export function addFriendMessage({ email, result, error }) {
-  if (error) return { ok: false, text: 'Couldn’t add your friend. Check your internet and try again.' }
-  if (result?.ok) return { ok: true, text: `Added! You and ${email.trim()} can now see each other’s spots this month.` }
-  return {
-    ok: false,
-    text: 'No player has that email yet. Ask your friend to sign up for Lisboa Explora first, then try again.',
+  const who = (email ?? '').trim()
+  if (error || !result?.ok) return { ok: false, text: 'Couldn’t send your request. Check your internet and try again.' }
+  if (result.status === 'already_friends') return { ok: true, text: `You and ${who} are already friends.` }
+  if (result.status === 'friends') {
+    return { ok: true, text: `${who} had already asked you, so you’re friends now! 🎉` }
   }
+  return {
+    ok: true,
+    text: `Request sent ✉️ If ${who} plays Lisboa Explora, they’ll see it in their Friends tab. Once they accept, you’re both on the leaderboard.`,
+  }
+}
+
+// After tapping Accept or Deny on a request.
+// result = what answerFriendRequest() returned, error = the request failed.
+export function answerMessage({ name, accept, result, error }) {
+  if (error || !result?.ok) return { ok: false, text: 'Couldn’t answer the request. Check your internet and try again.' }
+  return accept ? { ok: true, text: `You and ${name} are friends now! 🎉` } : { ok: true, text: `Request from ${name} removed.` }
+}
+
+// Under the friend request card: how many more are waiting after this one.
+export function moreWaiting(count) {
+  if (count <= 0) return ''
+  return count === 1 ? '1 more request waiting' : `${count} more requests waiting`
 }
 
 // ---------- Your name ----------

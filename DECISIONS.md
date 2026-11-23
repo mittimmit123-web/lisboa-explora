@@ -352,3 +352,27 @@ not be blocked by it.
 **Accepted limit.** On a new phone or browser the intro plays again.
 
 **Could change.** Saving "intro seen" with the account instead of the browser.
+
+## 24. A full-screen map with floating controls
+
+The map fills the whole screen. A white bar floats on top ("Lisbon · N
+collected", a filter button and "?"); the filters open in a small card only
+when the filter button is tapped. The nav bar floats as a white pill, with Add
+spot as a separate round yellow "+". The "Near you" screen shows the closest
+spot as a big card with a Check off button, and a ⭐ hint for spots within 50
+m.
+
+**Why.** The map is the heart of the app, but the title, two rows of category
+chips, the collected filter and the location warning used about half of the
+screen. Most players rarely change the filters, so they should not take that
+much space and attention. The design follows modern map apps, but keeps our
+colours, the Exploras and the yellow buttons.
+
+**Accepted limit.** The filters are one tap further away, and a number on the
+button is the only sign that some are on. The floating bars cover a little of
+the map; the map credits must stay visible, so they sit above the nav bar and
+are only covered while a spot card is open. The ⭐ in "Near you" is only a
+hint: the server still decides the real mark (decision 2).
+
+**Could change.** A bottom sheet over the map for "Near you" instead of a
+separate screen, and a search field in the top bar.

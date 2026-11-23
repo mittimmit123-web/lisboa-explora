@@ -1,9 +1,9 @@
 // Person 4: Friends & leaderboard — the competitive part of the game.
 import { useCallback, useEffect, useState } from 'react'
-import { addFriend, getCharacter, getFriendsLeaderboard, getUser, setDisplayName } from '../lib/api.js'
+import { addFriend, answerFriendRequest, getCharacter, getFriendRequests, getFriendsLeaderboard, getUser, setDisplayName } from '../lib/api.js'
 import { isDemoMode } from '../lib/supabase.js'
 import WeatherScene from '../components/WeatherScene.jsx'
-import { addFriendMessage, friendEmailProblem, NAME_MAX, nameProblem, nameResultMessage, playerLabel, titleLine, weatherMood, withTitles } from '../lib/friends.js'
+import { addFriendMessage, answerMessage, friendEmailProblem, NAME_MAX, nameProblem, nameResultMessage, playerLabel, titleLine, weatherMood, withTitles } from '../lib/friends.js'
 import { rankPlayers } from '../lib/progress.js'
 
 const MEDALS = ['🥇', '🥈', '🥉']
@@ -18,6 +18,8 @@ export default function FriendsScreen({ newThisMonth, myHoodCounts }) {
   const [note, setNote] = useState(null) // { ok, text }
   const [newName, setNewName] = useState(null) // null = not editing
   const [nameNote, setNameNote] = useState(null) // { ok, text }
+  const [requests, setRequests] = useState([]) // friend requests sent to me: [{ fromId, name }]
+  const [requestNote, setRequestNote] = useState(null) // { ok, text }
 
   const load = useCallback(() => {
     getFriendsLeaderboard(newThisMonth, myHoodCounts)
@@ -26,6 +28,26 @@ export default function FriendsScreen({ newThisMonth, myHoodCounts }) {
   }, [newThisMonth, myHoodCounts])
 
   useEffect(load, [load])
+
+  // Requests are extra: if they can't load, the rest of the screen still works.
+  const loadRequests = useCallback(() => {
+    getFriendRequests()
+      .then(setRequests)
+      .catch(() => setRequests([]))
+  }, [])
+
+  useEffect(loadRequests, [loadRequests])
+
+  async function answer(request, accept) {
+    setBusy(true)
+    const message = await answerFriendRequest(request.fromId, accept)
+      .then((result) => answerMessage({ name: request.name, accept, result }))
+      .catch((error) => answerMessage({ name: request.name, accept, error }))
+    setBusy(false)
+    setRequestNote(message)
+    loadRequests()
+    if (accept && message.ok) load()
+  }
 
   async function submit(e) {
     e.preventDefault()
@@ -83,6 +105,40 @@ export default function FriendsScreen({ newThisMonth, myHoodCounts }) {
         <h1>Friends</h1>
       </header>
       <div className="content">
+        {(requests.length > 0 || requestNote) && (
+          <section className="card requests" aria-label="Friend requests">
+            {requests.length > 0 && <h2 className="section-label">✉️ Friend requests</h2>}
+            {requests.length > 0 && (
+              <ul className="request-list">
+                {requests.map((request) => (
+                  <li key={request.fromId}>
+                    <span className="avatar" aria-hidden="true">
+                      {(request.name || '?')[0].toUpperCase()}
+                    </span>
+                    <span className="name">
+                      {request.name}
+                      <small className="muted">wants to be your friend</small>
+                    </span>
+                    <div className="request-buttons">
+                      <button className="primary small" type="button" disabled={busy} onClick={() => answer(request, true)}>
+                        Accept
+                      </button>
+                      <button className="secondary" type="button" disabled={busy} onClick={() => answer(request, false)}>
+                        Deny
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {requestNote && (
+              <p className={requestNote.ok ? 'note ok' : 'note error'} role="status">
+                {requestNote.text}
+              </p>
+            )}
+          </section>
+        )}
+
         <WeatherScene mood={weather?.mood} sub={weather?.sub} text={weather?.text} buddy={getCharacter()} />
 
         <h2 className="section-label">🏆 Leaderboard</h2>
@@ -170,6 +226,7 @@ export default function FriendsScreen({ newThisMonth, myHoodCounts }) {
           <label htmlFor="friend-email">
             <strong>Add a friend</strong>
           </label>
+          <p className="muted">They get a request and decide if they want to be friends.</p>
           <div className="row add-friend">
             <input
               id="friend-email"
@@ -183,7 +240,7 @@ export default function FriendsScreen({ newThisMonth, myHoodCounts }) {
               }}
             />
             <button className="primary small" type="submit" disabled={busy}>
-              {busy ? 'Adding…' : 'Add'}
+              {busy ? 'Sending…' : 'Send'}
             </button>
           </div>
           {note && (

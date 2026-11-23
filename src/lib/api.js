@@ -161,6 +161,7 @@ export async function getFriendsLeaderboard(myCount, myHoodCounts = {}) {
       { name: 'Marta', count: 6, hoodCounts: { Belém: 4, Alcântara: 2, Ajuda: 1, Estrela: 1, Misericórdia: 1 } },
       { name: 'João', count: 4, hoodCounts: { Misericórdia: 3, Arroios: 2, 'Santo António': 1, 'Penha de França': 1, 'São Vicente': 1, Estrela: 1, 'Avenidas Novas': 1, 'Santa Maria Maior': 1 } },
       { name: 'Lukas', count: 2, hoodCounts: { Alvalade: 1, Areeiro: 1 } },
+      ...(demoRequestState() === 'accepted' ? [{ name: 'Sofia', count: 1, hoodCounts: { Belém: 1 } }] : []),
     ]
   }
   const { data, error } = await supabase.rpc('friends_leaderboard')
@@ -196,10 +197,46 @@ export async function setDisplayName(name) {
   return data
 }
 
-// Sends a friend request by email address.
+// Sends a friend request by email address. Returns { ok: true, status }:
+// 'sent' (also when nobody has that email, so it can't be used to look people
+// up), 'already_friends', or 'friends' (they had already asked you).
 export async function addFriend(email) {
-  if (isDemoMode) return { ok: true }
+  if (isDemoMode) return { ok: true, status: 'sent' }
   const { data, error } = await supabase.rpc('add_friend', { p_email: email })
+  if (error) throw error
+  return data
+}
+
+// Demo mode: one example request from "Sofia", so the preview shows the card.
+// Saved in this browser: 'waiting' (default), 'accepted' or 'denied'.
+const DEMO_REQUEST_KEY = 'lisboa-explora-demo-request'
+function demoRequestState() {
+  try {
+    return localStorage.getItem(DEMO_REQUEST_KEY) ?? 'waiting'
+  } catch {
+    return 'waiting'
+  }
+}
+
+// Friend requests other players sent me: [{ fromId, name }]
+export async function getFriendRequests() {
+  if (isDemoMode) return demoRequestState() === 'waiting' ? [{ fromId: 'demo-sofia', name: 'Sofia' }] : []
+  const { data, error } = await supabase.rpc('my_friend_requests')
+  if (error) throw error
+  return data.map((row) => ({ fromId: row.from_id, name: row.display_name }))
+}
+
+// Say yes (accept = true) or no to a request. Returns { ok: true } or { ok: false, reason }.
+export async function answerFriendRequest(fromId, accept) {
+  if (isDemoMode) {
+    try {
+      localStorage.setItem(DEMO_REQUEST_KEY, accept ? 'accepted' : 'denied')
+    } catch {
+      // storage blocked: the demo request comes back after a reload, that's fine
+    }
+    return { ok: true }
+  }
+  const { data, error } = await supabase.rpc('answer_friend_request', { p_from: fromId, p_accept: accept })
   if (error) throw error
   return data
 }

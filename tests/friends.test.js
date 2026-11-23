@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addFriendMessage, friendEmailProblem, nameProblem, nameResultMessage, playerLabel, rememberMood, rememberedMood, titleLine, weatherMood, withTitles } from '../src/lib/friends.js'
+import { addFriendMessage, answerMessage, friendEmailProblem, nameProblem, nameResultMessage, playerLabel, rememberMood, rememberedMood, titleLine, weatherMood, withTitles } from '../src/lib/friends.js'
 
 describe('playerLabel', () => {
   it('shows other players by name', () => {
@@ -40,20 +40,43 @@ describe('friendEmailProblem (before asking the server)', () => {
 })
 
 describe('addFriendMessage (after the server answered)', () => {
-  it('confirms when the friend was added', () => {
-    const m = addFriendMessage({ email: 'ana@example.com', result: { ok: true } })
+  it('says the request was sent, without promising the person plays', () => {
+    const m = addFriendMessage({ email: ' ana@example.com ', result: { ok: true, status: 'sent' } })
     expect(m.ok).toBe(true)
-    expect(m.text).toContain('ana@example.com')
+    expect(m.text).toMatch(/Request sent/)
+    expect(m.text).toContain('If ana@example.com plays')
   })
 
-  it('explains clearly when no player has that email', () => {
-    const m = addFriendMessage({ email: 'ana@example.com', result: { ok: false } })
-    expect(m.ok).toBe(false)
-    expect(m.text).toMatch(/No player has that email/)
+  it('tells you when you are friends already', () => {
+    expect(addFriendMessage({ email: 'ana@example.com', result: { ok: true, status: 'already_friends' } }).text).toMatch(/already friends/)
   })
 
-  it('tells the player to check the internet when the request failed', () => {
+  it('celebrates when the other player had already asked you', () => {
+    const m = addFriendMessage({ email: 'ana@example.com', result: { ok: true, status: 'friends' } })
+    expect(m.ok).toBe(true)
+    expect(m.text).toMatch(/friends now/)
+  })
+
+  it('asks to try again when the request failed', () => {
     expect(addFriendMessage({ email: 'ana@example.com', error: new Error('offline') }).text).toMatch(/Check your internet/)
+    expect(addFriendMessage({ email: 'ana@example.com', result: { ok: false, reason: 'not_logged_in' } }).ok).toBe(false)
+  })
+})
+
+describe('answerMessage (after Accept or Deny)', () => {
+  it('celebrates an accepted request', () => {
+    expect(answerMessage({ name: 'Sofia', accept: true, result: { ok: true } }).text).toBe('You and Sofia are friends now! 🎉')
+  })
+
+  it('quietly confirms a denied request', () => {
+    const m = answerMessage({ name: 'Sofia', accept: false, result: { ok: true } })
+    expect(m.ok).toBe(true)
+    expect(m.text).toBe('Request from Sofia removed.')
+  })
+
+  it('asks to try again when it failed', () => {
+    expect(answerMessage({ name: 'Sofia', accept: true, error: new Error('offline') }).ok).toBe(false)
+    expect(answerMessage({ name: 'Sofia', accept: true, result: { ok: false, reason: 'no_request' } }).ok).toBe(false)
   })
 })
 

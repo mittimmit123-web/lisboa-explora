@@ -19,6 +19,7 @@ import {
 import { createIntroScene } from '../lib/introScene.js'
 import IntroPicker from './IntroPicker.jsx'
 import IntroAlbum from './IntroAlbum.jsx'
+import IntroPurpose from './IntroPurpose.jsx'
 import IntroName from './IntroName.jsx'
 
 const HOST = 'tram' // Trammy welcomes everyone, and stands in if no Explora is chosen
@@ -45,6 +46,7 @@ export default function IntroScreen({ onDone, replay = false }) {
         <div className="intro-disc" />
       </div>
       {step === 'welcome' && <WelcomeFilm onDone={next} />}
+      {step === 'purpose' && <IntroPurpose hostId={HOST} onDone={next} />}
       {step === 'pick' && (
         <IntroPicker
           onChosen={(id) => {

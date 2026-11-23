@@ -20,8 +20,9 @@ function fakeStorage() {
 }
 
 describe('nextStep', () => {
-  it('goes welcome -> pick -> prologue -> name -> album -> done', () => {
-    expect(nextStep('welcome')).toBe('pick')
+  it('goes welcome -> purpose -> pick -> prologue -> name -> album -> done', () => {
+    expect(nextStep('welcome')).toBe('purpose')
+    expect(nextStep('purpose')).toBe('pick')
     expect(nextStep('pick')).toBe('prologue')
     expect(nextStep('prologue')).toBe('name')
     expect(nextStep('name')).toBe('album')
@@ -29,7 +30,8 @@ describe('nextStep', () => {
   })
 
   it('skips choosing an Explora and the name when watched again', () => {
-    expect(nextStep('welcome', true)).toBe('prologue')
+    expect(nextStep('welcome', true)).toBe('purpose')
+    expect(nextStep('purpose', true)).toBe('prologue')
     expect(nextStep('prologue', true)).toBe('album')
     expect(nextStep('album', true)).toBe('done')
   })

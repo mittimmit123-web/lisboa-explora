@@ -42,10 +42,10 @@ export default function HelpMenu({ onIntro, onTour }) {
       {open && (
         <div className="help-menu" role="menu">
           <button type="button" role="menuitem" onClick={() => choose(onIntro)}>
-            ▶&nbsp; Watch the intro again
+            ▶&nbsp; Rewatch the intro
           </button>
           <button type="button" role="menuitem" onClick={() => choose(onTour)}>
-            🧭&nbsp; Show the app tour again
+            🧭&nbsp; Show me the app
           </button>
         </div>
       )}

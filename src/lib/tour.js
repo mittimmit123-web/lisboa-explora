@@ -11,8 +11,8 @@ export const TOUR_STEPS = [
   { target: 'map', tab: 'map', text: 'Walk to a pin, tap it and take a photo. If you are really there, you get a golden ⭐!' },
   { target: 'nav-add', tab: 'add', text: 'Already standing at a spot? Tap ⊕ Add spot: it lists the spots right around you, so you can add one without searching the map.' },
   { target: 'nav-collection', tab: 'collection', text: 'This is our journal: every spot, our story, and our postcard album made from your photos.' },
-  { target: 'nav-friends', tab: 'friends', text: 'Race your friends every month. The weather shows how you are doing!' },
-  { target: null, tab: 'map', text: 'Every new neighbourhood unlocks a chapter of our story. Ready? Let’s find our first spot!' },
+  { target: 'nav-friends', tab: 'friends', text: 'Add friends and race them every month! The weather shows how you are doing, and whoever has the most spots in a neighbourhood becomes its 👑 Ruler.' },
+  { target: null, tab: 'map', text: 'Every new neighbourhood unlocks a chapter of our story. Need help later? Tap ? on the map. Ready? Let’s go!' },
 ]
 
 // The tour is given by the chosen Explora, or by Trammy if none was chosen.

@@ -136,7 +136,6 @@ export default function App() {
             collectedIds={collectedIds}
             position={position}
             locationBlocked={locationBlocked}
-            newThisMonth={monthCount}
             onCheckOff={setCheckOffSpot}
             onReplayIntro={watchIntroAgain}
             onReplayTour={showTourAgain}

@@ -19,7 +19,7 @@ describe('isLocationBlocked', () => {
 describe('locationOffMessage', () => {
   it('names the website the player is on', () => {
     expect(locationOffMessage('lisboa-explora.vercel.app')).toBe(
-      'Location is off 📍 Allow location for lisboa-explora.vercel.app in your settings, then reload the page.',
+      'Allow location for lisboa-explora.vercel.app in your settings, then reload the page.',
     )
   })
 })

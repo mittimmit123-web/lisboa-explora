@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  activeFilterCount,
   SHOW_ALL_ZOOM,
   directionsUrl,
   emojiFor,
@@ -42,6 +43,18 @@ describe('isVisibleAtZoom', () => {
   it('shows every spot when zoomed in, starting exactly at SHOW_ALL_ZOOM', () => {
     expect(isVisibleAtZoom(normal, SHOW_ALL_ZOOM - 1)).toBe(false)
     expect(isVisibleAtZoom(normal, SHOW_ALL_ZOOM)).toBe(true)
+  })
+})
+
+describe('activeFilterCount (number on the filter button)', () => {
+  it('is 0 when everything is shown', () => {
+    expect(activeFilterCount([], 'all')).toBe(0)
+  })
+
+  it('counts each category and the collected filter', () => {
+    expect(activeFilterCount(['parks'], 'all')).toBe(1)
+    expect(activeFilterCount([], 'missing')).toBe(1)
+    expect(activeFilterCount(['parks', 'churches'], 'collected')).toBe(3)
   })
 })
 

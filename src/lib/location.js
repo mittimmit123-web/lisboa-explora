@@ -10,10 +10,11 @@ export function isLocationBlocked(errorCode) {
   return errorCode === PERMISSION_DENIED
 }
 
-// The sentence on the map. `host` is the website's address, e.g.
+// The help under "How to turn it on?" on the map (the note itself only says
+// "Location is off 📍"). `host` is the website's address, e.g.
 // "lisboa-explora.vercel.app", so it is also right on previews and localhost.
 export function locationOffMessage(host) {
-  return `Location is off 📍 Allow location for ${host} in your settings, then reload the page.`
+  return `Allow location for ${host} in your settings, then reload the page.`
 }
 
 // Where to switch location back on, per device.

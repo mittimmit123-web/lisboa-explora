@@ -147,7 +147,6 @@ input[type='email'], input[type='text'] { flex: 1; min-width: 0; min-height: 44p
 .hero { font-size: 34px; line-height: 1.1; }
 
 /* Bottom navigation */
-.navbar { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: var(--card); box-shadow: 0 -4px 16px rgba(60, 40, 120, 0.08); padding-bottom: env(safe-area-inset-bottom); }
 .nav-item { min-height: 64px; border: none; background: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--muted); font-size: 11px; font-weight: 600; }
 /* The open tab: purple label and a purple square behind the icon */
 .nav-item.active { color: var(--accent); font-weight: 900; }
@@ -455,3 +454,65 @@ input[type='email'], input[type='text'] { flex: 1; min-width: 0; min-height: 44p
 .all-spots-head { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 12px; padding: calc(env(safe-area-inset-top, 0px) + 12px) 20px 12px; background: var(--ground); border-bottom: 1px solid var(--line); }
 .all-spots-head h2 { margin: 0; }
 .all-spots-list { list-style: none; margin: 0; padding: 16px 20px 0; display: flex; flex-direction: column; gap: 14px; }
+
+/* ---------- Full-screen map (inspired by modern map apps) ---------- */
+/* The map fills the screen; the top bar, filters, notes and the nav bar float on top. */
+.map-screen { position: relative; height: 100%; }
+.map-screen .map-wrap { position: absolute; inset: 0; margin: 0; border-radius: 0; min-height: 0; }
+.map-screen .screen-header.map-bar { position: absolute; z-index: 1100; top: 12px; left: 12px; right: 12px; flex-direction: row; align-items: center; gap: 8px; padding: 8px 8px 8px 18px; background: var(--card); border-radius: 30px; box-shadow: 0 8px 24px rgb(60 40 120 / 16%); }
+.map-bar h1 { font-size: 20px; }
+.map-bar .muted { flex: 1; min-width: 0; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.map-bar .help { position: relative; top: auto; right: auto; }
+.map-bar .help-btn { border: none; background: var(--ground); }
+.filter-btn { position: relative; flex-shrink: 0; width: 44px; height: 44px; padding: 0; border: none; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; }
+.filter-btn[aria-expanded='true'] { background: var(--accent-edge); }
+.filter-count { position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px; border: 2px solid #fff; border-radius: 10px; background: var(--sun); color: #5a3d00; font-size: 11px; font-weight: 900; line-height: 16px; }
+/* The filters, in a card under the bar; compact chips, so it stays small */
+.filter-panel { position: absolute; z-index: 1090; top: 76px; left: 12px; right: 12px; padding: 12px 0 2px; background: var(--card); border-radius: 24px; box-shadow: 0 8px 24px rgb(60 40 120 / 16%); }
+.filter-panel .chips-wrap { gap: 5px; padding: 0 12px 8px; }
+.filter-panel .chips-wrap .chip { min-height: 36px; padding: 0 9px; font-size: 12px; }
+.filter-panel .chips-status { margin: 0 12px 10px; }
+.filter-panel .chips-status .chip { min-height: 36px; }
+/* Location note and zoom hint, under the bar */
+.map-notes { position: absolute; z-index: 1080; top: 76px; left: 12px; right: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+.map-notes > * { pointer-events: auto; }
+.map-screen .location-banner { align-self: stretch; margin: 0; padding: 8px 14px; border-radius: 20px; font-size: 13px; box-shadow: 0 8px 24px rgb(60 40 120 / 16%); }
+/* Zoom buttons on the right, map credits above the nav bar (they must stay visible) */
+.map-screen .leaflet-top.leaflet-left { top: 50%; left: auto; right: 0; transform: translateY(-50%); }
+.map-screen .leaflet-control-zoom { border: none; border-radius: 14px; overflow: hidden; box-shadow: 0 6px 16px rgb(60 40 120 / 18%); }
+.map-screen .leaflet-bottom.leaflet-right { bottom: calc(env(safe-area-inset-bottom, 0px) + 84px); }
+
+/* ---------- Floating nav bar ---------- */
+.app { position: relative; }
+.navbar { position: absolute; z-index: 1050; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 12px; padding: 0 14px calc(env(safe-area-inset-bottom, 0px) + 12px); background: none; box-shadow: none; pointer-events: none; }
+.nav-pill { flex: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: var(--card); border-radius: 32px; box-shadow: 0 6px 20px rgb(60 40 120 / 18%); pointer-events: auto; }
+.nav-pill .nav-item { min-height: 62px; }
+.nav-add { flex: 0 0 62px; height: 62px; padding: 0; border: none; border-radius: 50%; background: var(--sun); color: #5a3d00; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 0 var(--sun-edge), 0 8px 18px rgb(215 158 0 / 35%); pointer-events: auto; }
+.nav-add:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--sun-edge); }
+.nav-add.active { outline: 3px solid var(--accent); outline-offset: 3px; }
+/* The other screens scroll under the bar: room at the bottom so nothing hides behind it */
+.app-main > .screen:not(.map-screen) { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 90px); }
+.map-screen .location-banner summary { list-style: none; text-decoration: none; min-height: 28px; display: flex; align-items: center; gap: 6px; }
+.map-screen .location-banner summary::-webkit-details-marker { display: none; }
+.map-screen .location-banner details { margin: 0; }
+.map-screen .location-banner details p { margin-top: 6px; }
+
+/* ---------- Add spot ("Near you"), in the style of the full-screen map ---------- */
+.search-pill { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 18px; background: var(--card); border-radius: 26px; box-shadow: 0 6px 18px rgb(60 40 120 / 10%); color: var(--muted); }
+.search-pill input[type='text'] { border: none; padding: 0; min-height: 50px; background: none; font-size: 16px; outline: none; }
+.search-pill:focus-within { box-shadow: 0 0 0 2px var(--accent), 0 6px 18px rgb(60 40 120 / 10%); }
+.spot-icon { flex-shrink: 0; width: 44px; height: 44px; border: 3px solid var(--line); border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.spot-icon.big { width: 64px; height: 64px; border-width: 4px; font-size: 32px; }
+.distance-pill { flex-shrink: 0; min-height: 0; padding: 3px 10px; border-radius: 999px; background: #efe9ff; color: var(--accent); font-size: 13px; font-weight: 800; white-space: nowrap; }
+.distance-pill.star { background: #fff4d6; color: #92400e; }
+.closest-card { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px 14px; padding: 16px; background: var(--card); border-radius: 24px; box-shadow: 0 8px 24px rgb(60 40 120 / 12%); }
+.closest-card .primary { grid-column: 1 / -1; }
+.closest-text { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.closest-text .section-label { margin: 0; }
+.closest-text strong { font-size: 18px; line-height: 1.25; }
+.star-note { color: #92400e; font-weight: 700; font-size: 13px; }
+.add-spot .nearby-list button { border: none; box-shadow: 0 4px 14px rgb(60 40 120 / 8%); border-radius: 20px; }
+.add-spot .section-label { margin: 4px 0 0; }
+.closest-distance { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; margin-top: 4px; }
+.add-spot .status { border: none; border-radius: 20px; box-shadow: 0 4px 14px rgb(60 40 120 / 8%); }
+

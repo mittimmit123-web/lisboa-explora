@@ -42,6 +42,12 @@ export function toggleCategory(selected, id) {
   return selected.includes(id) ? selected.filter((c) => c !== id) : [...selected, id]
 }
 
+// Number on the map's filter button: each selected category counts, and so
+// does "Collected" / "Not yet". 0 = everything is shown (no number).
+export function activeFilterCount(selected, status) {
+  return selected.length + (status === 'all' ? 0 : 1)
+}
+
 export function matchesFilter(spot, selected) {
   return selected.length === 0 || selected.includes(spot.category)
 }

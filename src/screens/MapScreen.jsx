@@ -20,6 +20,7 @@ import { enableSmoothWheelZoom } from '../lib/smoothWheelZoom.js'
 import { MAP_ATTRIBUTION, mapStyle } from '../lib/mapStyle.js'
 import {
   SHOW_ALL_ZOOM,
+  activeFilterCount,
   directionsUrl,
   emojiFor,
   emptyMapMessage,
@@ -201,9 +202,10 @@ function readView(map) {
   return { zoom: map.getZoom(), bounds: { south: b.getSouth(), west: b.getWest(), north: b.getNorth(), east: b.getEast() } }
 }
 
-export default function MapScreen({ spots, collectedIds, position, locationBlocked, onCheckOff, newThisMonth, onReplayIntro, onReplayTour }) {
+export default function MapScreen({ spots, collectedIds, position, locationBlocked, onCheckOff, onReplayIntro, onReplayTour }) {
   const [filter, setFilter] = useState([]) // selected category ids, [] = all
   const [status, setStatus] = useState('all') // 'all' | 'collected' | 'missing'
+  const [filtersOpen, setFiltersOpen] = useState(false) // the filter card under the top bar
   const [selectedId, setSelectedId] = useState(null)
   const [map, setMap] = useState(null)
   const [view, setView] = useState(null)
@@ -244,36 +246,67 @@ export default function MapScreen({ spots, collectedIds, position, locationBlock
     view && emptyMapMessage({ shown: visible.length, categories: filter, status, collectedCount: collectedIds.size })
   const category = selected && categoryById(selected.category)
   const collected = selected && collectedIds.has(selected.id)
+  const activeFilters = activeFilterCount(filter, status)
 
   return (
     <div className="screen map-screen">
-      <header className="screen-header">
+      {/* Full-screen map: the bar, the filters and the notes float on top of it. */}
+      <header className="screen-header map-bar">
         <h1>Lisbon</h1>
-        <p className="muted">
-          {collectedIds.size} collected · {newThisMonth} new this month
-        </p>
+        <p className="muted">{collectedIds.size} collected</p>
+        <button
+          className="filter-btn"
+          type="button"
+          aria-label="Filters"
+          aria-expanded={filtersOpen}
+          onClick={() => setFiltersOpen(!filtersOpen)}
+        >
+          <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+            <path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1" />
+            <circle cx="15" cy="6" r="2" />
+            <circle cx="9" cy="12" r="2" />
+            <circle cx="17" cy="18" r="2" />
+          </svg>
+          {activeFilters > 0 && <span className="filter-count">{activeFilters}</span>}
+        </button>
         <HelpMenu onIntro={onReplayIntro} onTour={onReplayTour} />
       </header>
 
-      <CategoryFilter value={filter} onChange={setFilter} />
-      <StatusFilter value={status} onChange={setStatus} />
-
-      {/* Shown when location is blocked, so players know why their pin is missing. */}
-      {locationBlocked && (
-        <div className="location-banner" role="status">
-          <p>{locationOffMessage(window.location.host)}</p>
-          <details>
-            <summary>How do I turn it on?</summary>
-            <ul>
-              {LOCATION_STEPS.map((s) => (
-                <li key={s.device}>
-                  <b>{s.device}:</b> {s.steps}
-                </li>
-              ))}
-            </ul>
-          </details>
+      {filtersOpen && (
+        <div className="filter-panel">
+          <CategoryFilter value={filter} onChange={setFilter} />
+          <StatusFilter value={status} onChange={setStatus} />
         </div>
       )}
+
+      <div className="map-notes">
+        {/* Shown when location is blocked, so players know why their pin is missing. */}
+        {locationBlocked && (
+          <div className="location-banner" role="status">
+            <p>{locationOffMessage(window.location.host)}</p>
+            <details>
+              <summary>How do I turn it on?</summary>
+              <ul>
+                {LOCATION_STEPS.map((s) => (
+                  <li key={s.device}>
+                    <b>{s.device}:</b> {s.steps}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          </div>
+        )}
+
+        {/* An empty map explains itself (e.g. "Collected" before anything
+            is collected); otherwise the zoom hint as before. */}
+        {emptyMessage && <div style={styles.hint}>{emptyMessage}</div>}
+        {!emptyMessage && view && view.zoom < SHOW_ALL_ZOOM && status !== 'collected' && (
+          <div style={styles.hint}>Showing highlights · zoom in to see all spots</div>
+        )}
+        {!emptyMessage && view && view.zoom < SHOW_ALL_ZOOM && status === 'collected' && (
+          <div style={styles.hint}>Everything you have collected so far</div>
+        )}
+      </div>
 
       <div className="map-wrap" data-tour="map">
         {/* scrollWheelZoom is off: our own smooth wheel zoom replaces it
@@ -322,16 +355,6 @@ export default function MapScreen({ spots, collectedIds, position, locationBlock
               />
             ))}
         </MapContainer>
-
-        {/* An empty map explains itself (e.g. "Collected" before anything
-            is collected); otherwise the zoom hint as before. */}
-        {emptyMessage && <div style={styles.hint}>{emptyMessage}</div>}
-        {!emptyMessage && view && view.zoom < SHOW_ALL_ZOOM && status !== 'collected' && (
-          <div style={styles.hint}>Showing highlights · zoom in to see all spots</div>
-        )}
-        {!emptyMessage && view && view.zoom < SHOW_ALL_ZOOM && status === 'collected' && (
-          <div style={styles.hint}>Everything you have collected so far</div>
-        )}
 
         <div style={styles.bottom}>
           <button
@@ -395,11 +418,6 @@ export default function MapScreen({ spots, collectedIds, position, locationBlock
 // Styles only used on this screen. Shared styles live in src/index.css.
 const styles = {
   hint: {
-    position: 'absolute',
-    top: 10,
-    left: '50%',
-    transform: 'translateX(-50%)',
-    zIndex: 1000,
     background: 'rgba(255,255,255,0.92)',
     borderRadius: 999,
     padding: '6px 12px',
@@ -412,7 +430,7 @@ const styles = {
     position: 'absolute',
     left: 12,
     right: 12,
-    bottom: 12,
+    bottom: 'calc(env(safe-area-inset-bottom, 0px) + 90px)', // above the floating nav bar
     zIndex: 1000,
     display: 'flex',
     flexDirection: 'column',

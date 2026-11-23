@@ -7,9 +7,10 @@ import { categoryById } from '../data/categories.js'
 import { checkOffErrorMessage } from '../lib/messages.js'
 import { isPhotoTooBig, shrinkPhoto } from '../lib/photo.js'
 import { MAX_NOTE_LENGTH, charactersLeft } from '../lib/journal.js'
+import { LOCATION_OFF_SHORT } from '../lib/location.js'
 import StarRating from '../components/StarRating.jsx'
 
-export default function CheckOffScreen({ spot, position, gpsError, onDone, onBack }) {
+export default function CheckOffScreen({ spot, position, gpsError, locationBlocked, onDone, onBack }) {
   const [photo, setPhoto] = useState(null)
   const [busy, setBusy] = useState(false) // true while saving the check-off
   const [preparing, setPreparing] = useState(false) // true while shrinking the photo
@@ -89,8 +90,11 @@ export default function CheckOffScreen({ spot, position, gpsError, onDone, onBac
 
       <div className="content">
         <div className={willVerify ? 'status ok' : 'status'}>
-          {gpsError && !pretendHere && <span>GPS: {gpsError}</span>}
-          {!gpsError && distance === null && <span>Finding your location…</span>}
+          {/* Location problems only matter while we have no position at all:
+              a short GPS hiccup after a good fix is not worth showing. */}
+          {distance === null && locationBlocked && <span>{LOCATION_OFF_SHORT}</span>}
+          {distance === null && !locationBlocked && gpsError && <span>GPS: {gpsError}</span>}
+          {distance === null && !gpsError && <span>Finding your location…</span>}
           {distance !== null && (
             <span>
               {willVerify

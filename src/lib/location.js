@@ -17,6 +17,9 @@ export function locationOffMessage(host) {
   return `Allow location for ${host} in your settings, then reload the page.`
 }
 
+// The same news, short, for the status box on the check-off screen.
+export const LOCATION_OFF_SHORT = 'Location is off · you can still add it, just without the mark'
+
 // Where to switch location back on, per device.
 export const LOCATION_STEPS = [
   { device: 'iPhone', steps: 'Settings → Privacy & Security → Location Services → Safari Websites → While Using the App' },

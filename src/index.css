@@ -96,7 +96,7 @@ button { font: inherit; cursor: pointer; }
 .stat-link:active { transform: scale(0.97); }
 .stat.purple span { color: #f1edfb; }
 .card { background: var(--card); border-radius: 20px; box-shadow: 0 4px 0 var(--card-edge); padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
-.recap { background: #efe9ff; }
+.recap { background: #ddd2fb; box-shadow: 0 4px 0 #c9bbf5; }
 .recap p { margin: 0; line-height: 1.4; }
 .recent { list-style: none; margin: 0; padding: 0; background: var(--card); border-radius: 20px; box-shadow: 0 4px 0 var(--card-edge); }
 .recent li { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #eee8fb; }
@@ -126,7 +126,7 @@ button { font: inherit; cursor: pointer; }
 .leaderboard { list-style: none; margin: 0; padding: 0; background: var(--card); border-radius: 20px; box-shadow: 0 4px 0 var(--card-edge); }
 .leaderboard li { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid #eee8fb; }
 .leaderboard li:last-child { border-bottom: none; }
-.leaderboard li.me { background: #efe9ff; }
+.leaderboard li.me { background: #ddd2fb; }
 .leaderboard .name { display: flex; flex-direction: column; min-width: 0; }
 .player-title { color: #92400e; font-weight: 700; font-size: 13px; }
 .rank { width: 18px; font-weight: 700; color: var(--muted); }

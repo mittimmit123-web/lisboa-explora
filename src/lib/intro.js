@@ -2,19 +2,21 @@
 // Plain logic only, tested in tests/intro.test.js. The 3D scene is in
 // src/lib/introScene.js and the screens in src/components/Intro*.jsx.
 //
-// The intro has four steps:
+// The intro has six steps:
 //   welcome   Trammy, the app's host, rolls in and cheers ("Lisboa Explora")
 //   pick      the player chooses their Explora
 //   prologue  the chosen Explora says hello and asks "Will you show me around?"
+//   purpose   it explains WHY the app exists: most people only ever see their
+//             own neighbourhood, but Lisbon has 24
 //   name      it asks what to call you: the name your friends will see
-//   album     it explains the postcard album: your photo becomes a postcard
-//             in every new neighbourhood, 24 in total
+//   album     the goal: the first photo in each new neighbourhood becomes a
+//             postcard, 24 in total (the HOW is shown in the tour)
 // Then the guided tour starts (src/lib/tour.js).
-export const STEPS = ['welcome', 'pick', 'prologue', 'name', 'album']
+export const STEPS = ['welcome', 'pick', 'prologue', 'purpose', 'name', 'album']
 
 // Watching the intro again (the "?" button on the map) shows only the story:
 // the player already has an Explora and a name, so those steps are skipped.
-export const REPLAY_STEPS = ['welcome', 'prologue', 'album']
+export const REPLAY_STEPS = ['welcome', 'prologue', 'purpose', 'album']
 
 export function nextStep(step, replay = false) {
   const steps = replay ? REPLAY_STEPS : STEPS

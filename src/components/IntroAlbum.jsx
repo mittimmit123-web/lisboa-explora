@@ -1,6 +1,7 @@
-// Intro step 4 (issue #33): the Explora explains the postcard album before
-// the tour, so the player knows the goal: in every neighbourhood, the photo
-// becomes a postcard. 24 neighbourhoods, 24 postcards (Lisbon has 24 parishes).
+// Last intro step (issue #33): the postcard album as the goal. The first
+// photo in each new neighbourhood becomes a postcard: 24 neighbourhoods,
+// 24 postcards (Lisbon has 24 parishes). The WHY comes before (the "purpose"
+// step); the HOW is shown on the real screens in the tour (src/lib/tour.js).
 import { lazy, Suspense } from 'react'
 import { characterById } from '../lib/characters.js'
 
@@ -17,9 +18,7 @@ export default function IntroAlbum({ actorId, onDone }) {
         <Suspense fallback={<span className="buddy-avatar buddy-placeholder" aria-hidden="true" />}>
           <BuddyAvatar id={explora.id} />
         </Suspense>
-        <p className="intro-tiles-bubble">
-          In every neighbourhood we visit, your photo becomes a postcard for my album.
-        </p>
+        <p className="intro-tiles-bubble">Your first photo in each new neighbourhood becomes a postcard for my album.</p>
       </div>
 
       <div className="intro-tiles-map" aria-label="An empty album with 24 postcards">

@@ -10,6 +10,7 @@ import { getCharacter } from '../lib/api.js'
 import {
   HELLO_END,
   PROLOGUE_END,
+  PROLOGUE_HOLD,
   WELCOME_END,
   advancePrologue,
   nextStep,
@@ -54,6 +55,7 @@ export default function IntroScreen({ onDone, replay = false }) {
         />
       )}
       {step === 'prologue' && <PrologueFilm actorId={actorId} onDone={next} />}
+      {step === 'purpose' && <PurposeFilm actorId={actorId} onDone={next} />}
       {step === 'name' && <IntroName actorId={actorId} onDone={next} />}
       {step === 'album' && <IntroAlbum actorId={actorId} onDone={next} />}
     </div>
@@ -171,6 +173,39 @@ function PrologueFilm({ actorId, onDone }) {
           Yes, let&apos;s go!
         </button>
       )}
+    </>
+  )
+}
+
+// After "Yes, let's go!": the Explora stands in the middle and explains WHY
+// the app exists. Waits for the button (no timer), still blinking.
+function PurposeFilm({ actorId, onDone }) {
+  const canvasRef = useRef(null)
+  const doneRef = useRef(false)
+  const [calm] = useState(prefersCalm)
+  const explora = characterById(actorId)
+  useFilm(canvasRef, actorId, {
+    tick: () => PROLOGUE_HOLD, // the standing pose from the prologue
+    draw: (scene, t, live) => scene.drawPrologue(t, calm ? 0 : live),
+    finished: () => doneRef.current,
+    phaseOf: () => 'purpose',
+    onPhase: () => {},
+    onDone,
+  })
+  return (
+    <>
+      <canvas ref={canvasRef} className="intro-canvas" aria-hidden="true" />
+      <button className="intro-skip" type="button" onClick={onDone}>
+        Skip
+      </button>
+      <span className="intro-who">{explora.name}</span>
+      <p className="intro-bubble intro-bubble-purpose" aria-live="polite">
+        Did you know? Lisbon has <b>24 neighbourhoods</b>, each full of surprises. But most people only ever explore their own. Let&apos;s
+        discover the rest together! 🗺️
+      </p>
+      <button className="intro-yes" type="button" onClick={() => (doneRef.current = true)}>
+        Let&apos;s explore!
+      </button>
     </>
   )
 }

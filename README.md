@@ -1,12 +1,31 @@
 # Lisboa Explora
 
-**Collect Lisbon, one spot at a time.** Visit real places in Lisbon (viewpoints, parks, bars, food spots …), check them off with a photo, build your collection and compare with your friends every month.
+**Collect Lisbon, one spot at a time.** Visit real places in Lisbon — viewpoints,
+parks, churches, bars, food spots — check them off where you are standing, build a
+collection with photos and notes, and compare it with your friends every month.
 
-Team project for *Introduction to Programming* (Nova SBE, 2026/27). Deadline: **23 Nov 2026**.
+Team project for *Introduction to Programming* (Nova SBE, 2026/27).
 
-## Live app
+**Live app:** https://lisboa-explora.vercel.app
 
-**Deployed URL:** https://lisboa-explora.vercel.app
+## What we set out to build
+
+Most people who live in Lisbon know their own neighbourhood and three streets in
+Baixa. The goal of this project was to build something that gets a person to walk
+into the other twenty-three parishes of the city, and to make that feel like a
+game rather than homework.
+
+That gave us four objectives, and every decision in the project comes back to one
+of them:
+
+1. **Reward being somewhere, not typing something.** The phone's GPS, checked by
+   the server, is what separates a real visit from a wish list.
+2. **Never punish the player.** A check-off is never refused. A bad GPS reading
+   costs you a mark, never the memory.
+3. **Cover the whole city.** The spots come from OpenStreetMap, so all 24
+   parishes are filled, not just the places the four of us happen to know.
+4. **Make it worth opening twice.** Friends, a monthly leaderboard, a story that
+   unlocks as you travel, and a collection that is pleasant to look at.
 
 ## Team
 
@@ -17,33 +36,42 @@ Team project for *Introduction to Programming* (Nova SBE, 2026/27). Deadline: **
 | Sorcha Lauder | 71299 | [sorchalauder](https://github.com/sorchalauder) |
 | Tim Ohlert | 74723 | [mittimmit123-web](https://github.com/mittimmit123-web) |
 
-How to run the app and the tests: see [Run it on your computer](#run-it-on-your-computer) and [Useful commands](#useful-commands) below.
+Each of us owns one screen and the code behind it; the file headers say who wrote
+what. How we split the work, branch and review is in [AGENTS.md](AGENTS.md).
 
-## What the app does (first version)
+## What the app does
+
+The app holds **1930 spots** across the **24 parishes** of Lisbon, in **8
+categories**.
 
 | Screen | What you can do |
 | --- | --- |
-| **Map** | See all spots, filter by category, tap a spot to see the distance |
-| **Check off** | Take a photo and add the spot to your journal. Within 150 m it also gets a "verified on site" mark |
-| **Collection** | Total spots, new this month, sets in % (e.g. "Bars in Bairro Alto: 20%"), neighbourhoods in % |
-| **Friends** | Leaderboard "new spots this month" (live), add friends by email |
-
-Full concept: see the *Variant A – Concept Description* doc shared in the team.
+| **Map** | A full-screen map of Lisbon in our own design, with one emoji marker per spot. Zoomed out it shows only the highlights, so the city stays readable; zoomed in, everything appears. Filter by category, or by what you have already collected. Each parish has its own colour, and locked ones are lighter. |
+| **Check off** | Stand at a spot and add it to your journal, with a photo, a note and a rating if you want — all three optional. Within **150 m** the server adds a **"verified on site"** mark. The screen shows how accurate your GPS is and warns you when the reading is too vague to trust. |
+| **Add spot** | The other way round: instead of finding yourself on the map, see the closest spots you have not collected yet, with a ⭐ on the ones near enough for the mark. |
+| **Collection** | Your own journal. Spots collected, new this month, a photo gallery, and a tile per category that opens to show which parishes you have covered and which are still empty. Every new parish turns your photo into a **postcard** and unlocks the next chapter of the story. |
+| **Friends** | Send a friend request, accept or deny the ones you get. A live leaderboard for new spots this month, a **crown** for the parish you lead, and today's weather over your buddy. |
+| **First start** | An intro film with three 3D characters to pick from, then a short guided tour of the real screens. The **?** button brings both back at any time. |
 
 ## Tech stack
 
 | Part | Tool |
 | --- | --- |
-| UI | React + Vite |
-| Map | Leaflet + MapLibre (own map design, data from OpenStreetMap via OpenFreeMap) |
-| Login, database, photos | Supabase |
+| UI | React 19 + Vite |
+| Map | Leaflet + MapLibre, our own style, data from OpenStreetMap via OpenFreeMap |
+| 3D characters | three.js, loaded only when the intro actually runs |
+| Login, database, photos | Supabase (Postgres, Row Level Security, private storage) |
 | Hosting | Vercel |
-| Tests | Vitest |
+| Tests | Vitest, run by GitHub Actions on every pull request |
 
 ## Run it on your computer
 
 1. Install **Node.js** (LTS version) from nodejs.org.
-2. Clone the repo and open the folder in a terminal.
+2. Clone this repository and open the folder in a terminal:
+   ```
+   git clone https://github.com/mittimmit123-web/lisboa-explora.git
+   cd lisboa-explora
+   ```
 3. Install the libraries (once):
    ```
    npm install
@@ -52,11 +80,14 @@ Full concept: see the *Variant A – Concept Description* doc shared in the team
    ```
    npm run dev
    ```
-   Open the address it prints (usually http://localhost:5173).
+   Open the address it prints, usually http://localhost:5173.
 
-Without a `.env` file the app runs in **demo mode**: no login, data stays in your browser, fake friends. Good for building screens.
+**You do not need any keys to try it.** Without a `.env` file the app runs in
+**demo mode**: no login, the data stays in your browser, the friends are made up.
+Everything you can click still works.
 
-To use the real database, copy `.env.example` to `.env` and paste the two Supabase values (ask the person who owns the Supabase project; **never commit `.env`**).
+To use the real database instead, copy `.env.example` to `.env` and fill in the
+two Supabase values (see *Setting up Supabase* below). **Never commit `.env`.**
 
 ## Useful commands
 
@@ -64,28 +95,54 @@ To use the real database, copy `.env.example` to `.env` and paste the two Supaba
 | --- | --- |
 | `npm run dev` | Start the app locally |
 | `npm test` | Run the tests |
+| `npm run lint` | Run oxlint |
 | `npm run build` | Build the production version (Vercel does this automatically) |
 | `npm run seed` | Regenerate `supabase/seed.sql` after changing `src/data/spots.js` |
+
+## Tests
+
+21 test files cover the parts that are pure logic: distances and the radius,
+progress counts, the leaderboard, the story and intro state, photo shrinking,
+marker rules, map maths and the OpenStreetMap import filter. The screens
+themselves are checked by hand.
+
+Every pull request and every push to `main` runs `npm test` and a production
+build on GitHub Actions (`.github/workflows/tests.yml`). Nothing reaches `main`
+on a red build.
 
 ## Folder map
 
 ```
 src/
-  App.jsx               switches between the screens
-  screens/              one file per screen (Map, CheckOff, Collection, Friends, Login)
-  components/           small reusable pieces (NavBar, CategoryFilter, ProgressBar)
-  data/spots.js         THE list of spots (name, category, neighbourhood, coordinates)
-  data/neighbourhoods.js the 24 parishes of Lisbon ("you've been to 7 of 24")
-  data/categories.js    categories and their colours
-  lib/geo.js            distance display and the 150 m "verified" threshold
-  lib/progress.js       monthly count, category counts, neighbourhoods, ranking (pure functions, tested)
-  lib/api.js            the ONLY file that talks to Supabase (with demo mode)
-  lib/supabase.js       Supabase connection from .env
-  lib/useGeolocation.js live GPS position
+  App.jsx                switches between the screens
+  screens/               one file per screen
+    MapScreen            the map and its filters
+    CheckOffScreen       GPS, photo, note, rating
+    AddSpotScreen        the closest spots you have not collected
+    CollectionScreen     your journal, gallery, postcards, story
+    FriendsScreen        requests, leaderboard, crowns, weather
+    LoginScreen          magic-link login (only when Supabase is configured)
+  components/            reusable pieces (NavBar, filters, intro, tour, postcards)
+  data/
+    spots.js             THE list of spots (name, category, parish, coordinates)
+    neighbourhoods.js    the 24 parishes of Lisbon
+    categories.js        categories and their colours
+    parishes.js          parish borders for the map
+    story.js, facts.js   one chapter and one real fact per parish
+  lib/
+    api.js               the ONLY file that talks to Supabase (with demo mode)
+    geo.js               distances, the 150 m radius, the weak-GPS threshold
+    progress.js          counts for the Collection (pure functions, tested)
+    friends.js           leaderboard and crown rules
+    nearby.js            the closest uncollected spots
+    markers.js           what the map shows at which zoom
+    journal.js           the rules for notes and ratings
+    supabase.js          connection from .env
+    useGeolocation.js    live GPS position
 supabase/
-  schema.sql            tables, security rules, check_off function (run once in Supabase)
-  seed.sql              the spots for the database (generated, do not edit)
-tests/                  Vitest tests
+  schema.sql             tables, security rules, the check_off function
+  seed.sql               the spots for the database (generated, do not edit)
+tests/                   Vitest tests
 ```
 
 ## Setting up Supabase (once, project owner)
@@ -93,28 +150,54 @@ tests/                  Vitest tests
 1. Create a free project on supabase.com (log in with GitHub).
 2. SQL Editor → New query → paste `supabase/schema.sql` → Run.
 3. SQL Editor → New query → paste `supabase/seed.sql` → Run.
-4. Authentication → URL Configuration: add your Vercel URL and `http://localhost:5173` as redirect URLs.
-5. Project Settings → API: copy *Project URL* and *anon public key* into `.env` (and into Vercel → Settings → Environment Variables).
+4. Authentication → URL Configuration: add your Vercel URL and
+   `http://localhost:5173` as redirect URLs.
+5. Project Settings → API: copy *Project URL* and *anon public key* into `.env`
+   and into Vercel → Settings → Environment Variables.
 
-Note: free Supabase projects pause after a week without use. Open the app once before the presentation.
+Two things worth knowing. `schema.sql` can be run again at any time without
+losing data, and it has to be run again whenever it changes — the rules live in
+the database, not in the deployed app. And free Supabase projects pause after a
+week without use, so open the app once before a demo.
 
 ## How a check-off works
 
 A check-off **never fails because of distance**. The spot always goes into the
-player's journal, even days later or from the sofa. The GPS position only
-decides one thing: whether the entry gets a **"verified on site"** mark, which
-the player sees in the collection.
+player's journal, even days later or from the sofa. The GPS position decides one
+thing only: whether the entry gets a **"verified on site"** mark.
 
-This keeps the app a personal journal instead of a test you can fail, while
-the interesting rule still lives where it cannot be faked: on the server.
+The radius is **150 m**. We started at 50 m and the database showed us it was
+wrong: nine of the ten closest attempts missed the mark by 11 to 29 metres, while
+the testers were standing in front of the spots. In the narrow streets of central
+Lisbon the signal bounces off the buildings, so 50 m was measuring the quality of
+the signal rather than the visit. The reasoning is decision 25 in
+[DECISIONS.md](DECISIONS.md).
+
+This keeps the app a personal journal instead of a test you can fail, while the
+rule that matters lives where it cannot be faked: on the server.
 
 ## Security
 
-- The **"verified on site" mark is decided by the server** (`check_off` function in `schema.sql`), never by the browser. A player cannot set it.
-- **Row Level Security**: players can only read their own check-offs; nobody can write directly to the tables.
-- Photos go to a **private bucket**; each player can only upload to their own folder. Max 5 MB, images only.
-- Each spot can be collected **once per player** (database rule).
+- The **"verified on site" mark is decided by the server** (the `check_off`
+  function in `schema.sql`), never by the browser. A player cannot set it.
+- **Row Level Security**: players can only read their own check-offs, and nobody
+  can write to the tables directly — every write goes through a function.
+- A photo must really exist in storage before it can be attached to a check-off.
+- Photos go to a **private bucket**; each player can only upload into their own
+  folder. Images only, 5 MB maximum.
+- Each spot can be collected **once per player** (enforced by the database).
+- Friendship needs both sides: a request has to be accepted.
+- The Supabase publishable key in `.env` is not a secret — it is safe in the
+  browser because the row-level rules, not the key, decide what a player may see.
 
-## How we work together
+## Documentation
 
-See [AGENTS.md](AGENTS.md): branches, pull requests, who owns what.
+| File | What is in it |
+| --- | --- |
+| [DECISIONS.md](DECISIONS.md) | 25 decisions: what we chose, why, and what we knowingly gave up |
+| [AGENTS.md](AGENTS.md) | How we work: branches, pull requests, who owns what |
+| `supabase/schema.sql` | The database, commented line by line |
+
+`DECISIONS.md` is the one to read if you want to know why the app looks the way
+it does. We wrote it as we went, so that any of us can explain any part of the
+project, not only the part we wrote ourselves.

@@ -6,7 +6,8 @@ collection with photos and notes, and compare it with your friends every month.
 
 Team project for *Introduction to Programming* (Nova SBE, 2026/27).
 
-**Live app:** https://lisboa-explora.vercel.app
+**Live app:** https://lisboa-explora.vercel.app — best opened on a phone, see
+[Open it on your phone](#open-it-on-your-phone). No installation, no keys.
 
 ## What we set out to build
 
@@ -64,7 +65,37 @@ categories**.
 | Hosting | Vercel |
 | Tests | Vitest, run by GitHub Actions on every pull request |
 
+## Open it on your phone
+
+This is the way the app is meant to be used, and the quickest way to try it —
+there is nothing to install and no keys to set up.
+
+1. Open **https://lisboa-explora.vercel.app** in Safari (iPhone) or Chrome
+   (Android).
+2. Type your email. You get a login link by mail; open it on the same phone and
+   you are in. There is no password.
+3. Allow location when the app asks for it.
+
+Step 3 is the one that matters. The app runs without location — you can look at
+the map, read the story, browse your collection — but the GPS is what earns the
+**"verified on site"** mark, and that is the whole game. On a laptop the browser
+guesses your position from the wifi network, which in Lisbon can be a kilometre
+out, so the mark will not behave the way it does in the street.
+
+### Add it to the home screen (optional)
+
+| Phone | How |
+| --- | --- |
+| iPhone | Share button → *Add to Home Screen* |
+| Android | Menu (⋮) → *Add to Home screen* |
+
+It then opens full screen with its own icon and no browser bar, like an app from
+the store. It still needs an internet connection: there is no offline mode.
+
 ## Run it on your computer
+
+This section is for working on the code. To simply use the app, open the link
+above on a phone instead.
 
 1. Install **Node.js** (LTS version) from nodejs.org.
 2. Clone this repository and open the folder in a terminal:

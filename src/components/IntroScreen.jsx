@@ -158,7 +158,7 @@ function PrologueFilm({ actorId, onDone }) {
   }[phase]
   return (
     <>
-      <canvas ref={canvasRef} className="intro-canvas" aria-hidden="true" />
+      <canvas ref={canvasRef} className="intro-canvas raised" aria-hidden="true" />
       <button className="intro-skip" type="button" onClick={onDone}>
         Skip
       </button>
@@ -194,7 +194,7 @@ function PurposeFilm({ actorId, onDone }) {
   })
   return (
     <>
-      <canvas ref={canvasRef} className="intro-canvas" aria-hidden="true" />
+      <canvas ref={canvasRef} className="intro-canvas raised" aria-hidden="true" />
       <button className="intro-skip" type="button" onClick={onDone}>
         Skip
       </button>

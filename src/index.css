@@ -224,10 +224,10 @@ input[type='email'], input[type='text'] { flex: 1; min-width: 0; min-height: 44p
 .intro-bubble { position: absolute; left: 50%; margin: 0; width: max-content; max-width: min(320px, calc(100% - 40px)); padding: 16px 20px; border-radius: 24px; background: #fff; font-size: 23px; font-weight: 800; line-height: 1.25; text-align: center; box-shadow: 0 6px 0 rgba(0, 0, 0, 0.12); transform: translateX(-50%); transform-origin: center bottom; animation: intro-bubble 0.4s cubic-bezier(0.3, 1.5, 0.6, 1) both; }
 .intro-bubble::after { content: ''; position: absolute; bottom: -14px; left: 50%; margin-left: -12px; border: 12px solid transparent; border-top-color: #fff; border-bottom: 0; }
 .intro-bubble-welcome { top: 36%; }
-.intro-bubble-hello { top: 21%; }
-.intro-bubble-ask { top: 32%; }
-.intro-bubble-joy { top: 33%; }
-.intro-yes { position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 60px); height: 68px; padding: 0 36px; border: none; border-radius: 22px; background: #ffc93c; color: #5a3d00; box-shadow: 0 5px 0 #d79e00; font: inherit; font-weight: 900; font-size: 22px; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; cursor: pointer; transform: translateX(-50%); animation: intro-yes 1.2s ease-in-out 0.4s infinite; }
+.intro-bubble-hello { top: 14%; }
+.intro-bubble-ask { top: 19%; }
+.intro-bubble-joy { top: 21%; }
+.intro-yes { position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 64px); height: 64px; padding: 0 36px; border: none; border-radius: 22px; background: #ffc93c; color: #5a3d00; box-shadow: 0 5px 0 #d79e00; font: inherit; font-weight: 900; font-size: 22px; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; cursor: pointer; transform: translateX(-50%); animation: intro-yes 1.2s ease-in-out 0.4s infinite; }
 .intro-yes:active { transform: translateX(-50%) translateY(4px); box-shadow: 0 1px 0 #d79e00; }
 @keyframes intro-pop { from { opacity: 0; transform: scale(0.3); } to { opacity: 1; transform: none; } }
 @keyframes intro-bubble { from { opacity: 0; transform: translateX(-50%) scale(0); } to { opacity: 1; transform: translateX(-50%) scale(1); } }
@@ -236,7 +236,7 @@ input[type='email'], input[type='text'] { flex: 1; min-width: 0; min-height: 44p
 @keyframes intro-rays { to { transform: rotate(360deg); } }
 
 /* Intro step 2: choose your buddy */
-.intro-pick { position: absolute; inset: 0; display: flex; flex-direction: column; padding: calc(env(safe-area-inset-top, 0px) + 48px) 20px calc(env(safe-area-inset-bottom, 0px) + 18px); }
+.intro-pick { position: absolute; inset: 0; display: flex; flex-direction: column; padding: calc(env(safe-area-inset-top, 0px) + 48px) 20px calc(env(safe-area-inset-bottom, 0px) + 8px); }
 .intro-pick-title { margin: 0; text-align: center; font-size: clamp(26px, 8.5vw, 34px); font-weight: 900; line-height: 1.1; color: #fff; text-shadow: 0 3px 0 rgba(58, 40, 92, 0.55), 0 0 16px rgba(58, 40, 92, 0.45); position: relative; z-index: 1; }
 .intro-pick-stage { flex: 1; min-height: 260px; width: calc(100% + 40px); margin: 0 -20px; display: block; cursor: pointer; touch-action: manipulation; }
 .intro-bubble-pick { top: 24%; font-size: 21px; }
@@ -277,7 +277,7 @@ input[type='email'], input[type='text'] { flex: 1; min-width: 0; min-height: 44p
 .intro-bubble-enter { display: none; }
 
 /* Intro step 4: the tile map is explained */
-.intro-tiles { position: absolute; inset: 0; display: flex; flex-direction: column; gap: 12px; padding: calc(env(safe-area-inset-top, 0px) + 52px) 20px calc(env(safe-area-inset-bottom, 0px) + 22px); color: #fff; overflow-y: auto; }
+.intro-tiles { position: absolute; inset: 0; display: flex; flex-direction: column; gap: 12px; padding: calc(env(safe-area-inset-top, 0px) + 52px) 20px calc(env(safe-area-inset-bottom, 0px) + 64px); color: #fff; overflow-y: auto; }
 .intro-tiles-who { display: flex; align-items: center; gap: 12px; }
 .intro-tiles-who .buddy-avatar { width: 80px; height: 80px; border-radius: 50%; flex-shrink: 0; }
 .intro-tiles-bubble { position: relative; margin: 0; background: #fff; color: #2b2340; border-radius: 20px; padding: 12px 14px; font-size: 18px; font-weight: 800; line-height: 1.3; box-shadow: 0 5px 0 rgba(0, 0, 0, 0.12); animation: intro-pop 0.4s cubic-bezier(0.3, 1.5, 0.6, 1) both; }
@@ -292,7 +292,7 @@ input[type='email'], input[type='text'] { flex: 1; min-width: 0; min-height: 44p
 .intro-tiles .intro-name-input { flex: none; height: 60px; border: none; border-radius: 18px; padding: 0 18px; font: inherit; font-size: 20px; font-weight: 700; color: #2b2340; }
 .intro-name-hint { margin: 0; text-align: center; color: rgba(255, 255, 255, 0.85); font-weight: 700; }
 /* The empty album is small (6 x 4), so everything fits one phone screen */
-.intro-tiles .intro-choose { margin-top: auto; flex-shrink: 0; height: 76px; font-size: 22px; }
+.intro-tiles .intro-choose { margin-top: auto; flex-shrink: 0; }
 @media (prefers-reduced-motion: reduce) { .intro-tiles-bubble, .intro-tiles-grid li { animation: none; } }
 /* Small phones: a bit tighter, so the album step still fits without scrolling */
 @media (max-height: 700px) {
@@ -522,5 +522,14 @@ input[type='email'], input[type='text'] { flex: 1; min-width: 0; min-height: 44p
 .add-spot .status { border: none; border-radius: 20px; box-shadow: 0 4px 14px rgb(60 40 120 / 8%); }
 
 /* Intro "purpose" step: the Explora's bubble above it, in the middle */
-.intro-bubble-purpose { top: 13%; font-size: 19px; line-height: 1.3; max-width: min(340px, calc(100% - 32px)); }
-@media (max-height: 700px) { .intro-bubble-purpose { top: 10%; font-size: 16px; padding: 12px 16px; } }
+.intro-bubble-purpose { top: 9%; font-size: 19px; line-height: 1.3; max-width: min(340px, calc(100% - 32px)); }
+@media (max-height: 700px) { .intro-bubble-purpose { top: 8%; font-size: 16px; padding: 12px 16px; } }
+/* Prologue and "purpose" steps: the Explora stands a bit higher and the button
+   sits lower, so the button never covers its feet (or the tram's wheels) */
+.intro-canvas.raised { transform: translateY(-11%); }
+/* Every intro step has its main button at the same height: 64 px above the
+   bottom (the picker's "Choose later" link fills that space under its button) */
+/* On a laptop the intro pages keep phone width, like the speech bubbles */
+.intro-pick, .intro-tiles { max-width: 480px; margin: 0 auto; }
+
+@media (max-height: 600px) { .intro-bubble { font-size: 18px; padding: 12px 16px; } .intro-bubble-hello { top: 12%; } .intro-bubble-purpose { font-size: 15px; } } /* small phones: bubbles don't cover the Explora's head */

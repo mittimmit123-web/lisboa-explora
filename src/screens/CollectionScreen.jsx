@@ -42,15 +42,15 @@ export default function CollectionScreen({ spots, checkOffs, collectedIds }) {
         <BuddyCard />
 
         <div className="stats">
-          <button type="button" className="stat dark stat-link" onClick={() => jumpTo('your-spots')}>
+          <button type="button" className="stat purple stat-link" onClick={() => jumpTo('your-spots')}>
             <strong>{collectedIds.size}</strong>
             <span>spots total&nbsp;↓</span>
           </button>
-          <button type="button" className="stat stat-link" onClick={() => jumpTo('your-spots')}>
+          <button type="button" className="stat yellow stat-link" onClick={() => jumpTo('your-spots')}>
             <strong>{month.count}</strong>
             <span>new this month&nbsp;↓</span>
           </button>
-          <button type="button" className="stat stat-link" onClick={() => jumpTo('neighbourhoods')}>
+          <button type="button" className="stat pink stat-link" onClick={() => jumpTo('neighbourhoods')}>
             <strong>
               {hoods.visited}
               <small>/{hoods.total}</small>

@@ -492,4 +492,7 @@ input[type='email'], input[type='text'] { flex: 1; min-width: 0; min-height: 44p
 .nav-add.active { outline: 3px solid var(--accent); outline-offset: 3px; }
 /* The other screens scroll under the bar: room at the bottom so nothing hides behind it */
 .app-main > .screen:not(.map-screen) { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 90px); }
-
+.map-screen .location-banner summary { list-style: none; text-decoration: none; min-height: 28px; display: flex; align-items: center; gap: 6px; }
+.map-screen .location-banner summary::-webkit-details-marker { display: none; }
+.map-screen .location-banner details { margin: 0; }
+.map-screen .location-banner details p { margin-top: 6px; }

@@ -283,9 +283,11 @@ export default function MapScreen({ spots, collectedIds, position, locationBlock
         {/* Shown when location is blocked, so players know why their pin is missing. */}
         {locationBlocked && (
           <div className="location-banner" role="status">
-            <p>{locationOffMessage(window.location.host)}</p>
             <details>
-              <summary>How do I turn it on?</summary>
+              <summary>
+                Location is off 📍 <u>How to turn it on?</u>
+              </summary>
+              <p>{locationOffMessage(window.location.host)}</p>
               <ul>
                 {LOCATION_STEPS.map((s) => (
                   <li key={s.device}>

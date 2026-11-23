@@ -48,6 +48,12 @@ export function answerMessage({ name, accept, result, error }) {
   return accept ? { ok: true, text: `You and ${name} are friends now! 🎉` } : { ok: true, text: `Request from ${name} removed.` }
 }
 
+// Under the friend request card: how many more are waiting after this one.
+export function moreWaiting(count) {
+  if (count <= 0) return ''
+  return count === 1 ? '1 more request waiting' : `${count} more requests waiting`
+}
+
 // ---------- Your name ----------
 // Must match the check in set_display_name (supabase/schema.sql).
 export const NAME_MIN = 2

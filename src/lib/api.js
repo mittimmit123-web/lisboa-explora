@@ -161,7 +161,7 @@ export async function getFriendsLeaderboard(myCount, myHoodCounts = {}) {
       { name: 'Marta', count: 6, hoodCounts: { Belém: 4, Alcântara: 2, Ajuda: 1, Estrela: 1, Misericórdia: 1 } },
       { name: 'João', count: 4, hoodCounts: { Misericórdia: 3, Arroios: 2, 'Santo António': 1, 'Penha de França': 1, 'São Vicente': 1, Estrela: 1, 'Avenidas Novas': 1, 'Santa Maria Maior': 1 } },
       { name: 'Lukas', count: 2, hoodCounts: { Alvalade: 1, Areeiro: 1 } },
-      ...(demoRequestState() === 'accepted' ? [{ name: 'Sofia', count: 1, hoodCounts: { Belém: 1 } }] : []),
+      ...DEMO_REQUESTERS.filter((name) => demoAnswers()[name] === 'accepted').map((name) => ({ name, count: 1, hoodCounts: { Belém: 1 } })),
     ]
   }
   const { data, error } = await supabase.rpc('friends_leaderboard')
@@ -207,20 +207,24 @@ export async function addFriend(email) {
   return data
 }
 
-// Demo mode: one example request from "Sofia", so the preview shows the card.
-// Saved in this browser: 'waiting' (default), 'accepted' or 'denied'.
-const DEMO_REQUEST_KEY = 'lisboa-explora-demo-request'
-function demoRequestState() {
+// Demo mode: three example requests, so the preview shows the card and the
+// "more waiting" counter. Answers are saved in this browser: { Sofia: 'accepted' }.
+const DEMO_REQUEST_KEY = 'lisboa-explora-demo-requests'
+const DEMO_REQUESTERS = ['Sofia', 'Tiago', 'Inês']
+function demoAnswers() {
   try {
-    return localStorage.getItem(DEMO_REQUEST_KEY) ?? 'waiting'
+    return JSON.parse(localStorage.getItem(DEMO_REQUEST_KEY)) ?? {}
   } catch {
-    return 'waiting'
+    return {}
   }
 }
 
-// Friend requests other players sent me: [{ fromId, name }]
+// Friend requests other players sent me, oldest first: [{ fromId, name }]
 export async function getFriendRequests() {
-  if (isDemoMode) return demoRequestState() === 'waiting' ? [{ fromId: 'demo-sofia', name: 'Sofia' }] : []
+  if (isDemoMode) {
+    const answers = demoAnswers()
+    return DEMO_REQUESTERS.filter((name) => !answers[name]).map((name) => ({ fromId: name, name }))
+  }
   const { data, error } = await supabase.rpc('my_friend_requests')
   if (error) throw error
   return data.map((row) => ({ fromId: row.from_id, name: row.display_name }))
@@ -230,7 +234,7 @@ export async function getFriendRequests() {
 export async function answerFriendRequest(fromId, accept) {
   if (isDemoMode) {
     try {
-      localStorage.setItem(DEMO_REQUEST_KEY, accept ? 'accepted' : 'denied')
+      localStorage.setItem(DEMO_REQUEST_KEY, JSON.stringify({ ...demoAnswers(), [fromId]: accept ? 'accepted' : 'denied' }))
     } catch {
       // storage blocked: the demo request comes back after a reload, that's fine
     }

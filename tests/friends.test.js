@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addFriendMessage, answerMessage, friendEmailProblem, nameProblem, nameResultMessage, playerLabel, rememberMood, rememberedMood, titleLine, weatherMood, withTitles } from '../src/lib/friends.js'
+import { addFriendMessage, answerMessage, friendEmailProblem, moreWaiting, nameProblem, nameResultMessage, playerLabel, rememberMood, rememberedMood, titleLine, weatherMood, withTitles } from '../src/lib/friends.js'
 
 describe('playerLabel', () => {
   it('shows other players by name', () => {
@@ -250,5 +250,16 @@ describe('titleLine', () => {
     expect(titleLine([])).toBe('')
     expect(titleLine(['Belém'])).toBe('👑 Ruler of Belém')
     expect(titleLine(['Belém', 'Ajuda', 'Estrela'])).toBe('👑 Ruler of Belém + 2 more')
+  })
+})
+
+describe('moreWaiting (under the friend request card)', () => {
+  it('says nothing when this is the only request', () => {
+    expect(moreWaiting(0)).toBe('')
+  })
+
+  it('uses singular and plural', () => {
+    expect(moreWaiting(1)).toBe('1 more request waiting')
+    expect(moreWaiting(3)).toBe('3 more requests waiting')
   })
 })

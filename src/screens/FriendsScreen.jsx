@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { addFriend, answerFriendRequest, getCharacter, getFriendRequests, getFriendsLeaderboard, getUser, setDisplayName } from '../lib/api.js'
 import { isDemoMode } from '../lib/supabase.js'
 import WeatherScene from '../components/WeatherScene.jsx'
-import { addFriendMessage, answerMessage, friendEmailProblem, NAME_MAX, nameProblem, nameResultMessage, playerLabel, titleLine, weatherMood, withTitles } from '../lib/friends.js'
+import { addFriendMessage, answerMessage, friendEmailProblem, moreWaiting, NAME_MAX, nameProblem, nameResultMessage, playerLabel, titleLine, weatherMood, withTitles } from '../lib/friends.js'
 import { rankPlayers } from '../lib/progress.js'
 
 const MEDALS = ['🥇', '🥈', '🥉']
@@ -103,6 +103,7 @@ export default function FriendsScreen({ newThisMonth, myHoodCounts }) {
     load()
   }
 
+  const nextRequest = requests[0] // oldest first
   const ranked = players && rankPlayers(players, rankBy)
   const onlyMe = players && players.length <= 1
   // The sky shows how this month's race is going (null while loading).
@@ -116,29 +117,32 @@ export default function FriendsScreen({ newThisMonth, myHoodCounts }) {
       <div className="content">
         {(requests.length > 0 || requestNote) && (
           <section className="card requests" aria-label="Friend requests">
-            {requests.length > 0 && <h2 className="section-label">✉️ Friend requests</h2>}
-            {requests.length > 0 && (
-              <ul className="request-list">
-                {requests.map((request) => (
-                  <li key={request.fromId}>
-                    <span className="avatar" aria-hidden="true">
-                      {(request.name || '?')[0].toUpperCase()}
-                    </span>
-                    <span className="name">
-                      {request.name}
-                      <small className="muted">wants to be your friend</small>
-                    </span>
-                    <div className="request-buttons">
-                      <button className="primary small" type="button" disabled={busy} onClick={() => answer(request, true)}>
-                        Accept
-                      </button>
-                      <button className="secondary" type="button" disabled={busy} onClick={() => answer(request, false)}>
-                        Deny
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+            {/* One request at a time (the oldest); the counter shows how many are waiting */}
+            {nextRequest && (
+              <>
+                <h2 className="section-label request-head">
+                  ✉️ Friend requests
+                  {requests.length > 1 && <span className="request-count">{requests.length}</span>}
+                </h2>
+                <div className="request">
+                  <span className="avatar" aria-hidden="true">
+                    {(nextRequest.name || '?')[0].toUpperCase()}
+                  </span>
+                  <span className="name">
+                    {nextRequest.name}
+                    <small className="muted">wants to be your friend</small>
+                  </span>
+                  <div className="request-buttons">
+                    <button className="primary small" type="button" disabled={busy} onClick={() => answer(nextRequest, true)}>
+                      Accept
+                    </button>
+                    <button className="secondary" type="button" disabled={busy} onClick={() => answer(nextRequest, false)}>
+                      Deny
+                    </button>
+                  </div>
+                </div>
+                {requests.length > 1 && <p className="muted request-more">{moreWaiting(requests.length - 1)}</p>}
+              </>
             )}
             {requestNote && (
               <p className={requestNote.ok ? 'note ok fade-out' : 'note error'} role="status">

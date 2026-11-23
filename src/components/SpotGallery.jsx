@@ -1,13 +1,12 @@
-// "Your spots" in Collection: every spot you collected, newest first, as a
-// photo grid. Tap one to see it big; in the big view you swipe (or use the
-// arrows) through all of them, like a phone's photo gallery.
+// "Your spots" in Collection: your latest spot as a big card (photo, place and
+// what you wrote), then "See all spots", which opens the big view where you
+// swipe (or use the arrows) through all of them, like a phone's photo gallery.
 import { useEffect, useState } from 'react'
 import { categoryById } from '../data/categories.js'
 import { getPhotoUrls } from '../lib/api.js'
 import { emojiFor } from '../lib/markers.js'
+import { formatShortDate } from '../lib/progress.js'
 import PhotoViewer from './PhotoViewer.jsx'
-
-const FIRST = 6 // two rows, then "Show all"
 
 // A photo, or (no photo) a tile in the category's colour with its emoji.
 export function SpotPicture({ entry, url }) {
@@ -19,11 +18,10 @@ export function SpotPicture({ entry, url }) {
   )
 }
 
-// entries: from recentlyCollected(checkOffs, spots, Infinity)
+// entries: from recentlyCollected(checkOffs, spots, Infinity), newest first
 export default function SpotGallery({ entries }) {
   const [urls, setUrls] = useState([])
-  const [showAll, setShowAll] = useState(false)
-  const [open, setOpen] = useState(null) // index of the spot shown big, null = grid only
+  const [open, setOpen] = useState(null) // index of the spot shown big, null = closed
 
   useEffect(() => {
     let alive = true
@@ -35,26 +33,31 @@ export default function SpotGallery({ entries }) {
     }
   }, [entries])
 
-  const shown = showAll ? entries : entries.slice(0, FIRST)
+  const latest = entries[0]
   return (
     <>
-      <ul className="spot-grid">
-        {shown.map((entry, i) => (
-          <li key={entry.spot.id}>
-            <button type="button" className="spot-tile" onClick={() => setOpen(i)} aria-label={`${entry.spot.name}, open big`}>
-              <SpotPicture entry={entry} url={urls[i]} />
-              {entry.verified && (
-                <span className="spot-tile-star" aria-hidden="true">
-                  ⭐
-                </span>
-              )}
-            </button>
-          </li>
-        ))}
-      </ul>
-      {entries.length > FIRST && (
-        <button type="button" className="secondary" onClick={() => setShowAll(!showAll)}>
-          {showAll ? 'Show fewer' : `Show all ${entries.length}`}
+      <button type="button" className="latest-spot" onClick={() => setOpen(0)} aria-label={`${latest.spot.name}, open big`}>
+        <span className="latest-picture">
+          <SpotPicture entry={latest} url={urls[0]} />
+        </span>
+        <span className="latest-text">
+          <strong>{latest.spot.name}</strong>
+          <span className="muted">
+            {latest.spot.neighbourhood} · {formatShortDate(latest.date)}
+          </span>
+          {latest.verified && <span className="verified-note">⭐ You were really there</span>}
+          {latest.rating != null && (
+            <span className="entry-rating" aria-label={`You rated it ${latest.rating} out of 5`}>
+              {'★'.repeat(latest.rating)}
+              <span className="muted">{'★'.repeat(5 - latest.rating)}</span>
+            </span>
+          )}
+          {latest.note && <span className="entry-note">{latest.note}</span>}
+        </span>
+      </button>
+      {entries.length > 1 && (
+        <button type="button" className="secondary" onClick={() => setOpen(1)}>
+          See all {entries.length} spots →
         </button>
       )}
       {open !== null && <PhotoViewer entries={entries} urls={urls} start={open} onClose={() => setOpen(null)} />}

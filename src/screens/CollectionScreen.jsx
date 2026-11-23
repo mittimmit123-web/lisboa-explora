@@ -55,7 +55,7 @@ export default function CollectionScreen({ spots, checkOffs, collectedIds }) {
               {hoods.visited}
               <small>/{hoods.total}</small>
             </strong>
-            <span>neighbourhoods&nbsp;↓</span>
+            <span>neighbourhoods ↓</span>
           </button>
         </div>
 

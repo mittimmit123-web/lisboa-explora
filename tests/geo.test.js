@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { distanceMeters, formatDistance, isGpsWeak, isWithinRadius } from '../src/lib/geo.js'
+import { distanceMeters, formatDistance, isGpsWeak, isWithinRadius, showGpsWarning } from '../src/lib/geo.js'
 
 const santaLuzia = { lat: 38.7118, lng: -9.1301 }
 
@@ -49,5 +49,18 @@ describe('isGpsWeak', () => {
   })
   it('is weak when GPS is only accurate to 120 m', () => {
     expect(isGpsWeak(120)).toBe(true)
+  })
+})
+
+describe('showGpsWarning', () => {
+  it('warns when GPS is weak and the player looks too far away', () => {
+    expect(showGpsWarning(85, false)).toBe(true)
+  })
+  it('does not warn when the player already gets the mark', () => {
+    expect(showGpsWarning(85, true)).toBe(false)
+  })
+  it('does not warn when GPS is accurate or unknown', () => {
+    expect(showGpsWarning(20, false)).toBe(false)
+    expect(showGpsWarning(null, false)).toBe(false)
   })
 })

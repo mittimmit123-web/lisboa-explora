@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { checkOff } from '../lib/api.js'
 import { isDemoMode } from '../lib/supabase.js'
-import { CHECK_RADIUS_M, distanceMeters, formatDistance, isGpsWeak } from '../lib/geo.js'
+import { CHECK_RADIUS_M, distanceMeters, formatDistance, showGpsWarning } from '../lib/geo.js'
 import { categoryById } from '../data/categories.js'
 import { checkOffErrorMessage } from '../lib/messages.js'
 import { isPhotoTooBig, shrinkPhoto } from '../lib/photo.js'
@@ -102,9 +102,9 @@ export default function CheckOffScreen({ spot, position, gpsError, onDone, onBac
           {accuracy !== null && <span className="gps-accuracy">GPS accurate to {accuracy} m</span>}
         </div>
 
-        {accuracy !== null && isGpsWeak(accuracy) && (
+        {showGpsWarning(accuracy, willVerify) && (
           <p className="gps-warning" role="status">
-            Your GPS is not accurate right now (±{accuracy} m), so you might miss the "verified on site" mark. Wait a moment or step outside.
+            Your GPS is not accurate right now (±{accuracy} m), so you may be closer than it looks. Wait a moment or step outside to get the "verified on site" mark.
           </p>
         )}
 

@@ -41,3 +41,11 @@ export function formatDistance(meters) {
 export function isGpsWeak(accuracy, limit = CHECK_RADIUS_M) {
   return accuracy > limit
 }
+
+// Warn about weak GPS only when the player would NOT get the mark: then a bad
+// reading may be why they look too far away. When they are already within the
+// radius, the server gives the mark anyway (it only uses the reported
+// position), so a warning would contradict the green "You're here" message.
+export function showGpsWarning(accuracy, willVerify) {
+  return !willVerify && accuracy !== null && isGpsWeak(accuracy)
+}

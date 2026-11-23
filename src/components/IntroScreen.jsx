@@ -200,8 +200,8 @@ function PurposeFilm({ actorId, onDone }) {
       </button>
       <span className="intro-who">{explora.name}</span>
       <p className="intro-bubble intro-bubble-purpose" aria-live="polite">
-        Did you know Lisbon has 24 neighbourhoods, each full of surprises? Most people only ever see their own neighbourhood and never
-        discover the rest of Lisbon. Let&apos;s explore them together!
+        Did you know? Lisbon has <b>24 neighbourhoods</b>, each full of surprises. But most people only ever know their own. Let&apos;s
+        discover the rest together! 🗺️
       </p>
       <button className="intro-yes" type="button" onClick={() => (doneRef.current = true)}>
         Let&apos;s explore!

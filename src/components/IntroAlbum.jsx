@@ -8,9 +8,9 @@ import { characterById } from '../lib/characters.js'
 const BuddyAvatar = lazy(() => import('./BuddyAvatar.jsx'))
 
 const HOW = [
-  { emoji: '📍', text: 'Walk to a real place on the map' },
+  { emoji: '📍', text: 'Walk to a spot on the map' },
   { emoji: '📸', text: 'Snap a photo to collect it' },
-  { emoji: '💌', text: 'In every new neighbourhood, it becomes a postcard' },
+  { emoji: '💌', text: 'Your first photo in each new neighbourhood becomes a postcard' },
 ]
 
 export default function IntroAlbum({ actorId, onDone }) {
@@ -24,7 +24,7 @@ export default function IntroAlbum({ actorId, onDone }) {
         <Suspense fallback={<span className="buddy-avatar buddy-placeholder" aria-hidden="true" />}>
           <BuddyAvatar id={explora.id} />
         </Suspense>
-        <p className="intro-tiles-bubble">Here’s how it works:</p>
+        <p className="intro-tiles-bubble">Here’s how we play:</p>
       </div>
 
       <ol className="intro-how">

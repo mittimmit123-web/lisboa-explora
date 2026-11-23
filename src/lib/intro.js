@@ -9,8 +9,8 @@
 //   purpose   it explains WHY the app exists: most people only ever see their
 //             own neighbourhood, but Lisbon has 24
 //   name      it asks what to call you: the name your friends will see
-//   album     HOW it works: walk to a real place, snap a photo, and in every
-//             new neighbourhood it becomes a postcard (24 in total)
+//   album     the goal: the first photo in each new neighbourhood becomes a
+//             postcard, 24 in total (the HOW is shown in the tour)
 // Then the guided tour starts (src/lib/tour.js).
 export const STEPS = ['welcome', 'pick', 'prologue', 'purpose', 'name', 'album']
 

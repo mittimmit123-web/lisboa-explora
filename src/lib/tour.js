@@ -8,7 +8,7 @@
 // {name}  is replaced with the Explora's name
 export const TOUR_STEPS = [
   { target: 'map', tab: 'map', text: 'This is Lisbon! Every pin is a real place we can collect together.' },
-  { target: 'map', tab: 'map', text: 'Walk to a pin, tap it and take a photo. If you are really there, you get a golden ⭐!' },
+  { target: 'map', tab: 'map', text: 'Walk to a pin, tap it and snap a photo to collect it. If you are really there, you get a golden ⭐!' },
   { target: 'nav-add', tab: 'add', text: 'Already standing at a spot? Tap the yellow +: it lists the spots right around you, so you can add one without searching the map.' },
   { target: 'nav-collection', tab: 'collection', text: 'This is our journal: every spot, our story, and our postcard album made from your photos.' },
   { target: 'nav-friends', tab: 'friends', text: 'Add friends and race them every month! The weather shows how you are doing, and whoever has the most spots in a neighbourhood becomes its 👑 Ruler.' },

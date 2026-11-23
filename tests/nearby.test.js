@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { CHECK_RADIUS_M } from '../src/lib/geo.js'
 import { inStarRange, nearbySpots, simplify } from '../src/lib/nearby.js'
 
 // Three spots in a row going north from the player (about 111 m per 0.001°)
@@ -47,10 +48,15 @@ describe('simplify', () => {
 })
 
 describe('inStarRange (⭐ hint on Add spot)', () => {
-  it('is true within 50 m, false further away or without GPS', () => {
+  it('is true within the check-off radius, false further away or without GPS', () => {
     expect(inStarRange(15)).toBe(true)
-    expect(inStarRange(50)).toBe(true)
-    expect(inStarRange(51)).toBe(false)
+    expect(inStarRange(CHECK_RADIUS_M)).toBe(true)
+    expect(inStarRange(CHECK_RADIUS_M + 1)).toBe(false)
     expect(inStarRange(null)).toBe(false)
+  })
+
+  it('follows the radius rather than a number of its own', () => {
+    // 51 m used to be out of range; with the 150 m radius it is in.
+    expect(inStarRange(51)).toBe(true)
   })
 })

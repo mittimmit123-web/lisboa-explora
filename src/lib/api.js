@@ -74,7 +74,7 @@ export async function getMyCheckOffs() {
 }
 
 // Checks off a spot. This never fails because of distance: the spot always
-// goes into the player's journal. Being within 50 m only earns the
+// goes into the player's journal. Being within 150 m only earns the
 // "verified on site" mark, which the SERVER decides.
 // position: { lat, lng } from the phone's GPS, or null if there is none
 // photo: a File from the camera input

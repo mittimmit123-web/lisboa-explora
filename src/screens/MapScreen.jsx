@@ -164,8 +164,15 @@ function useExploraPinIcon() {
 // screen, so the first start is not slower. memo + `unlocked` as one text
 // ("Belém|Estrela"): the areas are only redrawn when a new neighbourhood is
 // unlocked, not on every GPS update.
+//
+// Leaflet normally draws these areas only for the part of the map on screen,
+// and redraws them only when a zoom has finished. While zooming out, the edges
+// were therefore empty for a moment, and the colours came in late. padding: 1
+// draws them one extra screen-width around the visible part (3 x 3 screens),
+// so zooming out shows colours straight away. Only 24 areas, so this is cheap.
 const NeighbourhoodColours = memo(function NeighbourhoodColours({ unlocked }) {
   const [parishes, setParishes] = useState(null)
+  const renderer = useMemo(() => L.svg({ padding: 1 }), [])
   useEffect(() => {
     let cancelled = false
     import('../data/parishes.js')
@@ -184,6 +191,7 @@ const NeighbourhoodColours = memo(function NeighbourhoodColours({ unlocked }) {
         positions={ring}
         interactive={false} // taps go through to the map and the markers
         pathOptions={{
+          renderer, // see the padding note above
           fillColor: NEIGHBOURHOOD_COLORS[parish.name] ?? '#CCCCCC',
           fillOpacity: isUnlocked.has(parish.name) ? UNLOCKED_OPACITY : LOCKED_OPACITY,
           color: '#FFFFFF', // thin white line between neighbourhoods

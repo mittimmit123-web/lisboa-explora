@@ -6,7 +6,11 @@
 // used for showing "320 m away" in the app and for demo mode.
 // Both use the same formula (haversine).
 
-export const CHECK_RADIUS_M = 50
+// 150 m, not 50. In the narrow streets of central Lisbon the signal
+// bounces off the buildings and the phone can be tens of metres off, so a
+// smaller radius measured the signal instead of the visit. See DECISIONS.md.
+// This number must match check_off() in supabase/schema.sql.
+export const CHECK_RADIUS_M = 150
 
 const EARTH_RADIUS_M = 6371000
 
@@ -35,9 +39,24 @@ export function formatDistance(meters) {
 }
 
 // GPS accuracy: the phone says "I'm here, give or take `accuracy` metres".
-// If that is more than our check-off radius, the distance we show can be
-// wrong, so the screen warns the player.
+// Worse than WEAK_GPS_M and the reading is vague enough to change whether the
+// player gets the mark, so the screen says so.
+//
+// This used to default to CHECK_RADIUS_M, which was the same number by
+// accident. They mean different things - one is how close you have to be, the
+// other is how much the phone is guessing - so widening the radius to 150 m
+// must not quietly stop the warning. They are separate now.
 // Example: isGpsWeak(25) -> false, isGpsWeak(120) -> true
-export function isGpsWeak(accuracy, limit = CHECK_RADIUS_M) {
+export const WEAK_GPS_M = 50
+
+export function isGpsWeak(accuracy, limit = WEAK_GPS_M) {
   return accuracy > limit
+}
+
+// Warn about weak GPS only when the player would NOT get the mark: then a bad
+// reading may be why they look too far away. When they are already within the
+// radius, the server gives the mark anyway (it only uses the reported
+// position), so a warning would contradict the green "You're here" message.
+export function showGpsWarning(accuracy, willVerify) {
+  return !willVerify && accuracy !== null && isGpsWeak(accuracy)
 }

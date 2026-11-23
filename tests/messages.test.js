@@ -7,6 +7,10 @@ describe('checkOffErrorMessage', () => {
     expect(checkOffErrorMessage({ reason: 'not_logged_in' })).toBe("You've been logged out. Please log in again.")
     expect(checkOffErrorMessage({ reason: 'bad_photo' })).toBe("We couldn't use this photo. Please take a new one.")
     expect(checkOffErrorMessage({ reason: 'photo_too_big' })).toBe('This photo is too big. Please take a new one.')
+    expect(checkOffErrorMessage({ reason: 'note_too_long' })).toBe(
+      'Your note is too long. Please keep it under 500 characters.',
+    )
+    expect(checkOffErrorMessage({ reason: 'bad_rating' })).toBe('Please choose between 1 and 5 stars.')
     expect(checkOffErrorMessage({ reason: 'unknown_spot' })).toBe(
       "This spot isn't available right now. Please try again later.",
     )

@@ -119,6 +119,7 @@ export default function App() {
             spot={checkOffSpot}
             position={position}
             gpsError={gpsError}
+            locationBlocked={locationBlocked}
             onBack={() => setCheckOffSpot(null)}
             onDone={() => {
               setCheckOffSpot(null)

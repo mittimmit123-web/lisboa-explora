@@ -20,7 +20,7 @@ export const FACTS = {
   Misericórdia: 'The Elevador da Bica has been carrying people up one of Lisbon’s steepest streets since 1892.',
   Olivais: 'Olivais was built in the 1950s and 60s as a “garden city”, with buildings spread out between parks.',
   'Parque das Nações': 'This whole area was built for the Expo 98 world’s fair. Its Oceanário is one of the largest aquariums in Europe.',
-  'Penha de França': 'The Miradouro da Penha de França is one of the highest viewpoints in Lisbon, with a view over the whole city.',
+  'Penha de França': 'The Miradouro da Penha de França, next to the church of the same name, looks out over the east of the city and the river Tagus.',
   'Santa Clara': 'Santa Clara is one of Lisbon’s newest parishes: it was created in 2012 by joining Ameixoeira and Charneca.',
   'Santa Maria Maior': 'Lisbon Cathedral, the Sé, was begun in 1147 and is the oldest church in the city.',
   'Santo António': 'Avenida da Liberdade was built in the 1880s as a grand boulevard inspired by the avenues of Paris.',

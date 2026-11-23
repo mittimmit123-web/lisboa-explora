@@ -35,9 +35,8 @@ button { font: inherit; cursor: pointer; }
 .screen.center { align-items: center; justify-content: center; }
 .screen-header { padding: 20px 20px 12px; display: flex; flex-direction: column; gap: 2px; }
 /* "?" help button at the top right of the map, with its small menu */
-.screen-header:has(.help) { position: relative; padding-right: 72px; }
-.help { position: absolute; top: 13px; right: 16px; z-index: 1100; }
-.help-btn { width: 44px; height: 44px; padding: 0; border-radius: 50%; border: 2px solid var(--card-edge); background: var(--card); color: var(--accent); font-size: 22px; font-weight: 900; line-height: 1; display: flex; align-items: center; justify-content: center; }
+.help { position: relative; z-index: 1100; }
+.help-btn { width: 44px; height: 44px; padding: 0; border-radius: 50%; border: none; background: var(--ground); color: var(--accent); font-size: 22px; font-weight: 900; line-height: 1; display: flex; align-items: center; justify-content: center; }
 .help-menu { position: absolute; top: 51px; right: 0; min-width: 230px; display: flex; flex-direction: column; padding: 6px; background: var(--card); border-radius: 18px; box-shadow: 0 4px 0 var(--card-edge), 0 8px 24px rgb(43 35 64 / 15%); }
 .help-menu button { min-height: 48px; padding: 0 12px; border: 0; border-radius: 12px; background: none; color: var(--ink); font-size: 15px; font-weight: 700; text-align: left; white-space: nowrap; }
 .help-menu button + button { border-top: 1px solid var(--card-edge); border-radius: 0 0 12px 12px; }
@@ -339,10 +338,8 @@ input[type='email'], input[type='text'] { flex: 1; min-width: 0; min-height: 44p
 /* Add spot tab: closest spots you haven't collected yet */
 .nearby-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .nearby-list button { width: 100%; display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 16px; background: var(--card); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
-.nearby-emoji { font-size: 26px; }
 .nearby-name { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .nearby-name small { color: var(--muted); }
-.nearby-distance { font-weight: 800; color: var(--accent); }
 
 /* Friends: add-friend form and feedback */
 /* Friend requests: a card at the top of Friends with Accept / Deny */
@@ -462,8 +459,6 @@ input[type='email'], input[type='text'] { flex: 1; min-width: 0; min-height: 44p
 .map-screen .screen-header.map-bar { position: absolute; z-index: 1100; top: 12px; left: 12px; right: 12px; flex-direction: row; align-items: center; gap: 8px; padding: 8px 8px 8px 18px; background: var(--card); border-radius: 30px; box-shadow: 0 8px 24px rgb(60 40 120 / 16%); }
 .map-bar h1 { font-size: 20px; }
 .map-bar .muted { flex: 1; min-width: 0; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.map-bar .help { position: relative; top: auto; right: auto; }
-.map-bar .help-btn { border: none; background: var(--ground); }
 .filter-btn { position: relative; flex-shrink: 0; width: 44px; height: 44px; padding: 0; border: none; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; }
 .filter-btn[aria-expanded='true'] { background: var(--accent-edge); }
 .filter-count { position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px; border: 2px solid #fff; border-radius: 10px; background: var(--sun); color: #5a3d00; font-size: 11px; font-weight: 900; line-height: 16px; }

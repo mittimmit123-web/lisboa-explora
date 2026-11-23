@@ -123,7 +123,7 @@ button { font: inherit; cursor: pointer; }
 .bar-fill { height: 100%; border-radius: 999px; }
 
 /* Friends */
-.leaderboard { list-style: none; margin: 0; padding: 0; background: var(--card); border-radius: 20px; box-shadow: 0 4px 0 var(--card-edge); }
+.leaderboard { list-style: none; margin: 0; padding: 0; background: var(--card); border-radius: 20px; overflow: hidden; box-shadow: 0 4px 0 var(--card-edge); }
 .leaderboard li { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid #eee8fb; }
 .leaderboard li:last-child { border-bottom: none; }
 .leaderboard li.me { background: #ddd2fb; }

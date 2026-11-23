@@ -7,6 +7,7 @@ import {
   neighbourhoodCoverage,
   newThisMonth,
   rankPlayers,
+  formatShortDate,
   recentlyCollected,
 } from '../src/lib/progress.js'
 
@@ -218,5 +219,30 @@ describe('categoryDetail', () => {
     expect(empty.collected).toEqual([])
     expect(empty.visited).toEqual([])
     expect(empty.missing).toEqual(['Graça'])
+  })
+})
+
+describe('recentlyCollected for the photo grid', () => {
+  const spots = [
+    { id: 'a', name: 'A' },
+    { id: 'b', name: 'B' },
+  ]
+  const rows = [
+    { spot_id: 'a', created_at: '2026-11-01T10:00:00Z', photo_path: 'u/a.jpg' },
+    { spot_id: 'b', created_at: '2026-11-05T10:00:00Z' },
+  ]
+
+  it('can list every spot (no limit), newest first', () => {
+    expect(recentlyCollected(rows, spots, Infinity).map((e) => e.spot.id)).toEqual(['b', 'a'])
+  })
+
+  it('keeps the saved row, so the photo can be found', () => {
+    expect(recentlyCollected(rows, spots, Infinity)[1].checkOff.photo_path).toBe('u/a.jpg')
+  })
+})
+
+describe('formatShortDate', () => {
+  it('writes day and short month', () => {
+    expect(formatShortDate(new Date(2026, 10, 17))).toBe('17 Nov')
   })
 })

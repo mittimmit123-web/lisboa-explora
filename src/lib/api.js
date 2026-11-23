@@ -130,6 +130,18 @@ export async function checkOff({ spot, position, photo, note, rating }) {
 // A link to show the player's own photo of a check-off on a postcard (#33),
 // or null if there is none. Real mode: photos are private, so we ask the
 // server for a temporary link (valid for one hour).
+// Links for many photos at once (the photo grid in Collection): one request
+// instead of one per photo. Returns the links in the same order (null = no photo).
+export async function getPhotoUrls(checkOffRows) {
+  if (isDemoMode) return checkOffRows.map((row) => row?.photo_thumb ?? null)
+  const paths = checkOffRows.map((row) => row?.photo_path).filter(Boolean)
+  if (paths.length === 0) return checkOffRows.map(() => null)
+  const { data, error } = await supabase.storage.from('photos').createSignedUrls(paths, 3600)
+  if (error) return checkOffRows.map(() => null)
+  const urlByPath = new Map(data.map((d) => [d.path, d.signedUrl]))
+  return checkOffRows.map((row) => urlByPath.get(row?.photo_path) ?? null)
+}
+
 export async function getPhotoUrl(checkOffRow) {
   if (isDemoMode) return checkOffRow?.photo_thumb ?? null
   if (!checkOffRow?.photo_path) return null

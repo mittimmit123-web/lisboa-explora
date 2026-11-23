@@ -39,6 +39,11 @@ export function rankPlayers(players, key = 'count') {
 
 // The newest check-offs joined with their spot, newest first.
 // Returns [{ spot, date, verified }]. Check-offs for unknown spots are skipped.
+// "17 Nov"
+export function formatShortDate(date) {
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+}
+
 export function recentlyCollected(checkOffs, spots, limit = 5) {
   return [...checkOffs]
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
@@ -49,6 +54,7 @@ export function recentlyCollected(checkOffs, spots, limit = 5) {
       // Both optional, and missing on entries made before they existed.
       note: cleanJournalNote(c.note),
       rating: cleanRating(c.rating),
+      checkOff: c, // the saved row, for the photo
     }))
     .filter((item) => item.spot)
     .slice(0, limit)

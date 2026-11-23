@@ -1,18 +1,14 @@
 // Person 4: Collection — the player's own journal. No ranking here on purpose:
 // competition lives on the Friends screen.
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import BuddyCard from '../components/BuddyCard.jsx'
 import CategoryDetail from '../components/CategoryDetail.jsx'
 import ProgressBar from '../components/ProgressBar.jsx'
+import SpotGallery from '../components/SpotGallery.jsx'
 import StorySection from '../components/StorySection.jsx'
-import { CATEGORIES, categoryById } from '../data/categories.js'
+import { CATEGORIES } from '../data/categories.js'
 import { NEIGHBOURHOODS } from '../data/neighbourhoods.js'
 import { categoryCounts, categoryDetail, monthSummary, neighbourhoodCoverage, recentlyCollected } from '../lib/progress.js'
-
-// "17 Nov"
-function formatDate(date) {
-  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
-}
 
 // The sentence in the "This month" card.
 function MonthText({ count, verified }) {
@@ -31,7 +27,8 @@ const jumpTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: '
 export default function CollectionScreen({ spots, checkOffs, collectedIds }) {
   const month = monthSummary(checkOffs)
   const [openCategory, setOpenCategory] = useState(null) // which tile is open, null = none
-  const recent = recentlyCollected(checkOffs, spots)
+  // All collected spots, newest first; only recounted when they change
+  const mySpots = useMemo(() => recentlyCollected(checkOffs, spots, Infinity), [checkOffs, spots])
   const categories = categoryCounts(spots, collectedIds, CATEGORIES)
   const hoods = neighbourhoodCoverage(spots, collectedIds, NEIGHBOURHOODS)
 
@@ -45,11 +42,11 @@ export default function CollectionScreen({ spots, checkOffs, collectedIds }) {
         <BuddyCard />
 
         <div className="stats">
-          <div className="stat dark">
+          <button type="button" className="stat dark stat-link" onClick={() => jumpTo('your-spots')}>
             <strong>{collectedIds.size}</strong>
-            <span>spots total</span>
-          </div>
-          <button type="button" className="stat stat-link" onClick={() => jumpTo('recently-collected')}>
+            <span>spots total ↓</span>
+          </button>
+          <button type="button" className="stat stat-link" onClick={() => jumpTo('your-spots')}>
             <strong>{month.count}</strong>
             <span>new this month ↓</span>
           </button>
@@ -69,31 +66,13 @@ export default function CollectionScreen({ spots, checkOffs, collectedIds }) {
           </p>
         </div>
 
-        <h2 className="section-label" id="recently-collected">
-          Recently collected
+        <h2 className="section-label" id="your-spots">
+          Your spots · {mySpots.length}
         </h2>
-        {recent.length === 0 ? (
+        {mySpots.length === 0 ? (
           <p className="muted">Nothing collected yet. Open the map and find your first spot!</p>
         ) : (
-          <ul className="recent">
-            {recent.map(({ spot, date, verified, note, rating }) => (
-              <li key={spot.id} className={verified ? 'verified' : undefined}>
-                <span className="dot" style={{ background: categoryById(spot.category)?.color }} />
-                <span className="name">
-                  {spot.name}
-                  {verified && <span className="verified-note">⭐ You were really there</span>}
-                  {rating != null && (
-                    <span className="entry-rating" aria-label={`You rated it ${rating} out of 5`}>
-                      {'★'.repeat(rating)}
-                      <span className="muted">{'★'.repeat(5 - rating)}</span>
-                    </span>
-                  )}
-                  {note && <span className="entry-note">{note}</span>}
-                </span>
-                <span className="muted">{formatDate(date)}</span>
-              </li>
-            ))}
-          </ul>
+          <SpotGallery entries={mySpots} />
         )}
 
         <StorySection spots={spots} checkOffs={checkOffs} />

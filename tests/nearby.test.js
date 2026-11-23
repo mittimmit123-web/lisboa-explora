@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { nearbySpots, simplify } from '../src/lib/nearby.js'
+import { inStarRange, nearbySpots, simplify } from '../src/lib/nearby.js'
 
 // Three spots in a row going north from the player (about 111 m per 0.001°)
 const me = { lat: 38.71, lng: -9.13 }
@@ -43,5 +43,14 @@ describe('simplify', () => {
   it('removes accents and capitals', () => {
     expect(simplify('São Jorge')).toBe('sao jorge')
     expect(simplify('Açúcar')).toBe('acucar')
+  })
+})
+
+describe('inStarRange (⭐ hint on Add spot)', () => {
+  it('is true within 50 m, false further away or without GPS', () => {
+    expect(inStarRange(15)).toBe(true)
+    expect(inStarRange(50)).toBe(true)
+    expect(inStarRange(51)).toBe(false)
+    expect(inStarRange(null)).toBe(false)
   })
 })

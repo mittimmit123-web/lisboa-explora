@@ -86,7 +86,7 @@ export default function SpotGallery({ entries }) {
 
   return (
     <>
-      <div className="latest-spot">
+      <div className="latest-spot compact">
         <SpotCard entry={entries[0]} url={urls[0]} />
       </div>
       {entries.length > 1 && (

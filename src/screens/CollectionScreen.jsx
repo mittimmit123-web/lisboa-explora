@@ -44,18 +44,18 @@ export default function CollectionScreen({ spots, checkOffs, collectedIds }) {
         <div className="stats">
           <button type="button" className="stat dark stat-link" onClick={() => jumpTo('your-spots')}>
             <strong>{collectedIds.size}</strong>
-            <span>spots total ↓</span>
+            <span>spots total&nbsp;↓</span>
           </button>
           <button type="button" className="stat stat-link" onClick={() => jumpTo('your-spots')}>
             <strong>{month.count}</strong>
-            <span>new this month ↓</span>
+            <span>new this month&nbsp;↓</span>
           </button>
           <button type="button" className="stat stat-link" onClick={() => jumpTo('neighbourhoods')}>
             <strong>
               {hoods.visited}
               <small>/{hoods.total}</small>
             </strong>
-            <span>neighbourhoods ↓</span>
+            <span>neighbourhoods&nbsp;↓</span>
           </button>
         </div>
 

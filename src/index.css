@@ -34,6 +34,13 @@ button { font: inherit; cursor: pointer; }
 .screen { display: flex; flex-direction: column; min-height: 100%; }
 .screen.center { align-items: center; justify-content: center; }
 .screen-header { padding: 20px 20px 12px; display: flex; flex-direction: column; gap: 2px; }
+/* "?" help button at the top right of the map, with its small menu */
+.screen-header:has(.help) { position: relative; padding-right: 72px; }
+.help { position: absolute; top: 13px; right: 16px; z-index: 1100; }
+.help-btn { width: 44px; height: 44px; padding: 0; border-radius: 50%; border: 2px solid var(--card-edge); background: var(--card); color: var(--accent); font-size: 22px; font-weight: 900; line-height: 1; display: flex; align-items: center; justify-content: center; }
+.help-menu { position: absolute; top: 51px; right: 0; min-width: 230px; display: flex; flex-direction: column; padding: 6px; background: var(--card); border-radius: 18px; box-shadow: 0 4px 0 var(--card-edge), 0 8px 24px rgb(43 35 64 / 15%); }
+.help-menu button { min-height: 48px; padding: 0 12px; border: 0; border-radius: 12px; background: none; color: var(--ink); font-size: 15px; font-weight: 700; text-align: left; white-space: nowrap; }
+.help-menu button + button { border-top: 1px solid var(--card-edge); border-radius: 0 0 12px 12px; }
 .content { padding: 0 20px 24px; display: flex; flex-direction: column; gap: 12px; }
 .row { display: flex; gap: 10px; align-items: center; }
 .row.between { justify-content: space-between; }

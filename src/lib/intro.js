@@ -12,9 +12,14 @@
 // Then the guided tour starts (src/lib/tour.js).
 export const STEPS = ['welcome', 'pick', 'prologue', 'name', 'album']
 
-export function nextStep(step) {
-  const i = STEPS.indexOf(step)
-  return i >= 0 && i < STEPS.length - 1 ? STEPS[i + 1] : 'done'
+// Watching the intro again (the "?" button on the map) shows only the story:
+// the player already has an Explora and a name, so those steps are skipped.
+export const REPLAY_STEPS = ['welcome', 'prologue', 'album']
+
+export function nextStep(step, replay = false) {
+  const steps = replay ? REPLAY_STEPS : STEPS
+  const i = steps.indexOf(step)
+  return i >= 0 && i < steps.length - 1 ? steps[i + 1] : 'done'
 }
 
 // ---------- welcome film (seconds) ----------

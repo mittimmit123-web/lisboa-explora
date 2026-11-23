@@ -6,6 +6,7 @@
 // Loaded only when needed (React.lazy in App.jsx), because of the 3D library.
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { characterById } from '../lib/characters.js'
+import { getCharacter } from '../lib/api.js'
 import {
   HELLO_END,
   PROLOGUE_END,
@@ -23,10 +24,12 @@ import IntroName from './IntroName.jsx'
 const HOST = 'tram' // Trammy welcomes everyone, and stands in if no Explora is chosen
 const prefersCalm = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
 
-export default function IntroScreen({ onDone }) {
+// replay: watched again from the "?" button. Shows only the story, with the
+// player's own Explora (no choosing, no name).
+export default function IntroScreen({ onDone, replay = false }) {
   const [step, setStep] = useState('welcome')
-  const [exploraId, setExploraId] = useState(null)
-  const next = useCallback(() => setStep((s) => nextStep(s)), [])
+  const [exploraId, setExploraId] = useState(() => (replay ? getCharacter() : null))
+  const next = useCallback(() => setStep((s) => nextStep(s, replay)), [replay])
 
   useEffect(() => {
     if (step === 'done') onDone()

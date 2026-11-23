@@ -26,6 +26,7 @@ const WelcomeBack = lazy(() => import('./components/WelcomeBack.jsx'))
 
 export default function App() {
   const [showIntro, setShowIntro] = useState(() => !hasSeenIntro()) // intro (#33)
+  const [replayIntro, setReplayIntro] = useState(false) // watched again from the "?" button
   // Later openings: splash with the player's Explora + "welcome back" card
   const [welcome, setWelcome] = useState(() => hasSeenIntro() && Boolean(getCharacter()))
   const [welcomeCard] = useState(() => {
@@ -64,11 +65,22 @@ export default function App() {
   const finishIntro = useCallback(() => {
     markIntroSeen()
     setShowIntro(false)
+    setReplayIntro(false)
     if (!hasSeenTour()) {
       setTourStep(0)
       setTab(TOUR_STEPS[0].tab)
     }
   }, [])
+
+  // The "?" button on the map: watch the intro story or the tour again.
+  function watchIntroAgain() {
+    setReplayIntro(true)
+    setShowIntro(true)
+  }
+  function showTourAgain() {
+    setTourStep(0)
+    setTab(TOUR_STEPS[0].tab)
+  }
 
   // Tour: go to the next step (and open its tab), or finish after the last one.
   function finishTour() {
@@ -90,7 +102,7 @@ export default function App() {
   if (showIntro) {
     return (
       <Suspense fallback={<div className="intro" />}>
-        <IntroScreen onDone={finishIntro} />
+        <IntroScreen onDone={finishIntro} replay={replayIntro} />
       </Suspense>
     )
   }
@@ -126,6 +138,8 @@ export default function App() {
             locationBlocked={locationBlocked}
             newThisMonth={monthCount}
             onCheckOff={setCheckOffSpot}
+            onReplayIntro={watchIntroAgain}
+            onReplayTour={showTourAgain}
           />
         ) : tab === 'add' ? (
           <AddSpotScreen spots={SPOTS} collectedIds={collectedIds} position={position} onPick={setCheckOffSpot} />

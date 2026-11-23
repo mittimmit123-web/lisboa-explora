@@ -3,6 +3,7 @@ import {
   SHOW_ALL_ZOOM,
   directionsUrl,
   emojiFor,
+  emptyMapMessage,
   isInBounds,
   isVisibleAtZoom,
   isVisibleAtZoomForStatus,
@@ -132,5 +133,30 @@ describe('isVisibleAtZoomForStatus', () => {
 
   it('still shows everything when zoomed in', () => {
     expect(isVisibleAtZoomForStatus(normal, SHOW_ALL_ZOOM, 'missing')).toBe(true)
+  })
+})
+
+describe('emptyMapMessage', () => {
+  const base = { shown: 0, categories: [], status: 'all', collectedCount: 3 }
+
+  it('says nothing while spots are on the map', () => {
+    expect(emptyMapMessage({ ...base, shown: 1, status: 'collected', collectedCount: 0 })).toBeNull()
+  })
+
+  it('explains "Collected" before anything is collected', () => {
+    expect(emptyMapMessage({ ...base, status: 'collected', collectedCount: 0 })).toBe(
+      "You haven't collected any spots yet",
+    )
+  })
+
+  it('blames the filters when a filter is on', () => {
+    expect(emptyMapMessage({ ...base, categories: ['park'] })).toBe('No spots match these filters here')
+    expect(emptyMapMessage({ ...base, status: 'missing' })).toBe('No spots match these filters here')
+    // collected spots exist, just none in this part of the map
+    expect(emptyMapMessage({ ...base, status: 'collected' })).toBe('No spots match these filters here')
+  })
+
+  it('blames the map area when no filter is on', () => {
+    expect(emptyMapMessage(base)).toBe('No spots in this part of the map')
   })
 })

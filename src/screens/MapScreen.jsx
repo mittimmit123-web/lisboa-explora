@@ -21,6 +21,7 @@ import {
   SHOW_ALL_ZOOM,
   directionsUrl,
   emojiFor,
+  emptyMapMessage,
   isInBounds,
   isVisibleAtZoomForStatus,
   matchesFilter,
@@ -238,6 +239,8 @@ export default function MapScreen({ spots, collectedIds, position, locationBlock
     return list
   }, [spots, filter, status, collectedIds, view, selected])
 
+  const emptyMessage =
+    view && emptyMapMessage({ shown: visible.length, categories: filter, status, collectedCount: collectedIds.size })
   const category = selected && categoryById(selected.category)
   const collected = selected && collectedIds.has(selected.id)
 
@@ -318,10 +321,13 @@ export default function MapScreen({ spots, collectedIds, position, locationBlock
             ))}
         </MapContainer>
 
-        {view && view.zoom < SHOW_ALL_ZOOM && status !== 'collected' && (
+        {/* An empty map explains itself (e.g. "Collected" before anything
+            is collected); otherwise the zoom hint as before. */}
+        {emptyMessage && <div style={styles.hint}>{emptyMessage}</div>}
+        {!emptyMessage && view && view.zoom < SHOW_ALL_ZOOM && status !== 'collected' && (
           <div style={styles.hint}>Showing highlights · zoom in to see all spots</div>
         )}
-        {view && view.zoom < SHOW_ALL_ZOOM && status === 'collected' && (
+        {!emptyMessage && view && view.zoom < SHOW_ALL_ZOOM && status === 'collected' && (
           <div style={styles.hint}>Everything you have collected so far</div>
         )}
 

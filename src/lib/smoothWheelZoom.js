@@ -15,13 +15,9 @@
 // so we do not need an extra library. It uses three of Leaflet's internal
 // functions (_moveStart, _move, _moveEnd), the same ones Leaflet uses itself
 // while you pinch-zoom on a phone.
+// The numbers and the maths are in src/lib/zoomMath.js (tested there).
 import L from 'leaflet'
-
-// How many zoom levels one pixel of scrolling is worth.
-// Bigger = faster. 0.04 means 25 px of scrolling = one zoom level.
-export const ZOOM_PER_PIXEL = 0.04
-const GLIDE = 0.3 // share of the remaining way the map moves per frame
-const END_AFTER_MS = 200
+import { addScroll, glideStep, zoomIsOver } from './zoomMath.js'
 
 export function enableSmoothWheelZoom(map) {
   const container = map.getContainer()
@@ -42,17 +38,16 @@ export function enableSmoothWheelZoom(map) {
     mousePoint = map.mouseEventToContainerPoint(event)
     mouseLatLng = map.containerPointToLatLng(mousePoint)
     const pixels = L.DomEvent.getWheelDelta(event) // up = positive
-    goalZoom = Math.min(map.getMaxZoom(), Math.max(map.getMinZoom(), goalZoom + pixels * ZOOM_PER_PIXEL))
+    goalZoom = addScroll(goalZoom, pixels, map.getMinZoom(), map.getMaxZoom())
     lastWheel = performance.now()
   }
 
   function step() {
     const current = map.getZoom()
-    let zoom = current + (goalZoom - current) * GLIDE
-    if (Math.abs(goalZoom - zoom) < 0.01) zoom = goalZoom
+    const zoom = glideStep(current, goalZoom)
     if (zoom === current) {
       // Goal reached: finish, or wait in case more scrolling follows.
-      if (performance.now() - lastWheel > END_AFTER_MS) finish()
+      if (zoomIsOver(current, goalZoom, performance.now() - lastWheel)) finish()
       else frame = requestAnimationFrame(step)
       return
     }

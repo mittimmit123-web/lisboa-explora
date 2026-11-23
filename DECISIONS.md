@@ -168,6 +168,13 @@ and laggy. `src/lib/smoothWheelZoom.js` replaces it: the map follows the
 scrolling directly, like Google Maps. We wrote it ourselves (same idea as the
 Leaflet.SmoothWheelZoom plugin) rather than add a little-maintained library.
 Markers are also memoised, so a new GPS position does not redraw all of them.
+The zoom maths (how far one scroll zooms, the glide, when a zoom is over)
+is in `src/lib/zoomMath.js`, separate from Leaflet, so `tests/zoomMath.test.js`
+can check it, including the smallest and largest zoom.
+
+**An empty map explains itself.** When the filters or the visible part of the
+map leave no spots, a short hint says why (for example "You haven't collected
+any spots yet"), so an empty map never looks broken.
 
 ## 14. Our own map design (vector map)
 

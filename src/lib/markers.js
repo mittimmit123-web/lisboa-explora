@@ -77,6 +77,17 @@ export function unlockedNeighbourhoods(spots, collectedIds) {
   return [...names].sort()
 }
 
+// What the map says when it shows no spots at all, so an empty map never
+// looks broken. Returns null while there is something to see.
+//   shown: number of spots on the map, categories: selected category ids,
+//   status: 'all' | 'collected' | 'missing', collectedCount: spots collected
+export function emptyMapMessage({ shown, categories, status, collectedCount }) {
+  if (shown > 0) return null
+  if (status === 'collected' && collectedCount === 0) return "You haven't collected any spots yet"
+  if (categories.length > 0 || status !== 'all') return 'No spots match these filters here'
+  return 'No spots in this part of the map'
+}
+
 // Link that opens walking directions in Google Maps (new tab / Maps app).
 export function directionsUrl(spot) {
   return `https://www.google.com/maps/dir/?api=1&destination=${spot.lat},${spot.lng}&travelmode=walking`

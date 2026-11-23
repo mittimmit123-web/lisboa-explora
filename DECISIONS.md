@@ -221,3 +221,134 @@ gzipped and is loaded only after the map is on screen, so the first start is
 not slower. The areas lie on top of the street names, so they are never
 solid. `SHOW_NEIGHBOURHOOD_COLOURS = false` in `src/screens/MapScreen.jsx`
 turns them off.
+
+## 16. The story unlocks by neighbourhood, not by number of spots
+
+Every new neighbourhood unlocks the next of 24 chapters (Lisbon has 24
+parishes), in the order the player visits them. The first photo taken there
+becomes a postcard for the Explora's album, with the chapter on the back.
+Logic in `src/lib/story.js`, texts in `src/data/story.js`.
+
+**Why.** We want players to explore the whole city, not collect ten cafés on
+their own street. A fixed chapter order means the story always makes sense,
+whichever neighbourhood a player starts in; the neighbourhood's name is filled
+into the text.
+
+**Accepted limit.** The chapters cannot tell something specific about each
+place, because any chapter can belong to any neighbourhood. After 24
+neighbourhoods the story ends.
+
+**Could change.** One chapter written for each neighbourhood, or new stories
+for other cities.
+
+## 17. Every neighbourhood has one real fact
+
+Each of the 24 neighbourhoods has one short, true fact (`src/data/facts.js`),
+shown as "💡 Did you know?" with the story chapter and on the back of its
+postcard.
+
+**Why.** The story chapters can belong to any neighbourhood (decision 16), so
+they cannot say much about the place itself. The fact is the part that is
+really about that neighbourhood, so players learn something real about where
+they have been.
+
+**Accepted limit.** We wrote and checked the facts ourselves, so one could be
+wrong or become outdated. There is only one fact per neighbourhood, so it
+never changes.
+
+**Could change.** Several facts per neighbourhood that rotate, or a link to a
+source for each fact.
+
+## 18. The player's Explora is saved on the phone, not on the server
+
+The chosen Explora (Trammy, Captain Bubbles or Miss Purrfect) is stored in the
+browser's `localStorage` (`getCharacter` / `setCharacter` in
+`src/lib/api.js`).
+
+**Why.** It is only decoration, not personal data. It needs no database change
+and works the same in demo mode.
+
+**Accepted limit.** On a new phone or browser the player chooses again, and
+friends cannot see each other's Explora.
+
+**Could change.** A column in `profiles`, so the Explora follows the account
+and can appear on the leaderboard.
+
+## 19. The 3D models only load when they are needed
+
+The 3D library (three.js) is downloaded only when the intro or an Explora is
+shown, for example in the Collection card or the weather square (`React.lazy`
+in `src/App.jsx` and the components that show an Explora). Until then a
+placeholder is shown.
+
+**Why.** three.js is large. The map must open quickly on mobile data in the
+street.
+
+**Accepted limit.** The first time a 3D scene appears there is a short wait,
+and very old phones may struggle.
+
+**Could change.** Simpler 2D pictures as a fallback for slow phones.
+
+## 20. Friends must accept a request, and "sent" is always the answer
+
+Adding a friend sends a request; the other player accepts or denies it.
+`add_friend` in `supabase/schema.sql` always answers "sent", even for an email
+that does not exist.
+
+**Why.** Before, typing someone's email made you friends at once, so a
+stranger could see your spots (weak spot 3 in `docs/security-check.md`).
+Always answering "sent" means nobody can use the app to find out which emails
+play.
+
+**Accepted limit.** A mistyped email is not reported. Denying is silent, so
+the sender never learns why nothing happens.
+
+**Could change.** Invite links or QR codes instead of typing an email.
+
+## 21. Crowns are worked out in the app, among you and your friends
+
+The server sends how many spots each player has in each neighbourhood
+(`friends_leaderboard`). The app decides who is "👑 Ruler": the most spots
+there, and a tie means nobody (`withTitles` in `src/lib/friends.js`). The
+leaderboard shows only a player's strongest crown.
+
+**Why.** It is a friendly title, not a score that needs protecting: the server
+already checks every check-off, and the crown is only computed from those
+counts. Showing one crown keeps the leaderboard short.
+
+**Accepted limit.** "Ruler" depends on the friend group, so two people can
+both be "Ruler of Belém" in different groups. A player can lead in many
+neighbourhoods, but only the best one is shown.
+
+**Could change.** A minimum number of spots for a crown, or crowns computed on
+the server for everyone.
+
+## 22. The Friends screen shows weather instead of just a rank
+
+The player's Explora stands in weather that matches their rank among their
+friends this month: golden sun when leading by 2 or more, clouds when it is
+close, wind or drizzle when behind, rain with 0 spots (`weatherMood` in
+`src/lib/friends.js`).
+
+**Why.** A friendly race should motivate, not shame. The weather shows at a
+glance how you are doing, and the text always says what would make it better
+("One more spot and the sun breaks through").
+
+**Accepted limit.** It is less exact than a number, so the exact counts are in
+the leaderboard below it.
+
+**Could change.** Weather for the neighbourhoods leaderboard too.
+
+## 23. The intro plays once; the "?" button brings it back
+
+The intro and the tour play only the first time (remembered in the browser).
+The "?" on the map replays them; the replay skips choosing an Explora and the
+name (`REPLAY_STEPS` in `src/lib/intro.js`). The "welcome back" card shows at
+most once a day.
+
+**Why.** New players need to understand the game, but returning players should
+not be blocked by it.
+
+**Accepted limit.** On a new phone or browser the intro plays again.
+
+**Could change.** Saving "intro seen" with the account instead of the browser.

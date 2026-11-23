@@ -402,3 +402,20 @@ input[type='email'], input[type='text'] { flex: 1; min-width: 0; min-height: 44p
 .chips-inline .chip { min-height: 32px; font-size: 12px; gap: 4px; }
 .category-missing-label { margin: 0; font-size: 13px; }
 .category-missing { margin: 0; font-size: 13px; line-height: 1.5; }
+
+/* Collection: "Your spots": the latest spot as a big card */
+.latest-spot { display: flex; flex-direction: column; border-radius: 16px; overflow: hidden; background: var(--card); }
+.latest-picture { display: block; aspect-ratio: 4 / 3; }
+.latest-picture img, .spot-art { width: 100%; height: 100%; object-fit: cover; display: flex; align-items: center; justify-content: center; font-size: 64px; }
+.latest-text { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; }
+/* On the Collection page: small photo on the left, text on the right */
+.latest-spot.compact { flex-direction: row; }
+.latest-spot.compact .latest-picture { position: relative; flex: 0 0 120px; aspect-ratio: auto; min-height: 120px; overflow: hidden; }
+.latest-spot.compact .latest-picture img, .latest-spot.compact .spot-art { position: absolute; inset: 0; font-size: 40px; }
+.latest-spot.compact .latest-text { justify-content: center; padding: 10px 12px; }
+
+/* "See all spots": a full-screen list of the same cards, scrolled like a feed */
+.all-spots { position: fixed; inset: 0; z-index: 3500; max-width: 520px; margin: 0 auto; background: var(--ground); overflow-y: auto; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); }
+.all-spots-head { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 12px; padding: calc(env(safe-area-inset-top, 0px) + 12px) 20px 12px; background: var(--ground); border-bottom: 1px solid var(--line); }
+.all-spots-head h2 { margin: 0; }
+.all-spots-list { list-style: none; margin: 0; padding: 16px 20px 0; display: flex; flex-direction: column; gap: 14px; }
